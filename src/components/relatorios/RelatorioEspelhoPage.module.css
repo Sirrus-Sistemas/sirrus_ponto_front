@@ -1,0 +1,416 @@
+.wrap {
+  background: var(--sp-bg-card);
+  border-radius: 18px;
+  padding: 1.35rem 1.35rem 2rem;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Formulário ──────────────────────────────────────────────────── */
+.form {
+  margin-bottom: 1.5rem;
+}
+
+.formTitle {
+  margin-bottom: 1rem;
+}
+
+.title {
+  margin: 0 0 0.25rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--sp-text);
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--sp-text-3);
+}
+
+.formRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+  align-items: flex-end;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.field > label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--sp-text-3);
+}
+
+.field select {
+  min-width: 150px;
+  padding: 0.45rem 0.65rem;
+  border-radius: var(--sp-radius-md);
+  border: 1px solid var(--sp-border);
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--sp-text);
+  background: var(--sp-bg-card);
+}
+
+.radioGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  padding-top: 0.2rem;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--sp-text-2);
+  cursor: pointer;
+}
+
+.formActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.85rem;
+}
+
+.btnGerar {
+  padding: 0.55rem 1.25rem;
+  border-radius: var(--sp-radius-md);
+  border: none;
+  background: var(--sp-accent);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnGerar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btnGerar:not(:disabled):hover {
+  background: var(--sp-bg-sidebar-2);
+}
+
+.btnImprimir {
+  padding: 0.55rem 1.25rem;
+  border-radius: var(--sp-radius-md);
+  border: 1px solid var(--sp-accent);
+  background: var(--sp-bg-card);
+  color: var(--sp-accent);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnImprimir:hover {
+  background: #f0f9f8;
+}
+
+.progressBar {
+  margin-top: 0.75rem;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--sp-border);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--sp-accent);
+  border-radius: 3px;
+  transition: width 0.2s ease;
+}
+
+.errorMsg {
+  margin: 0.5rem 0 0;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  background: var(--sp-sirrus-soft);
+  color: var(--sp-sirrus);
+  font-size: 0.88rem;
+}
+
+/* ── Bloco de um funcionário ──────────────────────────────────────── */
+.report {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.block {
+  border: 1px solid var(--sp-border);
+  border-radius: var(--sp-radius-lg);
+  overflow: hidden;
+}
+
+.blockHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem 0.75rem;
+  background: var(--sp-bg-card-soft);
+  border-bottom: 1px solid var(--sp-border);
+}
+
+.blockEmployee {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.blockNome {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--sp-text);
+}
+
+.blockSub {
+  font-size: 0.8rem;
+  color: var(--sp-text-3);
+}
+
+.blockPeriodo {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.blockPeriodoLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sp-text-3);
+}
+
+.blockPeriodoVal {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--sp-text-2);
+  text-transform: capitalize;
+}
+
+/* ── Summary cards por bloco ─────────────────────────────────────── */
+.blockSummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-bottom: 1px solid var(--sp-border);
+}
+
+.sc {
+  padding: 0.55rem 0.9rem;
+  border-right: 1px solid var(--sp-border);
+}
+
+.sc:last-child {
+  border-right: none;
+}
+
+.scLabel {
+  margin: 0 0 0.1rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--sp-text-3);
+}
+
+.scVal {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--sp-text);
+}
+
+.scMono {
+  font-variant-numeric: tabular-nums;
+}
+
+.scPresente { color: var(--sp-status-presente-text); }
+.scFalta { color: var(--sp-status-falta-text); }
+.scOcorrencia { color: var(--sp-status-ocorrencia-text); }
+.scWarn { color: #b45309; }
+
+/* ── Tabela ───────────────────────────────────────────────────────── */
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.83rem;
+}
+
+.table th,
+.table td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #f0f2f1;
+  vertical-align: top;
+}
+
+.table th {
+  background: var(--sp-bg-card-soft);
+  font-weight: 600;
+  color: var(--sp-text-2);
+  white-space: nowrap;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.colDia {
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--sp-text);
+}
+
+.colBatidas {
+  color: var(--sp-text-2);
+  line-height: 1.5;
+}
+
+.colNum {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.colObs {
+  font-size: 0.78rem;
+  color: var(--sp-text-3);
+}
+
+/* ── Status badge ─────────────────────────────────────────────────── */
+.sBadge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.12rem 0.4rem;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+  background: var(--sp-bg-canvas);
+  color: var(--sp-text-3);
+}
+
+.sBadgePresente { background: var(--sp-status-presente-bg); color: var(--sp-status-presente-text); }
+.sBadgeFalta    { background: var(--sp-status-falta-bg);    color: var(--sp-status-falta-text); }
+.sBadgeFolga    { background: var(--sp-status-folga-bg);    color: var(--sp-status-folga-text); }
+.sBadgeFeriado  { background: var(--sp-status-feriado-bg);  color: var(--sp-status-feriado-text); }
+.sBadgeOcorrencia { background: var(--sp-status-ocorrencia-bg); color: var(--sp-status-ocorrencia-text); }
+.sBadgeSemEscala  { background: #ffedd5; color: #9a3412; }
+
+/* ── Tipo badge (WEB / GEO / etc.) ────────────────────────────────── */
+.tipoBadge {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  margin-right: 0.25rem;
+  vertical-align: middle;
+  background: #d8f3f1;
+  color: var(--sp-status-presente-text);
+}
+
+/* ── Linhas coloridas por status ──────────────────────────────────── */
+.rowWarn { background: #fffbeb; }
+.rowFeriado { background: #eff6ff; }
+.rowFalta { background: #fff1f2; }
+.rowFolga { background: #f9fafb; }
+.rowOcorrencia { background: #fffbeb; }
+
+/* ── Print ────────────────────────────────────────────────────────── */
+.printOnly {
+  display: none;
+}
+
+@media print {
+  .report { display: none !important; }
+  .printOnly { display: block; }
+
+  .form {
+    display: none !important;
+  }
+
+  .wrap {
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  .report {
+    gap: 0;
+  }
+
+  .block {
+    border: none;
+    border-radius: 0;
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .block:last-child {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  .blockHeader {
+    background: transparent;
+    border-bottom: 1px solid #ccc;
+    padding: 0.5rem 0 0.5rem;
+  }
+
+  .blockSummary {
+    border-bottom: 1px solid #ccc;
+  }
+
+  .sc {
+    border-right: 1px solid #ccc;
+  }
+
+  .table {
+    font-size: 0.75rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.35rem 0.5rem;
+  }
+
+  .table tr {
+    page-break-inside: avoid;
+  }
+}
+
+@media (max-width: 640px) {
+  .blockSummary {
+    flex-wrap: wrap;
+  }
+
+  .sc {
+    flex: 1 1 calc(33% - 1px);
+  }
+}

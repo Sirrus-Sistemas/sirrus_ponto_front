@@ -1,0 +1,994 @@
+/* ─── Layout ─────────────────────────────────────────────────────────────── */
+.page {
+  --c-primary: #14918b;
+  --c-primary-dark: #11837e;
+  max-width: 720px;
+}
+
+.page[style*="max-width: 100%"],
+.page[style] {
+  max-width: 100%;
+}
+
+/* ─── Form page (edit/create) ────────────────────────────────────────────── */
+.formPage {
+  --c-primary: #14918b;
+  --c-primary-dark: #11837e;
+  min-height: 100%;
+  padding-bottom: 3rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ─── Breadcrumb ─────────────────────────────────────────────────────────── */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+  font-size: 0.82rem;
+  color: var(--sp-text-3);
+}
+
+.breadcrumbSep {
+  color: var(--sp-text-3);
+  opacity: 0.5;
+}
+
+.breadcrumbItem {
+  color: var(--sp-text-3);
+}
+
+/* ─── Profile bar ────────────────────────────────────────────────────────── */
+.profileBar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.profileLeft {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.avatarWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #14918b;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.profileInfo {
+  min-width: 0;
+  flex: 1;
+}
+
+.profileTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.3rem;
+}
+
+.profileName {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--sp-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+}
+
+.profileMeta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--sp-text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+/* ─── Status pills ───────────────────────────────────────────────────────── */
+.pillAtivo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.pillInativo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  background: var(--sp-bg-canvas);
+  color: var(--sp-text-3);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.pillDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.pillNeutral {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  background: var(--sp-bg-canvas);
+  color: var(--sp-text-2);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid var(--sp-border);
+}
+
+/* ─── Profile actions ────────────────────────────────────────────────────── */
+.profileActions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  width: 100%;
+  max-width: fit-content;
+}
+
+.dirtyLabel {
+  font-size: 0.78rem;
+  color: var(--sp-text-3);
+  white-space: nowrap;
+}
+
+/* ─── 3-panel grid ───────────────────────────────────────────────────────── */
+.panelGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .panelGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .panelGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Panel ──────────────────────────────────────────────────────────────── */
+.panel {
+  background: var(--sp-bg-card);
+  border: 1px solid var(--sp-border);
+  border-radius: 14px;
+  padding: 1.25rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--sp-border);
+}
+
+.panelDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.panelTitle {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sp-text-2);
+  flex: 1;
+}
+
+.panelCount {
+  font-size: 0.72rem;
+  color: var(--sp-text-3);
+}
+
+/* ─── Field row ──────────────────────────────────────────────────────────── */
+.fieldRow {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+
+/* ─── Field ──────────────────────────────────────────────────────────────── */
+.field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.field label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sp-text-3);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.req {
+  color: var(--sp-sirrus, #e53e3e);
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.lockIcon {
+  font-size: 0.65rem;
+  opacity: 0.6;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  border: 1px solid var(--sp-border);
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--sp-text);
+  background: var(--sp-bg-card);
+  min-height: 42px;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 1px var(--c-primary);
+}
+
+.inputReadonly {
+  background: var(--sp-bg-card-soft) !important;
+  color: var(--sp-text-3) !important;
+  cursor: default !important;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--sp-text-3);
+  line-height: 1.4;
+}
+
+/* ─── Input with icon ────────────────────────────────────────────────────── */
+.inputIconWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 0.65rem;
+  font-size: 0.8rem;
+  color: var(--sp-text-3);
+  pointer-events: none;
+  line-height: 1;
+}
+
+/* ─── Status select colors ───────────────────────────────────────────────── */
+.selectAtivo {
+  color: #15803d !important;
+  font-weight: 600 !important;
+}
+
+.selectInativo {
+  color: var(--sp-text-3) !important;
+}
+
+/* ─── Toggle switch ──────────────────────────────────────────────────────── */
+.toggleCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0.9rem;
+  background: var(--sp-bg-canvas);
+  border-radius: 10px;
+  border: 1px solid var(--sp-border);
+}
+
+.toggleInfo {
+  min-width: 0;
+}
+
+.toggleLabel {
+  margin: 0 0 0.2rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--sp-text);
+}
+
+.toggleDesc {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--sp-text-3);
+  line-height: 1.4;
+}
+
+.toggle {
+  flex-shrink: 0;
+  width: 42px;
+  height: 24px;
+  border-radius: 9999px;
+  background: var(--sp-border);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  padding: 0;
+}
+
+.toggleOn {
+  background: var(--c-primary, #14918b);
+}
+
+.toggleThumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggleOn .toggleThumb {
+  transform: translateX(18px);
+}
+
+/* ─── List header ────────────────────────────────────────────────────────── */
+.listHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.title {
+  margin: 0 0 0.2rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--sp-text);
+}
+
+.subtitle {
+  margin: 0 0 1.5rem;
+  font-size: 0.875rem;
+  color: var(--sp-text-3);
+}
+
+/* ─── Search ─────────────────────────────────────────────────────────────── */
+.searchBar {
+  margin-bottom: 1rem;
+}
+
+.searchInput {
+  width: 100%;
+  max-width: 440px;
+  height: 42px;
+  padding: 0 1rem;
+  border: 1px solid var(--sp-border);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--sp-text);
+  background: var(--sp-bg-card);
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #14918b;
+  box-shadow: 0 0 0 1px #14918b;
+}
+
+/* ─── Table card ─────────────────────────────────────────────────────────── */
+.tableCard {
+  background: var(--sp-bg-card);
+  border: 1px solid var(--sp-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.table thead th {
+  padding: 0.6rem 1rem;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sp-text-3);
+  background: var(--sp-bg-card-soft);
+  border-bottom: 1px solid var(--sp-border);
+  white-space: nowrap;
+}
+
+.table tbody td {
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--sp-bg-canvas);
+  color: var(--sp-text);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover td {
+  background: var(--sp-bg-card-soft);
+}
+
+.empNome {
+  font-weight: 600;
+}
+
+.empMat {
+  color: var(--sp-text-3);
+  font-size: 0.8rem;
+}
+
+.monoCell {
+  font-family: monospace;
+  font-size: 0.82rem;
+  color: var(--sp-text-2);
+}
+
+/* ─── Chips ──────────────────────────────────────────────────────────────── */
+.chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #dbeafe;
+  color: #1e40af;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-right: 4px;
+}
+
+.chipGray {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--sp-bg-canvas);
+  color: var(--sp-text-2);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* ─── Badges ─────────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.role_admin {
+  background: var(--sp-status-ocorrencia-bg);
+  color: var(--sp-status-ocorrencia-text);
+}
+
+.role_gestor {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.role_funcionario {
+  background: var(--sp-bg-canvas);
+  color: var(--sp-text-2);
+}
+
+.badgeAtivo {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.badgeInativo {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--sp-bg-canvas);
+  color: var(--sp-text-3);
+}
+
+/* ─── Edit button ────────────────────────────────────────────────────────── */
+.btnEdit {
+  height: 32px;
+  padding: 0 0.875rem;
+  background: transparent;
+  border: 1.5px solid var(--sp-border);
+  border-radius: var(--sp-radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--sp-text-2);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.btnEdit:hover {
+  border-color: #14918b;
+  color: #14918b;
+}
+
+/* ─── Pagination ─────────────────────────────────────────────────────────── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  border-top: 1px solid var(--sp-border);
+}
+
+.pageBtn {
+  height: 34px;
+  padding: 0 1rem;
+  background: var(--sp-bg-card);
+  border: 1px solid var(--sp-border);
+  border-radius: var(--sp-radius-sm);
+  font: inherit;
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--sp-text-2);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background: var(--sp-bg-canvas);
+}
+
+.pageBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pageInfo {
+  font-size: 0.825rem;
+  color: var(--sp-text-3);
+}
+
+/* ─── Empty / loading ────────────────────────────────────────────────────── */
+.emptyState {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--sp-text-3);
+  font-size: 0.9rem;
+}
+
+/* ─── Back button ────────────────────────────────────────────────────────── */
+.btnBack {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--c-primary, #14918b);
+  cursor: pointer;
+  padding: 0;
+}
+
+.btnBack:hover {
+  text-decoration: underline;
+}
+
+/* ─── Buttons ────────────────────────────────────────────────────────────── */
+.btnPrimary {
+  border: none;
+  border-radius: 9999px;
+  padding: 0.6rem 1.5rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  background: #14918b;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(20, 145, 139, 0.3);
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: #11837e;
+}
+
+.btnPrimary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.btnGhost {
+  border: 1px solid var(--sp-border);
+  border-radius: 9999px;
+  padding: 0.6rem 1.1rem;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--sp-text-2);
+  background: var(--sp-bg-card);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.btnGhost:hover {
+  background: var(--sp-bg-card-soft);
+}
+
+/* ─── Feedback ───────────────────────────────────────────────────────────── */
+.feedback {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.88rem;
+}
+
+.feedbackError {
+  background: var(--sp-sirrus-soft);
+  color: var(--sp-sirrus);
+}
+
+.feedbackOk {
+  background: #ecfdf5;
+  color: var(--sp-status-presente-text);
+}
+
+/* ─── Access denied ──────────────────────────────────────────────────────── */
+.denied {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: var(--sp-radius-lg);
+  padding: 1.25rem 1.1rem;
+  color: var(--sp-status-ocorrencia-text);
+}
+
+.denied h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.denied p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.denied a {
+  color: var(--sp-status-presente-text);
+  font-weight: 600;
+}
+
+.loading {
+  color: var(--sp-text-3);
+  font-size: 0.95rem;
+}
+
+/* ─── Municipio combobox ─────────────────────────────────────────────────── */
+.comboWrap {
+  position: relative;
+}
+
+.comboSearchIcon {
+  position: absolute;
+  left: 0.65rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  color: var(--sp-text-3);
+  pointer-events: none;
+  line-height: 1;
+  z-index: 1;
+}
+
+.comboWrap input {
+  width: 100%;
+  border: 1px solid var(--sp-border);
+  border-radius: 10px;
+  padding: 0.55rem 2.2rem 0.55rem 2rem;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--sp-text);
+  background: var(--sp-bg-card);
+  min-height: 42px;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.comboWrap input:focus {
+  outline: none;
+  border-color: #14918b;
+  box-shadow: 0 0 0 1px #14918b;
+}
+
+.comboClear {
+  position: absolute;
+  right: 0.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--sp-text-3);
+  padding: 0.2rem;
+  line-height: 1;
+}
+
+.comboClear:hover {
+  color: var(--sp-text);
+}
+
+.comboList {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--sp-bg-card);
+  border: 1px solid var(--sp-border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  margin: 0;
+  padding: 0.3rem 0;
+  z-index: 100;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.comboItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.comboItem:hover {
+  background: var(--sp-bg-card-soft);
+}
+
+.comboNome {
+  flex: 1;
+  font-weight: 500;
+  color: var(--sp-text);
+}
+
+.comboUf {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--sp-text-2);
+  background: var(--sp-bg-canvas);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.comboFuso {
+  font-size: 0.75rem;
+  color: var(--sp-text-3);
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+
+/* Tablet: 900px e abaixo */
+@media (max-width: 900px) {
+  .profileBar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .profileActions {
+    max-width: 100%;
+    justify-content: flex-start;
+  }
+
+  .profileName {
+    font-size: 1.2rem;
+  }
+}
+
+/* Mobile: 680px e abaixo */
+@media (max-width: 680px) {
+  .formPage {
+    padding-bottom: 5rem;
+  }
+
+  .profileBar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .profileLeft {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 0.95rem;
+  }
+
+  .profileName {
+    font-size: 1.05rem;
+  }
+
+  .profileMeta {
+    font-size: 0.72rem;
+  }
+
+  .profileActions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    max-width: 100%;
+  }
+
+  .dirtyLabel {
+    width: 100%;
+    order: -1;
+  }
+
+  .btnPrimary,
+  .btnGhost {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* Empilha fieldRow em mobile */
+  .fieldRow {
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  /* Reseta flex-basis fixo nos filhos de fieldRow */
+  .fieldRow > .field {
+    flex: 1 1 auto !important;
+    width: 100%;
+  }
+
+  /* Painéis com padding menor */
+  .panel {
+    padding: 1rem 0.85rem;
+  }
+
+  /* Tabela: esconde colunas menos essenciais */
+  .table thead th:nth-child(3),
+  .table tbody td:nth-child(3),
+  .table thead th:nth-child(4),
+  .table tbody td:nth-child(4),
+  .table thead th:nth-child(5),
+  .table tbody td:nth-child(5) {
+    display: none;
+  }
+
+  .listHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btnPrimary.listBtn,
+  .listHeader .btnPrimary {
+    width: 100%;
+    text-align: center;
+  }
+
+  .searchInput {
+    max-width: 100%;
+  }
+}
+
+/* Muito pequeno: 400px e abaixo */
+@media (max-width: 400px) {
+  .profileName {
+    font-size: 0.95rem;
+  }
+
+  .pillAtivo,
+  .pillInativo,
+  .pillNeutral {
+    font-size: 0.62rem;
+    padding: 1px 7px;
+  }
+
+  .btnPrimary,
+  .btnGhost {
+    font-size: 0.82rem;
+    padding: 0.55rem 0.9rem;
+  }
+}

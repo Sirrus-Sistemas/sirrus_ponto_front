@@ -1,0 +1,169 @@
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 50px;
+  padding: 0 16px;
+  background: #fff;
+  border-bottom: 1px solid #E2E8F0;
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.filterBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  background: transparent;
+  color: #334155;
+  font-family: var(--sp-font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.filterBtn:hover { background: #F8FAFC; }
+
+.employeeSelector {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #fff;
+  flex-shrink: 0;
+}
+.employeeSelector:hover { background: #F8FAFC; }
+
+.employeeInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.employeeName {
+  font-family: var(--sp-font-ui);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #0F172A;
+  white-space: nowrap;
+}
+
+.employeeMeta {
+  font-family: var(--sp-font-mono);
+  font-size: 10px;
+  color: #94A3B8;
+  font-variant-numeric: tabular-nums;
+}
+
+.chevron { color: #94A3B8; flex-shrink: 0; }
+
+.select {
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  background: #fff;
+  font-family: var(--sp-font-ui);
+  font-size: 13px;
+  color: #334155;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.select:focus { outline: 2px solid #10B981; outline-offset: 1px; }
+
+.dateRange {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Torna o DatePicker compacto para caber na FilterBar */
+.datePicker {
+  width: 130px !important;
+}
+
+.datePicker > div:first-child {
+  min-height: 30px !important;
+  padding: 0 8px !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+}
+
+.dateRangeArrow { color: #94A3B8; font-size: 12px; flex-shrink: 0; }
+
+.periodLabel {
+  font-family: var(--sp-font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748B;
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-transform: capitalize;
+}
+
+.loadBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 14px;
+  background: #064E3B;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--sp-font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.loadBtn:hover { background: #047857; }
+
+.shortcuts {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  border: 1px solid #CBD5E1;
+  border-radius: 4px;
+  background: #F8FAFC;
+  font-family: var(--sp-font-mono);
+  font-size: 10px;
+  color: #475569;
+  box-shadow: 0 1px 0 #CBD5E1;
+}
+
+.shortcutLabel {
+  font-family: var(--sp-font-ui);
+  font-size: 11px;
+  color: #94A3B8;
+}
+
+.shortcutSep {
+  color: #CBD5E1;
+  font-size: 11px;
+  margin: 0 2px;
+}

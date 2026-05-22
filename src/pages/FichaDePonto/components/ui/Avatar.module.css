@@ -1,0 +1,17 @@
+.avatar {
+  border-radius: 50%;
+  background: linear-gradient(135deg, #064E3B 0%, #10B981 100%);
+  color: #fff;
+  font-family: var(--sp-font-ui);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.sm { width: 28px; height: 28px; font-size: 11px; }
+.md { width: 36px; height: 36px; font-size: 13px; }
+.lg { width: 48px; height: 48px; font-size: 17px; }

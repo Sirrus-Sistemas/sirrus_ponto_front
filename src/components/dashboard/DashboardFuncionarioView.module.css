@@ -1,0 +1,573 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Saudação ─────────────────────────────────────────────────────────────── */
+
+.greetingRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.greeting {
+  margin-bottom: 0.25rem;
+}
+
+.greetingTitle {
+  margin: 0 0 0.2rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--sp-text);
+  letter-spacing: -0.02em;
+}
+
+.greetingSub {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--sp-text-3);
+}
+
+/* ── Hero card ────────────────────────────────────────────────────────────── */
+
+.hero {
+  background: linear-gradient(160deg, #1a4a47 0%, #0d3330 100%);
+  border-radius: 20px;
+  padding: 1.75rem 2rem;
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  color: white;
+  min-height: 220px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  right: -60px;
+  top: -60px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.03);
+  pointer-events: none;
+}
+
+@media (max-width: 860px) {
+  .hero {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+}
+
+.heroLeft {
+  flex: 1;
+  min-width: 0;
+}
+
+.heroKicker {
+  margin: 0 0 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.55);
+  text-transform: uppercase;
+}
+
+.heroKickerDate {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.heroTitle {
+  margin: 0 0 0.4rem;
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: white;
+}
+
+.heroSub {
+  margin: 0 0 1.5rem;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.heroSub strong {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+}
+
+/* ── Timeline ─────────────────────────────────────────────────────────────── */
+
+.timelineWrap {
+  margin-bottom: 1.75rem;
+  position: relative;
+  padding-bottom: 1.5rem;
+}
+
+.timelineBar {
+  position: relative;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+.timelineFill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: #4ade80;
+  border-radius: 3px;
+  transition: width 1s linear;
+}
+
+.timelineDot {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #4ade80;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.timelineNowLine {
+  position: absolute;
+  top: -10px;
+  bottom: -10px;
+  width: 2px;
+  background: white;
+  transform: translateX(-50%);
+  z-index: 3;
+}
+
+.timelineNowLabel {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: white;
+  color: #0d3330;
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.timelineLabels {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1.2rem;
+}
+
+.timelineLabel {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+}
+
+/* ── Hero buttons ─────────────────────────────────────────────────────────── */
+
+.heroBtns {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btnBater {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.25rem;
+  border: none;
+  border-radius: 10px;
+  background: #ef4444;
+  color: white;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+.btnBater:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.btnBater:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.btnSecundario {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.7rem 1.1rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.88rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.btnSecundario:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.registerError {
+  margin-top: 0.75rem;
+  font-size: 0.82rem;
+  color: #fca5a5;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.4rem 0.65rem;
+  border-radius: 8px;
+}
+
+/* ── Hero right (donut) ───────────────────────────────────────────────────── */
+
+.heroRight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.heroDonutLabel {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+}
+
+.heroDonut {
+  position: relative;
+}
+
+.heroDonutSub {
+  margin: 0;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.heroLegend {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.legendDotSpacer {
+  width: 0.75rem;
+}
+
+/* ── Stats row ────────────────────────────────────────────────────────────── */
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 900px) {
+  .statsRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .statsRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+.statCard {
+  background: var(--sp-bg-card);
+  border-radius: 16px;
+  padding: 1.1rem 1.2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.statCardAccent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 16px 16px 0 0;
+}
+
+.statKicker {
+  margin: 0 0 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sp-text-3);
+}
+
+.statMain {
+  margin: 0 0 0.2rem;
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.statSub {
+  margin: 0.3rem 0 0;
+  font-size: 0.78rem;
+  color: var(--sp-text-3);
+  line-height: 1.4;
+}
+
+.statProgressTrack {
+  height: 4px;
+  background: var(--sp-bg-canvas);
+  border-radius: 2px;
+  margin-top: 0.75rem;
+  overflow: hidden;
+}
+
+.statProgressFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+/* ── Bottom row ───────────────────────────────────────────────────────────── */
+
+.bottomRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 700px) {
+  .bottomRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bottomCard {
+  background: var(--sp-bg-card);
+  border-radius: 18px;
+  padding: 1.25rem 1.35rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.bottomCardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.bottomCardTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--sp-text);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: #ef4444;
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.verTodos {
+  font-size: 0.82rem;
+  color: var(--sp-text-3);
+  text-decoration: none;
+}
+
+.verTodos:hover {
+  color: var(--sp-text-2);
+}
+
+.emptyMsg {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--sp-text-3);
+  padding: 0.5rem 0;
+}
+
+/* ── Pendentes ────────────────────────────────────────────────────────────── */
+
+.pendentesList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pendente {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--sp-border, #f3f4f6);
+}
+
+.pendente:last-child {
+  border-bottom: none;
+}
+
+.pendenteData {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--sp-text-3);
+  min-width: 38px;
+  text-align: center;
+  background: var(--sp-bg-canvas);
+  padding: 0.25rem 0.4rem;
+  border-radius: 6px;
+}
+
+.pendenteCentro {
+  flex: 1;
+  min-width: 0;
+}
+
+.pendenteTitulo {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--sp-text);
+}
+
+.pendenteSub {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--sp-text-3);
+}
+
+.resolverBtn {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #14918b;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.resolverBtn:hover {
+  color: #0f6b67;
+}
+
+/* ── Batidas recentes ─────────────────────────────────────────────────────── */
+
+.recentesList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.recente {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--sp-border, #f3f4f6);
+}
+
+.recente:last-child {
+  border-bottom: none;
+}
+
+.recenteDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #14918b;
+  flex-shrink: 0;
+}
+
+.recenteCentro {
+  flex: 1;
+  min-width: 0;
+}
+
+.recenteTipo {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--sp-text);
+}
+
+.recenteData {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--sp-text-3);
+}
+
+.recenteHora {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--sp-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Page states ──────────────────────────────────────────────────────────── */
+
+.pageState {
+  padding: 2rem;
+}
+
+.pageLoading {
+  color: var(--sp-text-3);
+  font-size: 0.95rem;
+}
+
+.pageError {
+  color: var(--sp-sirrus);
+  background: var(--sp-sirrus-soft);
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-size: 0.92rem;
+}

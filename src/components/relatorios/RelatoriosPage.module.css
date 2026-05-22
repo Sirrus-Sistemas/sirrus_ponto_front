@@ -1,0 +1,321 @@
+.wrap {
+  background: var(--sp-bg-card);
+  border-radius: 18px;
+  padding: 1.35rem 1.35rem 2rem;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.pageTitle {
+  margin: 0 0 0.25rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--sp-text);
+  letter-spacing: -0.02em;
+}
+
+.pageSubtitle {
+  margin: 0 0 1.25rem;
+  font-size: 0.88rem;
+  color: var(--sp-text-3);
+}
+
+/* ── Tabs ─────────────────────────────────────────────────────────── */
+.tabBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  border-bottom: 2px solid var(--sp-accent-soft);
+  margin-bottom: 1.5rem;
+}
+
+.tabBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.55rem 1rem;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--sp-text-2);
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.tabBtn:hover {
+  background: #f0f9f8;
+  color: var(--sp-accent);
+}
+
+.tabBtnActive {
+  color: var(--sp-accent);
+  font-weight: 700;
+  border-bottom-color: var(--sp-accent);
+  background: var(--sp-accent-soft);
+}
+
+.tabContent {
+  min-height: 200px;
+}
+
+/* ── Filter bar (shared across tabs) ─────────────────────────────── */
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 1.25rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.field > label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--sp-text-3);
+}
+
+.field select {
+  min-width: 140px;
+  padding: 0.45rem 0.65rem;
+  border-radius: var(--sp-radius-md);
+  border: 1px solid var(--sp-border);
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--sp-text);
+  background: var(--sp-bg-card);
+}
+
+.btnGerar {
+  padding: 0.55rem 1.25rem;
+  border-radius: var(--sp-radius-md);
+  border: none;
+  background: var(--sp-accent);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btnGerar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btnGerar:not(:disabled):hover {
+  background: var(--sp-bg-sidebar-2);
+}
+
+.btnImprimir {
+  padding: 0.55rem 1.25rem;
+  border-radius: var(--sp-radius-md);
+  border: 1px solid var(--sp-accent);
+  background: var(--sp-bg-card);
+  color: var(--sp-accent);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btnImprimir:hover {
+  background: #f0f9f8;
+}
+
+/* ── Progress ─────────────────────────────────────────────────────── */
+.progressBar {
+  margin-top: 0.75rem;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--sp-border);
+  overflow: hidden;
+  max-width: 480px;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--sp-accent);
+  border-radius: 3px;
+  transition: width 0.2s ease;
+}
+
+.progressLabel {
+  font-size: 0.8rem;
+  color: var(--sp-text-2);
+  margin-top: 0.4rem;
+}
+
+/* ── Error ────────────────────────────────────────────────────────── */
+.errorMsg {
+  margin: 0.5rem 0 0;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  background: var(--sp-sirrus-soft);
+  color: var(--sp-sirrus);
+  font-size: 0.88rem;
+}
+
+/* ── Screen table ─────────────────────────────────────────────────── */
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--sp-border);
+  border-radius: var(--sp-radius-md);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.table th {
+  background: var(--sp-bg-card-soft);
+  font-weight: 600;
+  color: var(--sp-text-2);
+  white-space: nowrap;
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--sp-border);
+}
+
+.table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #f0f2f1;
+  vertical-align: top;
+  color: var(--sp-text-2);
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.tableEmpty {
+  text-align: center;
+  color: var(--sp-text-3);
+  padding: 2rem 1rem !important;
+  font-size: 0.88rem;
+}
+
+/* ── "Folha de Ponto" tab redirect box ─────────────────────────────── */
+.redirectBox {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background: var(--sp-bg-card-soft);
+  border: 1px solid var(--sp-border);
+  border-radius: 12px;
+  max-width: 520px;
+}
+
+.redirectBox p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--sp-text-2);
+}
+
+.btnLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.25rem;
+  border-radius: var(--sp-radius-md);
+  border: none;
+  background: var(--sp-accent);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btnLink:hover {
+  background: var(--sp-bg-sidebar-2);
+}
+
+/* ── Actions row ─────────────────────────────────────────────────── */
+.actionsRow {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+
+/* ── Print ────────────────────────────────────────────────────────── */
+.screenSection {
+  display: block;
+}
+
+.printSection {
+  display: none;
+}
+
+@media print {
+  .pageTitle,
+  .pageSubtitle,
+  .tabBar {
+    display: none !important;
+  }
+
+  .screenSection {
+    display: none !important;
+  }
+
+  .printSection {
+    display: block !important;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 6.5pt;
+    color: #000;
+  }
+
+  @page {
+    size: A4 landscape;
+    margin: 7mm 6mm;
+  }
+
+  .printTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 6.5pt;
+    border: 1px solid #000;
+    margin-top: 2mm;
+  }
+
+  .printTable th {
+    background: #f0f0f0;
+    font-weight: bold;
+    text-align: left;
+    padding: 0.4mm 1mm;
+    border: 1px solid #888;
+    white-space: nowrap;
+  }
+
+  .printTable td {
+    padding: 0.4mm 1mm;
+    border: 1px solid #888;
+    vertical-align: top;
+  }
+
+  .printTable tr:nth-child(even) td {
+    background: #fafafa;
+  }
+}

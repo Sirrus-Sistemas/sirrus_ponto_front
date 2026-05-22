@@ -1,0 +1,319 @@
+.page {
+  --login-primary: #14918b;
+
+  max-width: 960px;
+}
+
+.title {
+  margin: 0 0 0.35rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--sp-text);
+}
+
+.subtitle {
+  margin: 0 0 1.5rem;
+  font-size: 0.9rem;
+  color: var(--sp-text-3);
+  line-height: 1.45;
+}
+
+.card {
+  background: var(--sp-bg-card);
+  border-radius: 16px;
+  padding: 1.5rem 1.35rem;
+  margin-bottom: 1.25rem;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.sectionTitle {
+  margin: 0 0 1rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sp-text-3);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.1rem;
+}
+
+.gridFull {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--sp-text-3);
+}
+
+.field input,
+.field select {
+  width: 100%;
+  border: 1px solid var(--sp-border);
+  border-radius: 12px;
+  padding: 0.65rem 0.85rem;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--sp-text);
+  background: var(--sp-bg-card);
+  min-height: 48px;
+  box-sizing: border-box;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--login-primary);
+  box-shadow: 0 0 0 1px var(--login-primary);
+}
+
+.hint {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  color: var(--sp-text-3);
+}
+
+.actions {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.btnPrimary {
+  border: none;
+  border-radius: 9999px;
+  padding: 0.75rem 1.75rem;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--login-primary);
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(20, 145, 139, 0.35);
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: #11837e;
+}
+
+.btnPrimary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.btnGhost {
+  border: 1px solid var(--sp-border);
+  border-radius: 9999px;
+  padding: 0.75rem 1.25rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--sp-text-2);
+  background: var(--sp-bg-card);
+  cursor: pointer;
+}
+
+.btnGhost:hover:not(:disabled) {
+  background: var(--sp-bg-card-soft);
+}
+
+.btnGhost:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.feedback {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--sp-radius-md);
+  font-size: 0.88rem;
+}
+
+.feedbackError {
+  background: var(--sp-sirrus-soft);
+  color: var(--sp-sirrus);
+}
+
+.feedbackOk {
+  background: #ecfdf5;
+  color: var(--sp-status-presente-text);
+}
+
+.denied {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: var(--sp-radius-lg);
+  padding: 1.25rem 1.1rem;
+  color: var(--sp-status-ocorrencia-text);
+}
+
+.denied h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.denied p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.denied a {
+  color: var(--sp-status-presente-text);
+  font-weight: 600;
+}
+
+.loading {
+  color: var(--sp-text-3);
+  font-size: 0.95rem;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  margin: 0 -0.25rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 0.65rem 0.5rem;
+  border-bottom: 1px solid var(--sp-border);
+  white-space: nowrap;
+}
+
+.table th {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--sp-text-3);
+  font-weight: 700;
+}
+
+.table tbody tr:hover {
+  background: var(--sp-bg-card-soft);
+}
+
+.table td:first-child {
+  font-weight: 600;
+  color: var(--sp-text);
+  white-space: normal;
+  max-width: 12rem;
+}
+
+.btnLink {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  color: var(--login-primary);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.btnLink:hover {
+  color: #11837e;
+}
+
+.emptyRow td {
+  color: var(--sp-text-3);
+  font-style: italic;
+  white-space: normal;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--sp-radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--sp-bg-canvas);
+  color: var(--sp-text-2);
+}
+
+.badgeOff {
+  background: var(--sp-sirrus-soft);
+  color: var(--sp-sirrus);
+}
+
+/* ── Horários por dia ─────────────────────────────────────────────── */
+.rowFolga {
+  background: var(--sp-bg-card-soft);
+  color: var(--sp-text-3);
+}
+
+.rowFolga .timeInput {
+  opacity: 0.35;
+}
+
+.tdDia {
+  font-weight: 700 !important;
+  color: var(--sp-text) !important;
+  min-width: 42px;
+}
+
+.tdCarga {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--sp-accent);
+  white-space: nowrap;
+  min-width: 60px;
+}
+
+.rowFolga .tdCarga {
+  color: var(--sp-text-3);
+  font-weight: 400;
+}
+
+.timeInput {
+  width: 90px;
+  padding: 0.3rem 0.4rem;
+  border-radius: 8px;
+  border: 1px solid var(--sp-border);
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--sp-text);
+}
+
+.timeInput:disabled {
+  background: var(--sp-bg-canvas);
+  cursor: not-allowed;
+}
+
+.timeInput:focus {
+  outline: none;
+  border-color: var(--sp-accent);
+  box-shadow: 0 0 0 2px rgba(15, 95, 90, 0.12);
+}

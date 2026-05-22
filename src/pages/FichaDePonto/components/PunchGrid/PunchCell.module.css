@@ -1,0 +1,81 @@
+.cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 34px;
+  border-radius: 5px;
+  font-family: var(--sp-font-mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  transition: border-color 0.12s;
+}
+
+.filled {
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  color: #0F172A;
+  font-weight: 500;
+}
+
+.manual {
+  background: #F8FAFC;
+}
+
+.empty {
+  border: 1.5px dashed #CBD5E1;
+  background: transparent;
+  color: #CBD5E1;
+  cursor: pointer;
+}
+.empty:hover {
+  border-color: #10B981;
+  color: #10B981;
+  background: #ECFDF5;
+}
+
+.missing {
+  border: 1px solid #FCA5A5;
+  background: #FEF2F2;
+  color: #B91C1C;
+  font-size: 11.5px;
+  font-weight: 600;
+  font-family: var(--sp-font-ui);
+  gap: 5px;
+}
+
+.missingDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #EF4444;
+  flex-shrink: 0;
+}
+
+.originDot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.origin_rep    { background: #2563EB !important; }
+.origin_mobile { background: #9333EA !important; }
+.origin_manual { background: #64748B !important; }
+
+.time {
+  font-family: var(--sp-font-mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+.plusIcon {
+  color: #94A3B8;
+  transition: color 0.12s;
+}
+.empty:hover .plusIcon { color: #10B981; }

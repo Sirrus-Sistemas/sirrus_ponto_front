@@ -1,0 +1,258 @@
+.page {
+  max-width: 900px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--sp-text);
+  margin: 0 0 0.25rem;
+}
+
+.subtitle {
+  color: var(--sp-text-2);
+  margin: 0 0 1.5rem;
+}
+
+.loading,
+.denied {
+  color: var(--sp-text-2);
+  padding: 2rem 0;
+}
+
+.banner {
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+}
+
+.bannerOk {
+  background: var(--sp-accent-soft);
+  color: var(--sp-accent);
+  border: 1px solid #b3dbd6;
+}
+
+.bannerWarn {
+  background: #fff8e6;
+  color: #7a5500;
+  border: 1px solid #f5d87a;
+}
+
+.card {
+  background: var(--sp-bg-card);
+  border-radius: var(--sp-radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+}
+
+.cardTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--sp-text);
+  margin: 0 0 0.35rem;
+}
+
+.cardDesc {
+  color: var(--sp-text-2);
+  font-size: 0.88rem;
+  margin: 0 0 1rem;
+}
+
+.cardRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btnPrimary {
+  padding: 0.55rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--sp-accent);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: var(--sp-bg-sidebar-2);
+}
+
+.btnPrimary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnSmall {
+  padding: 0.35rem 0.75rem;
+  border-radius: 7px;
+  border: 1px solid var(--sp-accent);
+  background: transparent;
+  color: var(--sp-accent);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btnSmall:hover:not(:disabled) {
+  background: var(--sp-accent-soft);
+}
+
+.btnSmall:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.inlineMsg {
+  font-size: 0.88rem;
+  color: var(--sp-accent);
+}
+
+.inlineMsgSm {
+  font-size: 0.8rem;
+  color: var(--sp-accent);
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  color: var(--sp-text-2);
+  border-bottom: 1px solid var(--sp-border);
+}
+
+.table td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--sp-divider);
+  color: var(--sp-text);
+}
+
+.tdCpf {
+  color: var(--sp-text-2) !important;
+  font-size: 0.83rem !important;
+}
+
+.tdAcao {
+  width: 200px;
+}
+
+.acaoRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.emptyRow {
+  text-align: center;
+  color: #8aadaa;
+  padding: 1.5rem !important;
+}
+
+.tdFilial {
+  color: var(--sp-text-2);
+  font-size: 0.85rem;
+}
+
+.tdMobileId {
+  width: 100px;
+}
+
+.mobileIdBadge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--sp-radius-sm);
+  background: var(--sp-accent-soft);
+  color: var(--sp-accent);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.mobileIdEmpty {
+  color: #b0c4c2;
+}
+
+.funcBar {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.select {
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--sp-border);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--sp-text);
+  background: var(--sp-bg-card);
+  min-width: 180px;
+}
+
+.pullForm {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.field label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--sp-text-2);
+}
+
+.field input {
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--sp-border);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--sp-text);
+}
+
+.error {
+  color: #c0392b;
+  font-size: 0.88rem;
+  margin: 0.5rem 0 0;
+}
+
+.pullResult {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.resultOk { color: var(--sp-accent); }
+.resultIgn { color: var(--sp-status-ocorrencia-text); }
+.resultErr { color: var(--sp-sirrus); }

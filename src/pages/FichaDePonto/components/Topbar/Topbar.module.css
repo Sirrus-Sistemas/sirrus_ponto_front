@@ -1,0 +1,115 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  padding: 0 16px;
+  background: #fff;
+  border-bottom: 1px solid #E2E8F0;
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: #64748B;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.iconBtn:hover { background: #F1F5F9; color: #334155; }
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--sp-font-ui);
+  font-size: 13px;
+}
+
+.crumbMuted { color: #94A3B8; }
+.sep { color: #CBD5E1; font-size: 11px; }
+.crumbActive { color: #0F172A; font-weight: 600; }
+
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-family: var(--sp-font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.btnSave {
+  background: #10B981;
+  color: #fff;
+  border-color: #059669;
+}
+.btnSave:hover { background: #059669; }
+
+.btnSaveDisabled {
+  background: #F1F5F9;
+  color: #94A3B8;
+  border-color: #E2E8F0;
+  cursor: not-allowed;
+}
+
+.btnGhost {
+  background: transparent;
+  color: #334155;
+  border-color: #E2E8F0;
+}
+.btnGhost:hover { background: #F8FAFC; border-color: #CBD5E1; }
+
+.pendingChip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #92400E;
+}
+
+.pendingDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #F59E0B;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  50% { box-shadow: 0 0 0 5px rgba(245, 158, 11, 0); }
+}

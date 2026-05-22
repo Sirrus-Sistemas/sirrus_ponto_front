@@ -1,0 +1,64 @@
+:root {
+  /* ── Backgrounds (warm) ───────────────────────────────────────────── */
+  --sp-bg-page: #FAF7F2;
+  --sp-bg-card: #FFFFFF;
+  --sp-bg-card-soft: #F9F6F1;
+  --sp-bg-canvas: #F4F1EC;
+  --sp-bg-topbar: #FFFFFF;
+  --sp-bg-sidebar: #0F3E37;
+  --sp-bg-sidebar-2: #0A2F2A;
+
+  /* ── Text ─────────────────────────────────────────────────────────── */
+  --sp-text: #14201D;
+  --sp-text-2: #4A5550;
+  --sp-text-3: #7B837E;
+
+  /* ── Borders ──────────────────────────────────────────────────────── */
+  --sp-border: #ECE7DF;
+  --sp-border-strong: #D9D2C5;
+  --sp-divider: #EFEBE3;
+
+  /* ── Brand ────────────────────────────────────────────────────────── */
+  --sp-accent: #103E37;
+  --sp-accent-soft: #E8F0ED;
+  --sp-sirrus: #E23838;
+  --sp-sirrus-soft: #FDE8E8;
+
+  /* ── Status pills ─────────────────────────────────────────────────── */
+  --sp-status-presente-bg: #E3F1EA;
+  --sp-status-presente-text: #2F7A53;
+  --sp-status-falta-bg: #FBE5E5;
+  --sp-status-falta-text: #A83434;
+  --sp-status-feriado-bg: #E3EBF6;
+  --sp-status-feriado-text: #2A4D7E;
+  --sp-status-folga-bg: #ECEBE6;
+  --sp-status-folga-text: #6A6A6A;
+  --sp-status-ocorrencia-bg: #FBEED3;
+  --sp-status-ocorrencia-text: #84561A;
+
+  /* ── Heatmap ──────────────────────────────────────────────────────── */
+  --sp-heat-0: #F1EDE5;
+  --sp-heat-1: #D9E6DD;
+  --sp-heat-2: #AACDB8;
+  --sp-heat-3: #6FAE8A;
+  --sp-heat-4: #3D8A64;
+  --sp-heat-5: #1D5D40;
+
+  /* ── Punch origins ────────────────────────────────────────────────── */
+  --sp-origin-manual: #84561A;
+  --sp-origin-web: #2A4D7E;
+  --sp-origin-app: #1D5D40;
+
+  /* ── Typography ───────────────────────────────────────────────────── */
+  --sp-font-ui: 'Geist', system-ui, sans-serif;
+  --sp-font-mono: 'Geist Mono', monospace;
+
+  /* ── Radii ────────────────────────────────────────────────────────── */
+  --sp-radius-sm: 6px;
+  --sp-radius-md: 10px;
+  --sp-radius-lg: 14px;
+
+  /* ── Shadows ──────────────────────────────────────────────────────── */
+  --sp-shadow-sm: 0 1px 0 rgba(20, 32, 29, .04);
+  --sp-shadow-md: 0 1px 0 rgba(20, 32, 29, .04), 0 4px 16px rgba(20, 32, 29, .06);
+}

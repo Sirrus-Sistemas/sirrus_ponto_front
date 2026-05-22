@@ -1,0 +1,92 @@
+.page {
+  --login-primary: #14918b;
+
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: var(--sp-bg-canvas);
+  font-family:
+    'Inter',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.title {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--sp-text);
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--sp-text-3);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.feedback {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--sp-sirrus);
+}
+
+.forgotLink {
+  display: block;
+  text-align: center;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--login-primary);
+  text-decoration: none;
+  margin-bottom: 1.75rem;
+}
+
+.forgotLink:hover {
+  text-decoration: underline;
+}
+
+.forgotLink:focus-visible {
+  outline: 2px solid var(--login-primary);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.copyright {
+  display: block;
+  margin: 0;
+  text-align: center;
+  font-size: 0.6875rem;
+  color: #b0b0b0;
+  text-decoration: none;
+}
+
+.copyright:hover {
+  color: var(--sp-text-3);
+  text-decoration: underline;
+}
+
+.copyright:focus-visible {
+  outline: 2px solid var(--login-primary);
+  outline-offset: 3px;
+  border-radius: 2px;
+}

@@ -1,0 +1,497 @@
+.printBanner {
+  display: none;
+}
+
+.wrap {
+  background: var(--sp-bg-card);
+  border-radius: 18px;
+  padding: 1.35rem 1.35rem 1.75rem;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.titleBlock {
+  flex: 1;
+  min-width: 200px;
+}
+
+.title {
+  margin: 0 0 0.25rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--sp-text);
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--sp-text-3);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.65rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.field label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--sp-text-3);
+}
+
+.field select {
+  min-width: 130px;
+  padding: 0.45rem 0.65rem;
+  border-radius: var(--sp-radius-md);
+  border: 1px solid var(--sp-border);
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--sp-text);
+  background: var(--sp-bg-card);
+}
+
+.field select[id='espelho-func'] {
+  min-width: 200px;
+  max-width: 260px;
+}
+
+.printBtn {
+  padding: 0.5rem 1rem;
+  border-radius: var(--sp-radius-md);
+  border: 1px solid var(--sp-accent);
+  background: var(--sp-bg-card);
+  color: var(--sp-accent);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.printBtn:hover {
+  background: #f0f9f8;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.sumCard {
+  background: var(--sp-bg-card-soft);
+  border: 1px solid var(--sp-border);
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
+}
+
+.sumLabel {
+  margin: 0 0 0.2rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--sp-text-3);
+}
+
+.sumValue {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--sp-text);
+}
+
+.sumWarn {
+  color: #b45309;
+}
+
+.sumPresente {
+  color: #065f46;
+}
+
+.sumFalta {
+  color: #991b1b;
+}
+
+.sumOcorrencia {
+  color: var(--sp-status-ocorrencia-text);
+}
+
+.sumMono {
+  font-variant-numeric: tabular-nums;
+}
+
+.feedback {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--sp-radius-md);
+  background: var(--sp-sirrus-soft);
+  color: var(--sp-sirrus);
+  font-size: 0.88rem;
+}
+
+.loading {
+  margin: 2rem 0;
+  text-align: center;
+  color: var(--sp-text-3);
+  font-size: 0.95rem;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--sp-border);
+  border-radius: 12px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.table th,
+.table td {
+  padding: 0.65rem 0.85rem;
+  text-align: left;
+  border-bottom: 1px solid #f0f2f1;
+  vertical-align: top;
+}
+
+.table th {
+  background: var(--sp-bg-card-soft);
+  font-weight: 600;
+  color: var(--sp-text-2);
+  white-space: nowrap;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.rowWarn {
+  background: #fffbeb;
+}
+
+.rowFeriado {
+  background: #eff6ff;
+}
+
+.rowFeriado td {
+  color: #1e3a5f;
+}
+
+.rowFalta {
+  background: #fff1f2;
+}
+
+.rowFolga {
+  background: #f9fafb;
+}
+
+.rowOcorrencia {
+  background: #fffbeb;
+}
+
+.colDia {
+  white-space: nowrap;
+  font-weight: 600;
+  color: #111827;
+}
+
+.colStatus {
+  white-space: nowrap;
+}
+
+.statusBadge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 5px;
+  letter-spacing: 0.02em;
+  background: var(--sp-bg-canvas);
+  color: var(--sp-text-3);
+}
+
+.statusBadgeSm {
+  margin-left: 0.4rem;
+  font-size: 0.62rem;
+  vertical-align: middle;
+}
+
+.statusPresente {
+  background: var(--sp-status-presente-bg);
+  color: var(--sp-status-presente-text);
+}
+
+.statusFalta {
+  background: var(--sp-status-falta-bg);
+  color: var(--sp-status-falta-text);
+}
+
+.statusFolga {
+  background: var(--sp-status-folga-bg);
+  color: var(--sp-status-folga-text);
+}
+
+.statusFeriado {
+  background: var(--sp-status-feriado-bg);
+  color: var(--sp-status-feriado-text);
+}
+
+.statusOcorrencia {
+  background: var(--sp-status-ocorrencia-bg);
+  color: var(--sp-status-ocorrencia-text);
+}
+
+.statusSemEscala {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.colBatidas {
+  color: var(--sp-text-2);
+  line-height: 1.5;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.12rem 0.35rem;
+  border-radius: 4px;
+  margin-right: 0.35rem;
+  vertical-align: middle;
+  background: #d8f3f1;
+  color: var(--sp-status-presente-text);
+}
+
+.colTempo {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.colObs {
+  color: var(--sp-text-3);
+  font-size: 0.82rem;
+}
+
+.colSaldo {
+  font-weight: 600;
+}
+
+.cards {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cardDay {
+  border: 1px solid var(--sp-border);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  background: var(--sp-bg-card);
+}
+
+.cardDayWarn {
+  border-color: #fcd34d;
+  background: #fffbeb;
+}
+
+.cardDayFeriado {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.cardFeriadoTxt {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e40af;
+}
+
+.cardOcorrenciaTxt {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sp-status-ocorrencia-text);
+}
+
+.cardDayFalta {
+  border-color: #fecaca;
+  background: #fff1f2;
+}
+
+.cardDayOcorrencia {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  margin-top: 0.45rem;
+  font-size: 0.82rem;
+  color: var(--sp-text-2);
+}
+
+.feriadoTag {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-radius: 4px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  vertical-align: middle;
+}
+
+.cardDayHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+
+.cardDayTitle {
+  font-weight: 700;
+  color: var(--sp-text);
+}
+
+.cardDaySub {
+  font-size: 0.8rem;
+  color: var(--sp-text-3);
+}
+
+.cardDayBat {
+  font-size: 0.88rem;
+  color: var(--sp-text-2);
+  line-height: 1.5;
+}
+
+.cardDayFoot {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--sp-text-3);
+}
+
+.legend {
+  margin: 1.25rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f2f1;
+  font-size: 0.78rem;
+  color: var(--sp-text-3);
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .tableWrap {
+    display: none;
+  }
+
+  .cards {
+    display: flex;
+  }
+}
+
+@media print {
+  /* A versão normativa (EspelhoImpressao) exibe o conteúdo; oculta a view de tela */
+  .printBanner { display: none !important; }
+  .toolbar { display: none !important; }
+  .summary { display: none !important; }
+  .tableWrap { display: none !important; }
+  .cards { display: none !important; }
+  .legend { display: none !important; }
+  .feedback { display: none !important; }
+  .loading { display: none !important; }
+
+  .wrap {
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  .printBanner {
+    display: block;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #0f5f5a;
+  }
+
+  .printBrand {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #0f5f5a;
+  }
+
+  .printTitle {
+    margin: 0.35rem 0 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .toolbar {
+    display: none !important;
+  }
+
+  .legend {
+    font-size: 0.7rem;
+    color: #6b7280;
+  }
+
+  .wrap {
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  .tableWrap {
+    border: 1px solid #ccc;
+  }
+
+  .table {
+    font-size: 0.75rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.4rem 0.5rem;
+  }
+
+  .table tr {
+    page-break-inside: avoid;
+  }
+
+  .summary {
+    page-break-after: avoid;
+  }
+}

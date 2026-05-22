@@ -1,0 +1,478 @@
+.wrap {
+  background: var(--sp-bg-card);
+  border-radius: 18px;
+  padding: 1.35rem 1.35rem 2rem;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Toolbar ──────────────────────────────────────────────────────────── */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.titleBlock {
+  flex: 1;
+  min-width: 200px;
+}
+
+.title {
+  margin: 0 0 0.25rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--sp-text);
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--sp-text-3);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.65rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.field label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--sp-text-3);
+}
+
+.field select {
+  min-width: 130px;
+  padding: 0.45rem 0.65rem;
+  border-radius: var(--sp-radius-md);
+  border: 1px solid var(--sp-border);
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--sp-text);
+  background: var(--sp-bg-card);
+}
+
+.field select[id='ficha-func'] {
+  min-width: 200px;
+  max-width: 280px;
+}
+
+.btnImprimir {
+  padding: 0.5rem 1rem;
+  border-radius: var(--sp-radius-md);
+  border: 1px solid var(--sp-accent);
+  background: var(--sp-bg-card);
+  color: var(--sp-accent);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnImprimir:hover {
+  background: #f0f9f8;
+}
+
+/* ── Feedback ─────────────────────────────────────────────────────────── */
+.errorMsg {
+  margin: 0.5rem 0 1rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 8px;
+  background: var(--sp-sirrus-soft);
+  color: var(--sp-sirrus);
+  font-size: 0.88rem;
+}
+
+.loadingMsg {
+  margin: 2rem 0;
+  text-align: center;
+  color: var(--sp-text-3);
+}
+
+/* ── Table ────────────────────────────────────────────────────────────── */
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--sp-border);
+  border-radius: 12px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.table th,
+.table td {
+  padding: 0.45rem 0.55rem;
+  text-align: center;
+  border-bottom: 1px solid #f0f2f1;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.table th {
+  background: var(--sp-bg-card-soft);
+  font-weight: 600;
+  color: var(--sp-text-2);
+  font-size: 0.75rem;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.thDia {
+  text-align: left;
+  min-width: 50px;
+}
+
+.thDsem {
+  min-width: 36px;
+}
+
+.thAcao {
+  width: 24px;
+}
+
+.tdDia {
+  text-align: left;
+  font-weight: 600;
+  color: var(--sp-text);
+}
+
+.tdDsem {
+  color: var(--sp-text-3);
+  font-size: 0.78rem;
+}
+
+/* ── Row domingo ─────────────────────────────────────────────────────── */
+.rowDom {
+  background: var(--sp-bg-card-soft);
+}
+
+.rowDom .tdDsem {
+  color: var(--sp-sirrus);
+  font-weight: 600;
+}
+
+/* ── Slot cells ───────────────────────────────────────────────────────── */
+.tdSlot {
+  min-width: 68px;
+  padding: 0.3rem 0.4rem;
+}
+
+.slotRep {
+  background: #fff;
+}
+
+.slotManual {
+  background: #fef9c3;
+}
+
+.slotEmpty {
+  background: #fff;
+}
+
+.slotContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.slotTime {
+  display: block;
+  padding: 0.15rem 0.3rem;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--sp-text);
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.slotTime:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.slotTime:disabled {
+  cursor: default;
+}
+
+.slotDel {
+  display: block;
+  padding: 0 0.25rem;
+  border: none;
+  background: transparent;
+  font-size: 0.9rem;
+  color: var(--sp-text-3);
+  cursor: pointer;
+  line-height: 1;
+  border-radius: 3px;
+}
+
+.slotDel:hover {
+  color: var(--sp-sirrus);
+  background: var(--sp-status-falta-bg);
+}
+
+.slotMotivo {
+  display: block;
+  max-width: 64px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.6rem;
+  color: var(--sp-status-ocorrencia-text);
+  background: var(--sp-status-ocorrencia-bg);
+  border-radius: 3px;
+  padding: 0.05rem 0.25rem;
+  line-height: 1.4;
+}
+
+.slotAdd {
+  width: 100%;
+  padding: 0.2rem 0;
+  border: 1px dashed var(--sp-border);
+  background: transparent;
+  color: var(--sp-text-3);
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.slotAdd:hover {
+  border-color: var(--sp-accent);
+  color: var(--sp-accent);
+  background: #f0f9f8;
+}
+
+.slotDash {
+  color: var(--sp-border);
+  font-size: 0.75rem;
+}
+
+/* ── Legenda ──────────────────────────────────────────────────────────── */
+.legenda {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin: 1rem 0 0;
+  font-size: 0.78rem;
+  color: var(--sp-text-3);
+}
+
+.legendaRepDot,
+.legendaManualDot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid var(--sp-border);
+  margin-right: 0.3rem;
+  vertical-align: middle;
+}
+
+.legendaRepDot {
+  background: #fff;
+}
+
+.legendaManualDot {
+  background: #fef9c3;
+}
+
+/* ── Modal ────────────────────────────────────────────────────────────── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--sp-bg-card);
+  border-radius: var(--sp-radius-lg);
+  padding: 1.5rem 1.75rem 1.25rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.modalTitle {
+  margin: 0 0 1.1rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--sp-text);
+}
+
+.modalBody {
+  margin: 0 0 1.25rem;
+  font-size: 0.9rem;
+  color: var(--sp-text-2);
+  line-height: 1.5;
+}
+
+.modalField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.9rem;
+}
+
+.modalLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--sp-text-3);
+}
+
+.modalInput {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--sp-radius-md);
+  border: 1px solid var(--sp-border);
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--sp-text);
+}
+
+.modalInput:focus {
+  outline: none;
+  border-color: var(--sp-accent);
+  box-shadow: 0 0 0 2px rgba(15, 95, 90, 0.12);
+}
+
+.modalError {
+  margin: 0.25rem 0 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: var(--sp-sirrus-soft);
+  color: var(--sp-sirrus);
+  font-size: 0.85rem;
+}
+
+.modalActions {
+  display: flex;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.btnSalvar {
+  padding: 0.55rem 1.25rem;
+  border-radius: var(--sp-radius-md);
+  border: none;
+  background: var(--sp-accent);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnSalvar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btnSalvar:not(:disabled):hover {
+  background: #0d4f4a;
+}
+
+.btnExcluir {
+  padding: 0.55rem 1.25rem;
+  border-radius: var(--sp-radius-md);
+  border: none;
+  background: var(--sp-sirrus);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnExcluir:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btnExcluir:not(:disabled):hover {
+  background: var(--sp-status-falta-text);
+}
+
+.btnCancelar {
+  padding: 0.55rem 1.25rem;
+  border-radius: var(--sp-radius-md);
+  border: 1px solid var(--sp-border);
+  background: var(--sp-bg-card);
+  color: var(--sp-text-2);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnCancelar:hover {
+  background: var(--sp-bg-card-soft);
+}
+
+/* ── Print ────────────────────────────────────────────────────────────── */
+@media print {
+  .toolbar { display: none !important; }
+  .legenda { display: none !important; }
+  .errorMsg { display: none !important; }
+  .loadingMsg { display: none !important; }
+  .slotAdd { display: none !important; }
+  .slotDel { display: none !important; }
+
+  .wrap {
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  .tableWrap {
+    border: 1px solid #ccc;
+    border-radius: 0;
+  }
+
+  .table {
+    font-size: 0.72rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.3rem 0.4rem;
+  }
+
+  .table tr {
+    page-break-inside: avoid;
+  }
+
+  .slotManual {
+    background: #fef9c3 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

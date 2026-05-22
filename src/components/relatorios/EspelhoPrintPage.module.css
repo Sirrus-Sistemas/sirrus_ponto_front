@@ -1,0 +1,127 @@
+.page {
+  min-height: 100vh;
+  background: var(--sp-bg-canvas);
+}
+
+/* ── Toolbar ──────────────────────────────────────────────────────── */
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 1.25rem;
+  background: var(--sp-bg-sidebar);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.toolbarTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toolbarActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.btnPrint {
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--sp-bg-card);
+  color: var(--sp-accent);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btnPrint:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnPrint:not(:disabled):hover {
+  background: #e6f4f3;
+}
+
+.btnClose {
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.btnClose:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ── Content ──────────────────────────────────────────────────────── */
+.content {
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+/* ── Loading / Error ──────────────────────────────────────────────── */
+.loadingWrap {
+  max-width: 420px;
+  margin: 3rem auto;
+}
+
+.loadingText {
+  text-align: center;
+  color: var(--sp-text-2);
+  font-size: 0.95rem;
+  margin: 0 0 0.75rem;
+}
+
+.progressBar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--sp-border);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--sp-accent);
+  border-radius: 3px;
+  transition: width 0.2s ease;
+}
+
+.errorMsg {
+  max-width: 480px;
+  margin: 3rem auto;
+  padding: 0.75rem 1rem;
+  border-radius: var(--sp-radius-md);
+  background: var(--sp-sirrus-soft);
+  color: var(--sp-sirrus);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* ── Print ────────────────────────────────────────────────────────── */
+@media print {
+  .page {
+    background: #fff;
+  }
+
+  .toolbar {
+    display: none !important;
+  }
+
+  .content {
+    padding: 0;
+  }
+}
