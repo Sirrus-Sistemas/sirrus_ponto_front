@@ -22,6 +22,7 @@ export interface DayRow {
   dow: number; // 0=Dom..6=Sáb
   status: DayStatus;
   punches: (Punch | null)[]; // always length 8: E1 S1 E2 S2 E3 S3 E4 S4
+  punchIds: number[];        // IDs das marcações existentes (ordem asc)
   note?: string;
   isToday?: boolean;
   holidayName?: string;
@@ -61,4 +62,6 @@ export interface FichaDePontoData {
   folhaStatus: FolhaStatus;
   month: number;
   year: number;
+  funcionarioId: number;
+  turnoId: number | null;
 }

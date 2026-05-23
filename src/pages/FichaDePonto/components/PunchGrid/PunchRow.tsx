@@ -9,7 +9,7 @@ const SLOT_LABELS = ['E1', 'S1', 'E2', 'S2', 'E3', 'S3', 'E4', 'S4'];
 
 interface PunchRowProps {
   row: DayRow;
-  onCellOpen?: (dayLabel: string, slotLabel: string, e: React.MouseEvent) => void;
+  onCellOpen?: (dayLabel: string, slotLabel: string, row: DayRow, e: React.MouseEvent) => void;
 }
 
 export function PunchRow({ row, onCellOpen }: PunchRowProps) {
@@ -41,7 +41,7 @@ export function PunchRow({ row, onCellOpen }: PunchRowProps) {
       {row.punches.map((punch, i) => {
         const isMissing = isInconsistente && punch === null && i < 4;
         const slotLabel = SLOT_LABELS[i];
-        const handleOpen = (e: React.MouseEvent) => onCellOpen?.(dayLabel, slotLabel, e);
+        const handleOpen = (e: React.MouseEvent) => onCellOpen?.(dayLabel, slotLabel, row, e);
         return (
           <td key={i} className={styles.tdCell}>
             <PunchCell

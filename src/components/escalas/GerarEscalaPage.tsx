@@ -18,6 +18,7 @@ import {
   fetchEscala,
   fetchFuncionariosComEscala,
   previewEscala,
+  deleteEscala,
   salvarEscala,
   type DiaEscala,
   type FuncionarioEscala,
@@ -133,6 +134,8 @@ export function GerarEscalaPage() {
   const [tableOpen, setTableOpen] = useState(false)
   const [submitAttempted, setSubmitAttempted] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   // Load employees
   useEffect(() => {
@@ -297,6 +300,25 @@ export function GerarEscalaPage() {
     }
   }
 
+  async function handleDelete() {
+    if (!form.funcionario_id || !form.data_inicio || !form.data_fim) return
+    setDeleting(true)
+    setSaveError(null)
+    try {
+      await deleteEscala(Number(form.funcionario_id), form.data_inicio, form.data_fim)
+      setSuccess('Escala excluída com sucesso.')
+      setIsEditing(false)
+      setPreview(null)
+      setConfirmDelete(false)
+      setTimeout(() => setSuccess(null), 3000)
+    } catch (e) {
+      setSaveError(e instanceof ApiError ? e.message : 'Erro ao excluir escala.')
+      setConfirmDelete(false)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   async function handleSalvar() {
     setSubmitAttempted(true)
     const err = validate()
@@ -391,6 +413,36 @@ export function GerarEscalaPage() {
           >
             Cancelar
           </button>
+          {isEditing && !confirmDelete && (
+            <button
+              type="button"
+              className={styles.btnDelete}
+              onClick={() => setConfirmDelete(true)}
+              disabled={deleting || saving}
+            >
+              Excluir escala
+            </button>
+          )}
+          {isEditing && confirmDelete && (
+            <div className={styles.confirmDeleteInline}>
+              <span>Confirmar exclusão?</span>
+              <button
+                type="button"
+                className={styles.btnDeleteConfirm}
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? 'Excluindo…' : 'Sim, excluir'}
+              </button>
+              <button
+                type="button"
+                className={styles.btnCancel}
+                onClick={() => setConfirmDelete(false)}
+              >
+                Não
+              </button>
+            </div>
+          )}
           <button
             type="button"
             className={styles.btnSave}

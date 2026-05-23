@@ -38,6 +38,11 @@ export async function fetchTurnos(): Promise<Turno[]> {
   return Array.isArray(res.data) ? res.data : []
 }
 
+export async function fetchTurnoById(id: number): Promise<Turno | null> {
+  const list = await fetchTurnos()
+  return list.find((t) => t.id === id) ?? null
+}
+
 export type CreateTurnoPayload = {
   nome: string
   entrada: string

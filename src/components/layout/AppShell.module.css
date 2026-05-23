@@ -6,7 +6,8 @@
   --shell-text: #ffffff;
   --sidebar-width: 244px;
 
-  min-height: 100svh;
+  height: 100svh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   background: var(--sp-bg-canvas);
@@ -23,6 +24,7 @@
   flex: 1;
   display: flex;
   min-height: 0;
+  overflow: hidden;
 }
 
 .sidebar {
@@ -78,10 +80,35 @@
 
 .sidebarNav {
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   padding: 0.85rem 0.65rem;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  scrollbar-width: none;
+}
+
+.sidebarNav::-webkit-scrollbar {
+  width: 0;
+}
+
+.sidebarNav:hover {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+
+.sidebarNav:hover::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebarNav:hover::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebarNav:hover::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 4px;
 }
 
 .navSection {
@@ -323,6 +350,14 @@
   flex: 1;
   overflow: auto;
   min-height: 0;
+}
+
+.mainFull {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .mainInner {

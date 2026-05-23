@@ -90,6 +90,21 @@ export async function updateDiaEscala(
   })
 }
 
+export async function deleteEscala(
+  funcionarioId: number,
+  inicio: string,
+  fim: string
+): Promise<void> {
+  const params = new URLSearchParams({
+    funcionario_id: String(funcionarioId),
+    inicio,
+    fim,
+  })
+  await apiRequest<{ success: boolean }>(`/api/escalas?${params}`, {
+    method: 'DELETE',
+  })
+}
+
 export async function fetchEscala(
   funcionarioId: number,
   inicio: string,

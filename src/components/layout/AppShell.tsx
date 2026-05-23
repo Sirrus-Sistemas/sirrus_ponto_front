@@ -1,4 +1,4 @@
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useMatch, useNavigate } from 'react-router-dom'
 import type { AppShellOutletContext } from './appShellContext'
 import { useEffect, useRef, useState } from 'react'
 import { clearStoredToken } from '../../lib/api'
@@ -69,6 +69,8 @@ export function AppShell() {
   function navClass(isActive: boolean) {
     return `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`
   }
+
+  const isFullBleed = !!useMatch('/ficha-ponto')
 
   const podeCadastrarFuncionario = me?.role === 'admin' || me?.role === 'gestor'
   const podeGerarEscala = me?.role === 'admin' || me?.role === 'gestor'
@@ -345,10 +347,14 @@ export function AppShell() {
             </div>
           </header>
 
-          <main className={styles.main}>
-            <div className={styles.mainInner}>
+          <main className={isFullBleed ? styles.mainFull : styles.main}>
+            {isFullBleed ? (
               <Outlet context={outletCtx} />
-            </div>
+            ) : (
+              <div className={styles.mainInner}>
+                <Outlet context={outletCtx} />
+              </div>
+            )}
           </main>
         </div>
       </div>

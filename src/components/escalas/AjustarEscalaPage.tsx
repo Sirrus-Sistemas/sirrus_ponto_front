@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import type { AppShellOutletContext } from '../layout/appShellContext'
 import {
+  deleteEscala,
   fetchEscala,
   fetchFuncionariosComEscala,
   updateDiaEscala,
@@ -80,6 +81,9 @@ export function AjustarEscalaPage() {
   const [history, setHistory] = useState<HistoryEntry[]>([])
   const [historyOpen, setHistoryOpen] = useState(false)
   const [calMonth, setCalMonth] = useState<{ year: number; month: number } | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   // Load employees
   useEffect(() => {
@@ -130,6 +134,21 @@ export function AjustarEscalaPage() {
   }, [escalaMap, overrides])
 
   const ajustesCount = Object.keys(overrides).length + history.length
+
+  async function handleDelete() {
+    if (!currentFunc || !inicioParam || !fimParam) return
+    setDeleting(true)
+    setDeleteError(null)
+    try {
+      await deleteEscala(currentFunc.id, inicioParam, fimParam)
+      navigate('/escalas/gerar')
+    } catch {
+      setDeleteError('Erro ao excluir escala.')
+      setConfirmDelete(false)
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   async function handleChangeTipo(data: string, tipo: TipoAjuste) {
     if (!currentFunc) return
@@ -242,6 +261,36 @@ export function AjustarEscalaPage() {
         <button type="button" className={styles.btnGhost}>
           <FileText size={14} /> Exportar PDF
         </button>
+        {!confirmDelete ? (
+          <button
+            type="button"
+            className={styles.btnDelete}
+            onClick={() => setConfirmDelete(true)}
+            disabled={deleting}
+          >
+            Excluir escala
+          </button>
+        ) : (
+          <div className={styles.confirmDeleteInline}>
+            <span>Confirmar exclusão?</span>
+            <button
+              type="button"
+              className={styles.btnDeleteConfirm}
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting ? 'Excluindo…' : 'Sim, excluir'}
+            </button>
+            <button
+              type="button"
+              className={styles.btnGhost}
+              onClick={() => setConfirmDelete(false)}
+            >
+              Não
+            </button>
+          </div>
+        )}
+        {deleteError && <span className={styles.deleteError}>{deleteError}</span>}
         <button
           type="button"
           className={styles.btnConcluir}

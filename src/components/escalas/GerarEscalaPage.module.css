@@ -114,6 +114,59 @@
   cursor: not-allowed;
 }
 
+.btnDelete {
+  height: 36px;
+  padding: 0 16px;
+  background: transparent;
+  color: #c0392b;
+  border: 1px solid #e0b0ad;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btnDelete:hover:not(:disabled) {
+  background: #fdf2f1;
+  border-color: #c0392b;
+}
+
+.btnDelete:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btnDeleteConfirm {
+  height: 36px;
+  padding: 0 16px;
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btnDeleteConfirm:hover:not(:disabled) {
+  background: #a93226;
+}
+
+.btnDeleteConfirm:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.confirmDeleteInline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--sp-text-2);
+}
+
 /* ── Stepper ───────────────────────────────────────────────────────────────── */
 
 .stepper {

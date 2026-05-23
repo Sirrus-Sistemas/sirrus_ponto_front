@@ -1,25 +1,26 @@
 import { useEffect, useRef } from 'react';
+import type { DayRow } from '../../types';
 import styles from './DayActionMenu.module.css';
 
 export interface DayActionMenuContext {
-  dayLabel: string;   // "07/10"
-  slotLabel: string;  // "E1", "S2", etc.
+  dayLabel: string;
+  slotLabel: string;
   x: number;
   y: number;
+  row: DayRow;
+  funcionarioId: number;
+  turnoId: number | null;
 }
 
 interface DayActionMenuProps {
   ctx: DayActionMenuContext;
   onClose: () => void;
+  onAbonar: (ctx: DayActionMenuContext) => void;
+  onLancarOcorrencia: (ctx: DayActionMenuContext) => void;
+  onJustificativaAutomatica: (ctx: DayActionMenuContext) => void;
 }
 
-const OCORRENCIA_ITEMS = [
-  { label: 'Abonar' },
-  { label: 'Lançar Ocorrência por Período' },
-  { label: 'Justificativa Automática' },
-];
-
-export function DayActionMenu({ ctx, onClose }: DayActionMenuProps) {
+export function DayActionMenu({ ctx, onClose, onAbonar, onLancarOcorrencia, onJustificativaAutomatica }: DayActionMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,7 +40,6 @@ export function DayActionMenu({ ctx, onClose }: DayActionMenuProps) {
     };
   }, [onClose]);
 
-  // Adjust position to avoid going off-screen
   const menuWidth = 260;
   const menuHeight = 180;
   const vw = window.innerWidth;
@@ -48,11 +48,7 @@ export function DayActionMenu({ ctx, onClose }: DayActionMenuProps) {
   const top  = ctx.y + menuHeight > vh ? ctx.y - menuHeight : ctx.y;
 
   return (
-    <div
-      ref={ref}
-      className={styles.menu}
-      style={{ left, top }}
-    >
+    <div ref={ref} className={styles.menu} style={{ left, top }}>
       <div className={styles.header}>
         <span className={styles.headerDay}>{ctx.dayLabel}</span>
         <span className={styles.headerSep}>·</span>
@@ -61,11 +57,30 @@ export function DayActionMenu({ ctx, onClose }: DayActionMenuProps) {
 
       <div className={styles.section}>
         <p className={styles.sectionTitle}>Ocorrências</p>
-        {OCORRENCIA_ITEMS.map((item) => (
-          <button key={item.label} type="button" className={styles.item} onClick={onClose}>
-            <span className={styles.itemLabel}>{item.label}</span>
-          </button>
-        ))}
+
+        <button
+          type="button"
+          className={styles.item}
+          onClick={() => { onClose(); onAbonar(ctx); }}
+        >
+          <span className={styles.itemLabel}>Abonar</span>
+        </button>
+
+        <button
+          type="button"
+          className={styles.item}
+          onClick={() => { onClose(); onLancarOcorrencia(ctx); }}
+        >
+          <span className={styles.itemLabel}>Lançar Ocorrência por Período</span>
+        </button>
+
+        <button
+          type="button"
+          className={styles.item}
+          onClick={() => { onClose(); onJustificativaAutomatica(ctx); }}
+        >
+          <span className={styles.itemLabel}>Justificativa Automática</span>
+        </button>
       </div>
     </div>
   );

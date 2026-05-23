@@ -72,7 +72,13 @@ export function FichaDePonto() {
         {loading && <div className={styles.stateMsg}>Carregando…</div>}
         {error   && <div className={styles.errorMsg}>{error}</div>}
         {!loading && !error && data && (
-          <PunchGrid days={data.days} />
+          <PunchGrid
+            days={data.days}
+            funcionarioId={data.funcionarioId}
+            funcionarioNome={data.employee.fullName}
+            turnoId={data.turnoId}
+            onReload={reload}
+          />
         )}
       </div>
 

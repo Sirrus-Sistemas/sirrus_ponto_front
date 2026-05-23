@@ -13,6 +13,7 @@ import {
   type FilialMobileItem,
 } from '../../services/mobileApi'
 import { fetchFuncionarios, type FuncionarioListItem } from '../../services/funcionariosApi'
+import { fetchLotacoes, type Lotacao } from '../../services/lotacoesApi'
 import styles from './IntegracaoMobilePage.module.css'
 
 function nowYmd() {
@@ -37,6 +38,8 @@ export function IntegracaoMobilePage() {
 
   // Filial selecionada para o filtro de funcionários
   const [filtroFilialId, setFiltroFilialId] = useState<number | ''>('')
+  const [filtroLotacaoId, setFiltroLotacaoId] = useState<number | ''>('')
+  const [lotacoes, setLotacoes] = useState<Lotacao[]>([])
 
   // Sync filial
   const [syncFilialLoading, setSyncFilialLoading] = useState<number | null>(null)
@@ -53,6 +56,7 @@ export function IntegracaoMobilePage() {
 
   // Pull marcações
   const [pullFilialId, setPullFilialId] = useState<number | ''>('')
+  const [pullLotacaoId, setPullLotacaoId] = useState<number | ''>('')
   const [dataInicio, setDataInicio] = useState(prevMonthYmd)
   const [dataFim, setDataFim] = useState(nowYmd)
   const [pullLoading, setPullLoading] = useState(false)
@@ -61,14 +65,16 @@ export function IntegracaoMobilePage() {
 
   const load = useCallback(async () => {
     try {
-      const [status, fils, funcs] = await Promise.all([
+      const [status, fils, funcs, lots] = await Promise.all([
         fetchMobileStatus(),
         fetchMobileFiliais(),
         fetchFuncionarios({ limit: 1000, ativo: 1 }),
+        fetchLotacoes(),
       ])
       setConfigurado(status.configurado)
       setFiliais(fils)
       setFuncionarios(funcs.data)
+      setLotacoes(lots)
     } catch {
       setConfigurado(false)
     }
@@ -76,12 +82,17 @@ export function IntegracaoMobilePage() {
 
   useEffect(() => { void load() }, [load])
 
-  // Recarrega funcionários quando o filtro de filial muda
+  // Recarrega funcionários quando filtro de filial ou lotação muda
   useEffect(() => {
-    fetchFuncionarios({ limit: 1000, ativo: 1, filial_id: filtroFilialId || undefined })
+    fetchFuncionarios({
+      limit: 1000,
+      ativo: 1,
+      filial_id: filtroFilialId || undefined,
+      lotacao_id: filtroLotacaoId || undefined,
+    })
       .then((r) => setFuncionarios(r.data))
       .catch(() => {})
-  }, [filtroFilialId])
+  }, [filtroFilialId, filtroLotacaoId])
 
   async function handleSyncFilial(id: number) {
     setSyncFilialLoading(id)
@@ -130,7 +141,7 @@ export function IntegracaoMobilePage() {
     setPullResult(null)
     setPullError(null)
     try {
-      const r = await pullMarcacoes(pullFilialId, dataInicio, dataFim)
+      const r = await pullMarcacoes(pullFilialId, dataInicio, dataFim, pullLotacaoId || undefined)
       setPullResult(r)
     } catch (e) {
       setPullError(errMsg(e, 'Erro ao importar marcações.'))
@@ -242,6 +253,21 @@ export function IntegracaoMobilePage() {
             </select>
           </div>
 
+          <div className={styles.field}>
+            <label htmlFor="filtro-lotacao">Filtrar por lotação</label>
+            <select
+              id="filtro-lotacao"
+              value={filtroLotacaoId}
+              onChange={(e) => setFiltroLotacaoId(e.target.value ? Number(e.target.value) : '')}
+              className={styles.select}
+            >
+              <option value="">Todas as lotações</option>
+              {lotacoes.map((l) => (
+                <option key={l.id} value={l.id}>{l.nome}</option>
+              ))}
+            </select>
+          </div>
+
           <button
             type="button"
             className={styles.btnPrimary}
@@ -333,6 +359,20 @@ export function IntegracaoMobilePage() {
               <option value="">Selecione a filial</option>
               {filiaisAtivas.filter((f) => f.pontomobile_id).map((f) => (
                 <option key={f.id} value={f.id}>{f.nome}</option>
+              ))}
+            </select>
+          </div>
+          <div className={styles.field}>
+            <label htmlFor="pull-lotacao">Lotação</label>
+            <select
+              id="pull-lotacao"
+              value={pullLotacaoId}
+              onChange={(e) => setPullLotacaoId(e.target.value ? Number(e.target.value) : '')}
+              className={styles.select}
+            >
+              <option value="">Todas as lotações</option>
+              {lotacoes.map((l) => (
+                <option key={l.id} value={l.id}>{l.nome}</option>
               ))}
             </select>
           </div>

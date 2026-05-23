@@ -57,10 +57,16 @@ export async function pullMarcacoes(
   filialId: number,
   dataInicio: string,
   dataFim: string,
+  lotacaoId?: number,
 ): Promise<PullResult> {
   const r = await apiRequest<{ data: PullResult }>('/api/mobile/pull-marcacoes', {
     method: 'POST',
-    body: JSON.stringify({ filial_id: filialId, data_inicio: dataInicio, data_fim: dataFim }),
+    body: JSON.stringify({
+      filial_id: filialId,
+      data_inicio: dataInicio,
+      data_fim: dataFim,
+      ...(lotacaoId ? { lotacao_id: lotacaoId } : {}),
+    }),
   })
   return r.data
 }

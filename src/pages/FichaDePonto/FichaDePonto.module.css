@@ -1,11 +1,10 @@
 .page {
   display: flex;
   flex-direction: column;
-  margin: -1.25rem;
-  height: calc(100svh - 58px);
+  flex: 1;
+  min-height: 0;
   background: #fff;
   font-family: var(--sp-font-ui);
-  /* sem overflow: hidden aqui para não cortar o popup do DatePicker */
 }
 
 .gridArea {
