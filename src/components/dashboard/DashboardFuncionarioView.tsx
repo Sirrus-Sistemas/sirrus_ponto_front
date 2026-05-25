@@ -7,7 +7,6 @@ import {
   hojeIsoPtBr,
   formatMinutosPt,
   formatSaldoMesPt,
-  horaTurnoParaRelogio,
   proximaAcaoLabel,
   normalizarBatidasEsperadas,
 } from './dashboardDiaUtils'
@@ -214,7 +213,7 @@ function Timeline({
     }
   }).filter(Boolean) as { pct: number; label: string }[]
 
-  const _ = tick // consumed to trigger re-render on tick
+  void tick // consumed to trigger re-render on tick
 
   return (
     <div className={styles.timelineWrap}>
@@ -271,8 +270,6 @@ export function DashboardFuncionarioView({ me, espelho, onRegistrar, registering
   const nBatidas = dia?.marcacoes.length ?? 0
   const proximaAcao = proximaAcaoLabel(nBatidas, batidasTurno)
     .replace('Bater ', '')
-  const proximaAcaoCompleta = proximaAcaoLabel(nBatidas, batidasTurno)
-
   const previstaHHmm = nextExpectedTime(me, nBatidas, batidasTurno ?? 4)
 
   const ultimaBatida = ultimaMarcacaoDoDia(dia)

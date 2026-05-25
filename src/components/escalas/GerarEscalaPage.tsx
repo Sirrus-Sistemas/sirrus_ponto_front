@@ -31,7 +31,6 @@ import {
   feriadosNoPeriodo,
   formatDate,
   inicioCicloHint,
-  toLocalDate,
 } from './escalaUtils'
 import styles from './GerarEscalaPage.module.css'
 

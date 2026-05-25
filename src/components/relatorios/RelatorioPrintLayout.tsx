@@ -6,11 +6,6 @@ function pad2(n: number) {
   return String(n).padStart(2, '0')
 }
 
-function nowEmissao(): string {
-  const d = new Date()
-  return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`
-}
-
 function nowHora(): string {
   const d = new Date()
   return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`

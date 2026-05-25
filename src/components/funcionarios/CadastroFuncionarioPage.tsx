@@ -285,7 +285,7 @@ export function CadastroFuncionarioPage() {
         role: func.role ?? 'funcionario',
         usa_escala: !!func.usa_escala,
         usa_mobile: !!func.usa_mobile,
-        pontomobile_id: func.pontomobile_id ?? '',
+        pontomobile_id: func.pontomobile_id != null ? String(func.pontomobile_id) : '',
         ativo: !!func.ativo,
         cep: func.cep ?? '',
         logradouro: func.logradouro ?? '',

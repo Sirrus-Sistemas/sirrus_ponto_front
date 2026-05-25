@@ -6,10 +6,6 @@ import styles from './RelatoriosPage.module.css'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function pad2(n: number) {
-  return String(n).padStart(2, '0')
-}
-
 function labelMes(m: number) {
   return new Date(2000, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long' })
 }

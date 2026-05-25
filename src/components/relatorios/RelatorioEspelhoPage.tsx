@@ -330,8 +330,6 @@ export function RelatorioEspelhoPage() {
     setEntries(result)
   }, [escopo, lotacaoId, funcId, funcionarios, ano, mes])
 
-  const lotacaoSelecionada = lotacoes.find((l) => l.id === lotacaoId)
-
   return (
     <div className={styles.wrap}>
       {/* ── Formulário de filtros ──────────────────────────────────── */}
