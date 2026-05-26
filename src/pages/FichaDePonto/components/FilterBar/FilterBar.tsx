@@ -3,6 +3,7 @@ import { Avatar } from '../ui/Avatar';
 import styles from './FilterBar.module.css';
 import type { Employee } from '../../types';
 import type { FuncionarioListItem } from '../../../../services/funcionariosApi';
+import type { Lotacao } from '../../../../services/lotacoesApi';
 
 const MONTHS = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -23,6 +24,9 @@ interface FilterBarProps {
   funcionarios: FuncionarioListItem[];
   selectedFuncId: number | undefined;
   onFuncChange: (id: number | undefined) => void;
+  lotacoes: Lotacao[];
+  selectedLotacaoId: number | undefined;
+  onLotacaoChange: (id: number | undefined) => void;
   onLoad: () => void;
 }
 
@@ -32,6 +36,7 @@ export function FilterBar({
   endMonth, endYear,
   onStartMonthChange, onEndMonthChange,
   funcionarios, selectedFuncId, onFuncChange,
+  lotacoes, selectedLotacaoId, onLotacaoChange,
   onLoad,
 }: FilterBarProps) {
   return (
@@ -41,6 +46,19 @@ export function FilterBar({
           <ChevronDown size={14} />
           Filtros
         </button>
+
+        {lotacoes.length > 0 && (
+          <select
+            className={styles.select}
+            value={selectedLotacaoId ?? ''}
+            onChange={(e) => onLotacaoChange(e.target.value === '' ? undefined : Number(e.target.value))}
+          >
+            <option value="">Todas as lotações</option>
+            {lotacoes.map((l) => (
+              <option key={l.id} value={l.id}>{l.nome}</option>
+            ))}
+          </select>
+        )}
 
         {funcionarios.length > 0 ? (
           <select

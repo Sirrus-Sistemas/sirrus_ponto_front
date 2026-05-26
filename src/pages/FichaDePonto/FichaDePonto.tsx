@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useFichaDePonto } from './useFichaDePonto';
 import { FilterBar } from './components/FilterBar/FilterBar';
 import { EmployeeStrip } from './components/EmployeeStrip/EmployeeStrip';
 import { PunchGrid } from './components/PunchGrid/PunchGrid';
 import { ApuracaoFooter } from './components/ApuracaoFooter/ApuracaoFooter';
+import { fetchLotacoes, type Lotacao } from '../../services/lotacoesApi';
 import styles from './FichaDePonto.module.css';
 
 export function FichaDePonto() {
@@ -13,6 +14,8 @@ export function FichaDePonto() {
   const [endMonth,   setEndMonth]   = useState(now.getMonth() + 1);
   const [endYear,    setEndYear]    = useState(now.getFullYear());
   const [selectedFuncId, setSelectedFuncId] = useState<number | undefined>(undefined);
+  const [lotacoes, setLotacoes] = useState<Lotacao[]>([]);
+  const [selectedLotacaoId, setSelectedLotacaoId] = useState<number | undefined>(undefined);
 
   const { data, loading, error, me, funcionarios, reload } = useFichaDePonto({
     employeeId: selectedFuncId,
@@ -23,6 +26,17 @@ export function FichaDePonto() {
   });
 
   const canSelectFunc = me?.role === 'admin' || me?.role === 'gestor';
+
+  useEffect(() => {
+    if (canSelectFunc) {
+      fetchLotacoes().then(setLotacoes).catch(() => {});
+    }
+  }, [canSelectFunc]);
+
+  const funcionariosFiltrados = useMemo(() => {
+    if (!selectedLotacaoId) return funcionarios;
+    return funcionarios.filter((f) => f.lotacao_id === selectedLotacaoId);
+  }, [funcionarios, selectedLotacaoId]);
 
   function handleStartMonthChange(month: number, year: number) {
     setStartMonth(month);
@@ -58,9 +72,12 @@ export function FichaDePonto() {
         endYear={endYear}
         onStartMonthChange={handleStartMonthChange}
         onEndMonthChange={handleEndMonthChange}
-        funcionarios={canSelectFunc ? funcionarios : []}
+        funcionarios={canSelectFunc ? funcionariosFiltrados : []}
         selectedFuncId={selectedFuncId}
         onFuncChange={setSelectedFuncId}
+        lotacoes={canSelectFunc ? lotacoes : []}
+        selectedLotacaoId={selectedLotacaoId}
+        onLotacaoChange={(id) => { setSelectedLotacaoId(id); setSelectedFuncId(undefined); }}
         onLoad={reload}
       />
 

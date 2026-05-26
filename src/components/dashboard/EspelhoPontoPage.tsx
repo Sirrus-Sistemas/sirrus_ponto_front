@@ -9,6 +9,7 @@ import {
   type EspelhoPayload,
   type StatusDia,
 } from '../../services/espelhoApi'
+import { fetchLotacoes, type Lotacao } from '../../services/lotacoesApi'
 import { normalizarBatidasEsperadas } from './dashboardDiaUtils'
 import { EspelhoImpressao } from '../relatorios/EspelhoImpressao'
 import styles from './EspelhoPontoPage.module.css'
@@ -109,8 +110,15 @@ export function EspelhoPontoPage() {
   const [me, setMe] = useState<FuncionarioMe | null>(null)
   const [funcionarios, setFuncionarios] = useState<FuncionarioListItem[]>([])
   const [selectedFuncId, setSelectedFuncId] = useState<number | null>(null)
+  const [lotacoes, setLotacoes] = useState<Lotacao[]>([])
+  const [selectedLotacaoId, setSelectedLotacaoId] = useState<number | null>(null)
 
   const podeVerOutros = me?.role === 'admin' || me?.role === 'gestor'
+
+  const funcionariosFiltrados = useMemo(() => {
+    if (!selectedLotacaoId) return funcionarios
+    return funcionarios.filter((f) => f.lotacao_id === selectedLotacaoId)
+  }, [funcionarios, selectedLotacaoId])
 
   const anos = useMemo(() => {
     const y = new Date().getFullYear()
@@ -126,17 +134,23 @@ export function EspelhoPontoPage() {
     [],
   )
 
-  // Load current user and, if admin/gestor, the employee list
+  // Load current user and, if admin/gestor, the employee list and lotações
   useEffect(() => {
     fetchMe()
       .then((m) => {
         setMe(m)
         if (m.role === 'admin' || m.role === 'gestor') {
-          return fetchFuncionarios({ limit: 500, ativo: 1 })
+          return Promise.all([
+            fetchFuncionarios({ limit: 500, ativo: 1 }),
+            fetchLotacoes(),
+          ])
         }
       })
       .then((res) => {
-        if (res) setFuncionarios(res.data)
+        if (res) {
+          setFuncionarios(res[0].data)
+          setLotacoes(res[1])
+        }
       })
       .catch(() => {})
   }, [])
@@ -189,23 +203,45 @@ export function EspelhoPontoPage() {
         </div>
         <div className={styles.controls}>
           {podeVerOutros && funcionarios.length > 0 && (
-            <div className={styles.field}>
-              <label htmlFor="espelho-func">Funcionário</label>
-              <select
-                id="espelho-func"
-                value={selectedFuncId ?? ''}
-                onChange={(e) =>
-                  setSelectedFuncId(e.target.value === '' ? null : Number(e.target.value))
-                }
-              >
-                <option value="">Meu espelho</option>
-                {funcionarios.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    {f.nome}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <>
+              {lotacoes.length > 0 && (
+                <div className={styles.field}>
+                  <label htmlFor="espelho-lotacao">Lotação</label>
+                  <select
+                    id="espelho-lotacao"
+                    value={selectedLotacaoId ?? ''}
+                    onChange={(e) => {
+                      setSelectedLotacaoId(e.target.value === '' ? null : Number(e.target.value))
+                      setSelectedFuncId(null)
+                    }}
+                  >
+                    <option value="">Todas</option>
+                    {lotacoes.map((l) => (
+                      <option key={l.id} value={l.id}>
+                        {l.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <div className={styles.field}>
+                <label htmlFor="espelho-func">Funcionário</label>
+                <select
+                  id="espelho-func"
+                  value={selectedFuncId ?? ''}
+                  onChange={(e) =>
+                    setSelectedFuncId(e.target.value === '' ? null : Number(e.target.value))
+                  }
+                >
+                  <option value="">Meu espelho</option>
+                  {funcionariosFiltrados.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </>
           )}
           <div className={styles.field}>
             <label htmlFor="espelho-mes">Mês</label>

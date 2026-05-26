@@ -40,6 +40,8 @@ export function IntegracaoMobilePage() {
   const [filtroFilialId, setFiltroFilialId] = useState<number | ''>('')
   const [filtroLotacaoId, setFiltroLotacaoId] = useState<number | ''>('')
   const [lotacoes, setLotacoes] = useState<Lotacao[]>([])
+  const [funcPage, setFuncPage] = useState(0)
+  const FUNC_PAGE_SIZE = 10
 
   // Sync filial
   const [syncFilialLoading, setSyncFilialLoading] = useState<number | null>(null)
@@ -90,7 +92,7 @@ export function IntegracaoMobilePage() {
       filial_id: filtroFilialId || undefined,
       lotacao_id: filtroLotacaoId || undefined,
     })
-      .then((r) => setFuncionarios(r.data))
+      .then((r) => { setFuncionarios(r.data); setFuncPage(0) })
       .catch(() => {})
   }, [filtroFilialId, filtroLotacaoId])
 
@@ -171,173 +173,6 @@ export function IntegracaoMobilePage() {
           : configurado
           ? 'API mobile configurada e acessível.'
           : 'API mobile não configurada. Defina PONTOMOBILE_URL, PONTOMOBILE_CPF e PONTOMOBILE_SENHA no servidor.'}
-      </div>
-
-      {/* ── Filiais ─────────────────────────────────────────────────────── */}
-      <div className={styles.card}>
-        <h2 className={styles.cardTitle}>Filiais</h2>
-        <p className={styles.cardDesc}>
-          Cada filial é cadastrada como uma empresa no app mobile. Sincronize antes de enviar funcionários.
-        </p>
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>CNPJ</th>
-                <th>ID Mobile</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {filiaisAtivas.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className={styles.emptyRow}>Nenhuma filial ativa cadastrada.</td>
-                </tr>
-              ) : (
-                filiaisAtivas.map((f) => (
-                  <tr key={f.id}>
-                    <td>{f.nome}</td>
-                    <td className={styles.tdCpf}>{f.cnpj ?? '—'}</td>
-                    <td className={styles.tdMobileId}>
-                      {f.pontomobile_id ? (
-                        <span className={styles.mobileIdBadge}>{f.pontomobile_id}</span>
-                      ) : (
-                        <span className={styles.mobileIdEmpty}>—</span>
-                      )}
-                    </td>
-                    <td className={styles.tdAcao}>
-                      <div className={styles.acaoRow}>
-                        <button
-                          type="button"
-                          className={styles.btnSmall}
-                          onClick={() => void handleSyncFilial(f.id)}
-                          disabled={syncFilialLoading === f.id || !configurado}
-                        >
-                          {syncFilialLoading === f.id ? '…' : 'Sincronizar'}
-                        </button>
-                        {syncFilialMsg[f.id] ? (
-                          <span className={styles.inlineMsgSm}>{syncFilialMsg[f.id]}</span>
-                        ) : null}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* ── Funcionários ────────────────────────────────────────────────── */}
-      <div className={styles.card}>
-        <h2 className={styles.cardTitle}>Funcionários</h2>
-        <p className={styles.cardDesc}>
-          Sincronize individualmente ou use "Sincronizar Todos" para enviar todos de uma vez.
-        </p>
-
-        {/* Barra de filtro + sync todos */}
-        <div className={styles.funcBar}>
-          <div className={styles.field}>
-            <label htmlFor="filtro-filial">Filtrar por filial</label>
-            <select
-              id="filtro-filial"
-              value={filtroFilialId}
-              onChange={(e) => setFiltroFilialId(e.target.value ? Number(e.target.value) : '')}
-              className={styles.select}
-            >
-              <option value="">Todas as filiais</option>
-              {filiaisAtivas.map((f) => (
-                <option key={f.id} value={f.id}>{f.nome}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className={styles.field}>
-            <label htmlFor="filtro-lotacao">Filtrar por lotação</label>
-            <select
-              id="filtro-lotacao"
-              value={filtroLotacaoId}
-              onChange={(e) => setFiltroLotacaoId(e.target.value ? Number(e.target.value) : '')}
-              className={styles.select}
-            >
-              <option value="">Todas as lotações</option>
-              {lotacoes.map((l) => (
-                <option key={l.id} value={l.id}>{l.nome}</option>
-              ))}
-            </select>
-          </div>
-
-          <button
-            type="button"
-            className={styles.btnPrimary}
-            onClick={() => void handleSyncAll()}
-            disabled={syncAllLoading || !configurado}
-            style={{ alignSelf: 'flex-end' }}
-          >
-            {syncAllLoading
-              ? 'Sincronizando…'
-              : filtroFilialId
-              ? 'Sincronizar Todos desta Filial'
-              : 'Sincronizar Todos'}
-          </button>
-        </div>
-
-        {syncAllError ? (
-          <p className={styles.error} role="alert">{syncAllError}</p>
-        ) : null}
-
-        {syncAllResult ? (
-          <div className={styles.pullResult} style={{ marginBottom: '0.75rem' }}>
-            <span className={styles.resultOk}>{syncAllResult.sincronizados} sincronizado(s)</span>
-            {syncAllResult.erros.length > 0 ? (
-              <span className={styles.resultErr}>{syncAllResult.erros.length} erro(s)</span>
-            ) : null}
-          </div>
-        ) : null}
-
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>CPF</th>
-                <th>Filial</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {funcionarios.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className={styles.emptyRow}>Nenhum funcionário encontrado.</td>
-                </tr>
-              ) : (
-                funcionarios.map((f) => (
-                  <tr key={f.id}>
-                    <td>{f.nome}</td>
-                    <td className={styles.tdCpf}>{f.cpf ?? '—'}</td>
-                    <td className={styles.tdFilial}>{f.filial_nome ?? '—'}</td>
-                    <td className={styles.tdAcao}>
-                      <div className={styles.acaoRow}>
-                        <button
-                          type="button"
-                          className={styles.btnSmall}
-                          onClick={() => void handleSyncFuncionario(f.id)}
-                          disabled={syncFuncLoading === f.id || !configurado}
-                        >
-                          {syncFuncLoading === f.id ? '…' : 'Sincronizar'}
-                        </button>
-                        {syncFuncMsg[f.id] ? (
-                          <span className={styles.inlineMsgSm}>{syncFuncMsg[f.id]}</span>
-                        ) : null}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
       </div>
 
       {/* ── Importar Marcações ───────────────────────────────────────────── */}
@@ -429,6 +264,190 @@ export function IntegracaoMobilePage() {
             ) : null}
           </div>
         ) : null}
+      </div>
+
+      {/* ── Funcionários ────────────────────────────────────────────────── */}
+      <div className={styles.card}>
+        <h2 className={styles.cardTitle}>Funcionários</h2>
+        <p className={styles.cardDesc}>
+          Sincronize individualmente ou use "Sincronizar Todos" para enviar todos de uma vez.
+        </p>
+
+        {/* Barra de filtro + sync todos */}
+        <div className={styles.funcBar}>
+          <div className={styles.field}>
+            <label htmlFor="filtro-filial">Filtrar por filial</label>
+            <select
+              id="filtro-filial"
+              value={filtroFilialId}
+              onChange={(e) => setFiltroFilialId(e.target.value ? Number(e.target.value) : '')}
+              className={styles.select}
+            >
+              <option value="">Todas as filiais</option>
+              {filiaisAtivas.map((f) => (
+                <option key={f.id} value={f.id}>{f.nome}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className={styles.field}>
+            <label htmlFor="filtro-lotacao">Filtrar por lotação</label>
+            <select
+              id="filtro-lotacao"
+              value={filtroLotacaoId}
+              onChange={(e) => setFiltroLotacaoId(e.target.value ? Number(e.target.value) : '')}
+              className={styles.select}
+            >
+              <option value="">Todas as lotações</option>
+              {lotacoes.map((l) => (
+                <option key={l.id} value={l.id}>{l.nome}</option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            type="button"
+            className={styles.btnPrimary}
+            onClick={() => void handleSyncAll()}
+            disabled={syncAllLoading || !configurado}
+            style={{ alignSelf: 'flex-end' }}
+          >
+            {syncAllLoading
+              ? 'Sincronizando…'
+              : filtroFilialId
+              ? 'Sincronizar Todos desta Filial'
+              : 'Sincronizar Todos'}
+          </button>
+        </div>
+
+        {syncAllError ? (
+          <p className={styles.error} role="alert">{syncAllError}</p>
+        ) : null}
+
+        {syncAllResult ? (
+          <div className={styles.pullResult} style={{ marginBottom: '0.75rem' }}>
+            <span className={styles.resultOk}>{syncAllResult.sincronizados} sincronizado(s)</span>
+            {syncAllResult.erros.length > 0 ? (
+              <span className={styles.resultErr}>{syncAllResult.erros.length} erro(s)</span>
+            ) : null}
+          </div>
+        ) : null}
+
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>CPF</th>
+                <th>Filial</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {funcionarios.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className={styles.emptyRow}>Nenhum funcionário encontrado.</td>
+                </tr>
+              ) : (
+                funcionarios.slice(funcPage * FUNC_PAGE_SIZE, (funcPage + 1) * FUNC_PAGE_SIZE).map((f) => (
+                  <tr key={f.id}>
+                    <td>{f.nome}</td>
+                    <td className={styles.tdCpf}>{f.cpf ?? '—'}</td>
+                    <td className={styles.tdFilial}>{f.filial_nome ?? '—'}</td>
+                    <td className={styles.tdAcao}>
+                      <div className={styles.acaoRow}>
+                        <button
+                          type="button"
+                          className={styles.btnSmall}
+                          onClick={() => void handleSyncFuncionario(f.id)}
+                          disabled={syncFuncLoading === f.id || !configurado}
+                        >
+                          {syncFuncLoading === f.id ? '…' : 'Sincronizar'}
+                        </button>
+                        {syncFuncMsg[f.id] ? (
+                          <span className={styles.inlineMsgSm}>{syncFuncMsg[f.id]}</span>
+                        ) : null}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        {funcionarios.length > FUNC_PAGE_SIZE && (
+          <div className={styles.pagination}>
+            <button
+              className={styles.pageBtn}
+              onClick={() => setFuncPage((p) => p - 1)}
+              disabled={funcPage === 0}
+            >‹</button>
+            <span className={styles.pageInfo}>
+              {funcPage + 1} / {Math.ceil(funcionarios.length / FUNC_PAGE_SIZE)}
+            </span>
+            <button
+              className={styles.pageBtn}
+              onClick={() => setFuncPage((p) => p + 1)}
+              disabled={(funcPage + 1) * FUNC_PAGE_SIZE >= funcionarios.length}
+            >›</button>
+          </div>
+        )}
+      </div>
+
+      {/* ── Filiais ─────────────────────────────────────────────────────── */}
+      <div className={styles.card}>
+        <h2 className={styles.cardTitle}>Filiais</h2>
+        <p className={styles.cardDesc}>
+          Cada filial é cadastrada como uma empresa no app mobile. Sincronize antes de enviar funcionários.
+        </p>
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>CNPJ</th>
+                <th>ID Mobile</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {filiaisAtivas.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className={styles.emptyRow}>Nenhuma filial ativa cadastrada.</td>
+                </tr>
+              ) : (
+                filiaisAtivas.map((f) => (
+                  <tr key={f.id}>
+                    <td>{f.nome}</td>
+                    <td className={styles.tdCpf}>{f.cnpj ?? '—'}</td>
+                    <td className={styles.tdMobileId}>
+                      {f.pontomobile_id ? (
+                        <span className={styles.mobileIdBadge}>{f.pontomobile_id}</span>
+                      ) : (
+                        <span className={styles.mobileIdEmpty}>—</span>
+                      )}
+                    </td>
+                    <td className={styles.tdAcao}>
+                      <div className={styles.acaoRow}>
+                        <button
+                          type="button"
+                          className={styles.btnSmall}
+                          onClick={() => void handleSyncFilial(f.id)}
+                          disabled={syncFilialLoading === f.id || !configurado}
+                        >
+                          {syncFilialLoading === f.id ? '…' : 'Sincronizar'}
+                        </button>
+                        {syncFilialMsg[f.id] ? (
+                          <span className={styles.inlineMsgSm}>{syncFilialMsg[f.id]}</span>
+                        ) : null}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )
