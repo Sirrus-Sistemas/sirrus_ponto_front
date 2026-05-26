@@ -75,13 +75,13 @@ export async function fetchOcorrencias(params?: {
   funcionario_id?: number
   ano?: number
   mes?: number
-}): Promise<Ocorrencia[]> {
+}, signal?: AbortSignal): Promise<Ocorrencia[]> {
   const qs = new URLSearchParams()
   if (params?.funcionario_id) qs.set('funcionario_id', String(params.funcionario_id))
   if (params?.ano) qs.set('ano', String(params.ano))
   if (params?.mes) qs.set('mes', String(params.mes))
   const suffix = qs.toString() ? `?${qs.toString()}` : ''
-  const res = await apiRequest<{ data: Ocorrencia[] }>(`/api/ocorrencias${suffix}`)
+  const res = await apiRequest<{ data: Ocorrencia[] }>(`/api/ocorrencias${suffix}`, { signal })
   return res.data
 }
 

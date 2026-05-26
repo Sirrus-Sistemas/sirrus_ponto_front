@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { ApiError } from '../../lib/api'
 import { fetchEspelho, type EspelhoPayload } from '../../services/espelhoApi'
 import { fetchMe, type FuncionarioMe } from '../../services/userApi'
-import { registrarMarcacao } from '../../services/marcacaoApi'
 import { anoMesEspelhoPtBr } from './dashboardDiaUtils'
 import { DashboardFuncionarioView } from './DashboardFuncionarioView'
 import { DashboardGestorView } from './DashboardGestorView'
@@ -17,9 +16,6 @@ export function DashboardPage() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [visao, setVisao] = useState<Visao>('funcionario')
   const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [registering, setRegistering] = useState(false)
-  const [registerError, setRegisterError] = useState<string | null>(null)
-
   const isGestor = me?.role === 'admin' || me?.role === 'gestor'
 
   const reloadDados = useCallback(async () => {
@@ -46,18 +42,6 @@ export function DashboardPage() {
     }
   }, [reloadDados])
 
-  const handleRegistrar = useCallback(async () => {
-    setRegisterError(null)
-    setRegistering(true)
-    try {
-      await registrarMarcacao('online')
-      await reloadDados()
-    } catch (e) {
-      setRegisterError(e instanceof ApiError ? e.message : 'Não foi possível registrar o ponto.')
-    } finally {
-      setRegistering(false)
-    }
-  }, [reloadDados])
 
   if (loading) {
     return (
@@ -114,9 +98,6 @@ export function DashboardPage() {
         <DashboardFuncionarioView
           me={me}
           espelho={espelho}
-          onRegistrar={() => void handleRegistrar()}
-          registering={registering}
-          registerError={registerError}
           switcherNode={switcherNode}
         />
       )}

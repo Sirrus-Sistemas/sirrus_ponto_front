@@ -129,18 +129,6 @@ export function FilterBar({
         </button>
       </div>
 
-      <div className={styles.shortcuts}>
-        <kbd className={styles.kbd}>←</kbd>
-        <kbd className={styles.kbd}>→</kbd>
-        <span className={styles.shortcutLabel}>dias</span>
-        <span className={styles.shortcutSep}>·</span>
-        <kbd className={styles.kbd}>Ctrl</kbd>
-        <kbd className={styles.kbd}>S</kbd>
-        <span className={styles.shortcutLabel}>salvar</span>
-        <span className={styles.shortcutSep}>·</span>
-        <kbd className={styles.kbd}>Esc</kbd>
-        <span className={styles.shortcutLabel}>fechar</span>
-      </div>
     </div>
   );
 }

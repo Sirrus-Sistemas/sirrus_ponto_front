@@ -76,6 +76,8 @@ function buildDays(payload: EspelhoPayload): DayRow[] {
       status: mapStatus(dia.status, dia.incompleto),
       punches,
       punchIds: sorted.map((m) => m.id),
+      punchMotivos: sorted.map((m) => m.motivo_edicao ?? null),
+      ocorrenciaId: dia.ocorrencia?.id,
       holidayName: dia.feriado?.descricao,
     };
   });

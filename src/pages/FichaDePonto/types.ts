@@ -23,6 +23,8 @@ export interface DayRow {
   status: DayStatus;
   punches: (Punch | null)[]; // always length 8: E1 S1 E2 S2 E3 S3 E4 S4
   punchIds: number[];        // IDs das marcações existentes (ordem asc)
+  punchMotivos: (string | null)[]; // motivo_edicao de cada marcação (mesma ordem que punchIds)
+  ocorrenciaId?: number;
   note?: string;
   isToday?: boolean;
   holidayName?: string;

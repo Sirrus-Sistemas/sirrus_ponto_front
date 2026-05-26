@@ -120,9 +120,10 @@ export async function fetchEspelho(
   ano: number,
   mes: number,
   funcionarioId?: number,
+  signal?: AbortSignal,
 ): Promise<EspelhoPayload> {
   const qs = new URLSearchParams({ ano: String(ano), mes: String(mes) })
   if (funcionarioId != null) qs.set('funcionario_id', String(funcionarioId))
-  const res = await apiRequest<EspelhoResponse>(`/api/marcacoes/espelho?${qs.toString()}`)
+  const res = await apiRequest<EspelhoResponse>(`/api/marcacoes/espelho?${qs.toString()}`, { signal })
   return res.data
 }

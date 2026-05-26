@@ -109,20 +109,21 @@ export function DashboardGestorView({ me, switcherNode }: { me: FuncionarioMe; s
   const { ano, mes } = anoMesEspelhoPtBr()
 
   useEffect(() => {
-    let cancelled = false
+    const controller = new AbortController()
+    const { signal } = controller
 
     async function load() {
       setLoadingTeam(true)
       setTeamError(null)
       try {
         const [{ data: funcionarios }, esp, ocorrs, lots] = await Promise.all([
-          fetchFuncionarios({ ativo: 1, limit: 1000 }),
-          fetchEspelho(ano, mes),
-          fetchOcorrencias({ ano, mes }),
-          fetchLotacoes(),
+          fetchFuncionarios({ ativo: 1, limit: 1000 }, signal),
+          fetchEspelho(ano, mes, undefined, signal),
+          fetchOcorrencias({ ano, mes }, signal),
+          fetchLotacoes(signal),
         ])
-        if (!cancelled) setLotacoes(lots)
-        if (cancelled) return
+        if (signal.aborted) return
+        setLotacoes(lots)
         setMyEspelho(esp)
         setOcorrencias(ocorrs)
 
@@ -137,13 +138,14 @@ export function DashboardGestorView({ me, switcherNode }: { me: FuncionarioMe; s
         // carrega espelhos dos funcionários em série (lotes de 5, 300ms entre lotes)
         const BATCH = 5
         for (let i = 0; i < funcionarios.length; i += BATCH) {
-          if (cancelled) return
+          if (signal.aborted) return
           if (i > 0) await new Promise((r) => setTimeout(r, 300))
+          if (signal.aborted) return
           const batch = funcionarios.slice(i, i + BATCH)
           const results = await Promise.allSettled(
-            batch.map((f) => fetchEspelho(ano, mes, f.id))
+            batch.map((f) => fetchEspelho(ano, mes, f.id, signal))
           )
-          if (cancelled) return
+          if (signal.aborted) return
           setTeam((prev) => {
             const next = [...prev]
             batch.forEach((f, j) => {
@@ -160,14 +162,14 @@ export function DashboardGestorView({ me, switcherNode }: { me: FuncionarioMe; s
           })
         }
       } catch (e) {
-        if (!cancelled)
-          setTeamError(e instanceof ApiError ? e.message : 'Não foi possível carregar a equipe.')
+        if (signal.aborted) return
+        setTeamError(e instanceof ApiError ? e.message : 'Não foi possível carregar a equipe.')
         setLoadingTeam(false)
       }
     }
 
     void load()
-    return () => { cancelled = true }
+    return () => { controller.abort() }
   }, [ano, mes])
 
   // ── Filtro por lotação ──────────────────────────────────────────────────────

@@ -125,7 +125,7 @@ export async function fetchFuncionarios(params?: {
   ativo?: number
   lotacao_id?: number
   filial_id?: number
-}): Promise<{ data: FuncionarioListItem[]; pagination: FuncionariosPagination }> {
+}, signal?: AbortSignal): Promise<{ data: FuncionarioListItem[]; pagination: FuncionariosPagination }> {
   const qs = new URLSearchParams()
   if (params?.search)                qs.set('search', params.search)
   if (params?.page)                  qs.set('page', String(params.page))
@@ -135,7 +135,7 @@ export async function fetchFuncionarios(params?: {
   if (params?.filial_id != null)     qs.set('filial_id', String(params.filial_id))
   const query = qs.toString() ? `?${qs}` : ''
   return apiRequest<{ data: FuncionarioListItem[]; pagination: FuncionariosPagination }>(
-    `/api/funcionarios${query}`
+    `/api/funcionarios${query}`, { signal }
   )
 }
 

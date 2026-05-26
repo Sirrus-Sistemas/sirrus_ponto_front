@@ -36,8 +36,8 @@ export type Lotacao = {
 
 type ListaResponse<T> = { success?: boolean; data: T }
 
-export async function fetchLotacoes(): Promise<Lotacao[]> {
-  const res = await apiRequest<ListaResponse<Lotacao[]>>('/api/lotacoes')
+export async function fetchLotacoes(signal?: AbortSignal): Promise<Lotacao[]> {
+  const res = await apiRequest<ListaResponse<Lotacao[]>>('/api/lotacoes', { signal })
   return Array.isArray(res.data) ? res.data : []
 }
 
