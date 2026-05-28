@@ -12,7 +12,8 @@ export type DayStatus =
   | 'abonado'
   | 'justificado'
   | 'pendente'
-  | 'folga';
+  | 'folga'
+  | 'feriado';
 
 export interface DayRow {
   day: number;

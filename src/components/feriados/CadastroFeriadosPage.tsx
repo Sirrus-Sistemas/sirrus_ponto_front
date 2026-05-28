@@ -44,7 +44,7 @@ function badgeClass(tipo: TipoFeriado): string {
     nacional:    styles.badgeNacional,
     estadual:    styles.badgeEstadual,
     municipal:   styles.badgeMunicipal,
-    empresarial: styles.badgeEmpresarial,
+    empresa: styles.badgeEmpresarial,
   }
   return `${styles.badge} ${map[tipo]}`
 }

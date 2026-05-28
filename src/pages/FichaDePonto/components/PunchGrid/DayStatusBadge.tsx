@@ -10,6 +10,7 @@ const CONFIG: Record<DayStatus, { label: string }> = {
   justificado: { label: 'Justificado' },
   pendente: { label: 'Pendente' },
   folga: { label: 'Folga' },
+  feriado: { label: 'Feriado' },
 };
 
 interface DayStatusBadgeProps {
