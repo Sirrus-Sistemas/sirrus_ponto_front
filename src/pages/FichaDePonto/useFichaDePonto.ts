@@ -6,18 +6,13 @@ import { ApiError } from '../../lib/api';
 import { parseDataHoraUtc } from '../../lib/parseDataHora';
 import type { DayRow, DayStatus, Employee, FichaDePontoData, MonthlySummary, Punch, PunchSource } from './types';
 
-function mapStatus(s: StatusDia, incompleto: boolean): DayStatus {
-  if (incompleto) return 'inconsistente';
+function mapStatus(s: StatusDia, modifiers: string[]): DayStatus {
   switch (s) {
-    case 'presente': return 'ok';
+    case 'presente':
+      return modifiers.includes('incompleto') ? 'inconsistente' : 'ok';
     case 'falta': return 'falta';
-    case 'falta_justificada': return 'justificado';
     case 'folga': return 'folga';
     case 'sem_escala': return 'folga';
-    case 'feriado': return 'feriado';
-    case 'atestado':
-    case 'abono':
-    case 'licenca': return 'abonado';
     case 'ocorrencia': return 'abonado';
     case 'futuro': return 'ok';
     default: return 'ok';
@@ -44,7 +39,7 @@ function buildEmployee(payload: EspelhoPayload): Employee {
     matricula: m.funcionario_matricula ?? '—',
     nsr: m.funcionario_pis ?? '—',
     initials: initials(m.funcionario_nome ?? '?'),
-    lotacao: m.turno_nome ?? '—',
+    lotacao: '—',
     company: m.empresa_razao_social ?? '—',
     role: m.funcionario_cargo ?? '—',
     workdayDescription: m.minutos_previsto_dia_referencia
@@ -73,7 +68,8 @@ function buildDays(payload: EspelhoPayload): DayRow[] {
       month: parseInt(dia.data.slice(5, 7), 10),
       year: parseInt(dia.data.slice(0, 4), 10),
       dow: dia.dia_semana,
-      status: mapStatus(dia.status, dia.incompleto),
+      status: mapStatus(dia.status, dia.modifiers ?? []),
+      modifiers: dia.modifiers ?? [],
       punches,
       punchIds: sorted.map((m) => m.id),
       punchMotivos: sorted.map((m) => m.motivo_edicao ?? null),

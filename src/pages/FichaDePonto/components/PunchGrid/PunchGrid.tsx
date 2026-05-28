@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { PanelRightOpen } from 'lucide-react';
 import type { DayRow } from '../../types';
 import { PunchRow } from './PunchRow';
@@ -16,6 +16,7 @@ interface PunchGridProps {
   funcionarioNome: string;
   turnoId: number | null;
   onReload: () => void;
+  reloading?: boolean;
 }
 
 const COL_HEADERS = ['E1', 'S1', 'E2', 'S2', 'E3', 'S3', 'E4', 'S4'];
@@ -37,10 +38,18 @@ interface OcorrenciaModalState {
   dataFim: string;
 }
 
-export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, onReload }: PunchGridProps) {
+export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, onReload, reloading }: PunchGridProps) {
   const [menuCtx, setMenuCtx] = useState<DayActionMenuContext | null>(null);
   const [ocorrenciaModal, setOcorrenciaModal] = useState<OcorrenciaModalState | null>(null);
   const [actionMsg, setActionMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
+  const gridWrapRef = useRef<HTMLDivElement>(null);
+
+  // Sempre que os dias mudarem (novo funcionário carregado), volta para o topo
+  useEffect(() => {
+    if (gridWrapRef.current) {
+      gridWrapRef.current.scrollTop = 0;
+    }
+  }, [funcionarioId]);
 
   const handleCellOpen = useCallback((dayLabel: string, slotLabel: string, row: DayRow, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -113,11 +122,11 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, onRel
 
       // Horários do turno são locais (UTC-3); converter para UTC antes de enviar,
       // pois o backend salva data_hora como UTC e aplica CONVERT_TZ na leitura.
+      // Usamos o sufixo "-03:00" para que o construtor Date interprete corretamente
+      // o horário de Brasília sem depender do fuso configurado no navegador.
       const toUtc = (localTime: string): string => {
         const full = localTime.length === 5 ? localTime + ':00' : localTime;
-        const [h, m, s] = full.split(':').map(Number);
-        const d = new Date(`${datePrefix}T${pad(h)}:${pad(m)}:${pad(s || 0)}`);
-        d.setHours(d.getHours() + 3);
+        const d = new Date(`${datePrefix}T${full}-03:00`);
         return d.toISOString().replace('T', ' ').slice(0, 19);
       };
 
@@ -170,6 +179,15 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, onRel
 
   return (
     <div className={styles.outer}>
+      {reloading && (
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0,
+          height: 3, background: 'linear-gradient(90deg,#3B82F6 0%,#60A5FA 50%,#3B82F6 100%)',
+          backgroundSize: '200% 100%',
+          animation: 'sp-loading-bar 1.2s linear infinite',
+          zIndex: 10,
+        }} />
+      )}
       {actionMsg && (
         <div style={{
           position: 'fixed', top: 16, right: 16, zIndex: 3000,
@@ -184,7 +202,7 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, onRel
         </div>
       )}
 
-      <div className={styles.gridWrap}>
+      <div ref={gridWrapRef} className={styles.gridWrap}>
         <div className={styles.legendBar}>
           {LEGEND.map((item) => (
             <span key={item.label} className={styles.legendItem}>

@@ -27,6 +27,23 @@ export function FichaDePonto() {
 
   const canSelectFunc = me?.role === 'admin' || me?.role === 'gestor';
 
+  // Resolve o nome da lotação a partir da lista de funcionários (que já traz lotacao_nome)
+  const lotacaoNome = useMemo(() => {
+    if (selectedFuncId) {
+      return funcionarios.find((f) => f.id === selectedFuncId)?.lotacao_nome ?? null;
+    }
+    if (me && funcionarios.length > 0) {
+      return funcionarios.find((f) => f.id === me.id)?.lotacao_nome ?? null;
+    }
+    return null;
+  }, [selectedFuncId, funcionarios, me]);
+
+  // Injeta a lotação correta no employee sem refazer o fetch
+  const dataComLotacao = useMemo(() => {
+    if (!data) return null;
+    return { ...data, employee: { ...data.employee, lotacao: lotacaoNome ?? '—' } };
+  }, [data, lotacaoNome]);
+
   useEffect(() => {
     if (canSelectFunc) {
       fetchLotacoes().then(setLotacoes).catch(() => {});
@@ -37,6 +54,26 @@ export function FichaDePonto() {
     if (!selectedLotacaoId) return funcionarios;
     return funcionarios.filter((f) => f.lotacao_id === selectedLotacaoId);
   }, [funcionarios, selectedLotacaoId]);
+
+  function handlePrint() {
+    const funcId = selectedFuncId ?? me?.id;
+    if (!funcId || !dataComLotacao) return;
+
+    const openPrint = (mes: number, ano: number) => {
+      const qs = new URLSearchParams({
+        mes: String(mes),
+        ano: String(ano),
+        escopo: 'funcionario',
+        func_id: String(funcId),
+      });
+      window.open(`/relatorios/espelho/print?${qs.toString()}`, '_blank');
+    };
+
+    openPrint(startMonth, startYear);
+    if (startMonth !== endMonth || startYear !== endYear) {
+      openPrint(endMonth, endYear);
+    }
+  }
 
   function handleStartMonthChange(month: number, year: number) {
     setStartMonth(month);
@@ -65,7 +102,7 @@ export function FichaDePonto() {
   return (
     <div className={styles.page}>
       <FilterBar
-        employee={data?.employee ?? null}
+        employee={dataComLotacao?.employee ?? null}
         startMonth={startMonth}
         startYear={startYear}
         endMonth={endMonth}
@@ -79,27 +116,49 @@ export function FichaDePonto() {
         selectedLotacaoId={selectedLotacaoId}
         onLotacaoChange={(id) => { setSelectedLotacaoId(id); setSelectedFuncId(undefined); }}
         onLoad={reload}
+        onPrint={dataComLotacao ? handlePrint : undefined}
       />
 
-      {data && (
-        <EmployeeStrip employee={data.employee} folhaStatus={data.folhaStatus} />
+      {dataComLotacao && (
+        <EmployeeStrip
+          employee={dataComLotacao.employee}
+          folhaStatus={dataComLotacao.folhaStatus}
+          onPrev={canSelectFunc && funcionariosFiltrados.length > 1 ? () => {
+            const idx = funcionariosFiltrados.findIndex((f) => f.id === (selectedFuncId ?? me?.id));
+            const prev = funcionariosFiltrados[idx - 1];
+            if (prev) setSelectedFuncId(prev.id);
+          } : undefined}
+          onNext={canSelectFunc && funcionariosFiltrados.length > 1 ? () => {
+            const idx = funcionariosFiltrados.findIndex((f) => f.id === (selectedFuncId ?? me?.id));
+            const next = funcionariosFiltrados[idx + 1];
+            if (next) setSelectedFuncId(next.id);
+          } : undefined}
+          currentIndex={canSelectFunc && funcionariosFiltrados.length > 1
+            ? funcionariosFiltrados.findIndex((f) => f.id === (selectedFuncId ?? me?.id))
+            : undefined}
+          totalCount={canSelectFunc && funcionariosFiltrados.length > 1 ? funcionariosFiltrados.length : undefined}
+        />
       )}
 
       <div className={styles.gridArea}>
-        {loading && <div className={styles.stateMsg}>Carregando…</div>}
-        {error   && <div className={styles.errorMsg}>{error}</div>}
-        {!loading && !error && data && (
+        {/* Loading inicial (sem dados ainda) */}
+        {loading && !dataComLotacao && <div className={styles.stateMsg}>Carregando…</div>}
+        {error && !dataComLotacao   && <div className={styles.errorMsg}>{error}</div>}
+
+        {/* PunchGrid permanece montado durante reloads para não perder o scroll */}
+        {dataComLotacao && (
           <PunchGrid
-            days={data.days}
-            funcionarioId={data.funcionarioId}
-            funcionarioNome={data.employee.fullName}
-            turnoId={data.turnoId}
+            days={dataComLotacao.days}
+            funcionarioId={dataComLotacao.funcionarioId}
+            funcionarioNome={dataComLotacao.employee.fullName}
+            turnoId={dataComLotacao.turnoId}
             onReload={reload}
+            reloading={loading}
           />
         )}
       </div>
 
-      {data && <ApuracaoFooter summary={data.summary} />}
+      {dataComLotacao && <ApuracaoFooter summary={dataComLotacao.summary} />}
     </div>
   );
 }

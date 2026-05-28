@@ -83,6 +83,7 @@ export function AppShell() {
   const podeGerirFiliais = me?.role === 'admin'
   const podeGerirTiposOcorrencia = me?.role === 'admin'
   const podeGerirMunicipios = me?.role === 'admin'
+  const podeGerirFeriados = me?.role === 'admin'
   const podeGerirUsuarios = me?.role === 'admin'
   const outletCtx: AppShellOutletContext = { me, meReady }
 
@@ -247,6 +248,16 @@ export function AppShell() {
               >
                 <span className={styles.navIcon} aria-hidden><IconMapa /></span>
                 Municípios
+              </NavLink>
+            ) : null}
+            {podeGerirFeriados ? (
+              <NavLink
+                to="/feriados"
+                className={({ isActive }) => navClass(isActive)}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <span className={styles.navIcon} aria-hidden><IconFeriado /></span>
+                Feriados
               </NavLink>
             ) : null}
             {podeGerirUsuarios ? (
@@ -521,6 +532,18 @@ function IconUsuario() {
       <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" strokeLinecap="round" />
       <path d="M16 3.5a4 4 0 010 9" strokeLinecap="round" />
       <path d="M20 14c1.5.8 2.5 2.3 2.5 4" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconFeriado() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" strokeLinecap="round" />
+      <circle cx="8" cy="16" r="1" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="16" r="1" fill="currentColor" stroke="none" />
+      <circle cx="16" cy="16" r="1" fill="currentColor" stroke="none" />
     </svg>
   )
 }

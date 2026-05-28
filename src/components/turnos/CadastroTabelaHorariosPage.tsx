@@ -289,12 +289,21 @@ export function CadastroTabelaHorariosPage() {
       <div className={styles.card}>
         <h2 className={styles.sectionTitle}>{editingId != null ? 'Editar horário' : 'Novo horário'}</h2>
         {editingId != null ? (
-          <p className={styles.hint} style={{ marginTop: '-0.5rem', marginBottom: '1rem' }}>
-            Alterando registro #{editingId}.{' '}
-            <button type="button" className={styles.btnLink} onClick={cancelarEdicao}>
-              Cancelar edição
-            </button>
-          </p>
+          <>
+            <p className={styles.hint} style={{ marginTop: '-0.5rem', marginBottom: '0.5rem' }}>
+              Alterando registro #{editingId}.{' '}
+              <button type="button" className={styles.btnLink} onClick={cancelarEdicao}>
+                Cancelar edição
+              </button>
+            </p>
+            <div role="alert" style={{
+              background: '#fef3c7', border: '1px solid #f59e0b', borderRadius: 8,
+              padding: '0.6rem 0.9rem', marginBottom: '1rem', fontSize: '0.87rem', color: '#92400e',
+            }}>
+              <strong>Atenção:</strong> Alterações no turno afetam o cálculo do espelho de todos os funcionários vinculados.
+              Mudanças no meio do mês podem gerar inconsistências retroativas — prefira aplicar a partir do 1º do mês seguinte.
+            </div>
+          </>
         ) : null}
 
         {error ? (

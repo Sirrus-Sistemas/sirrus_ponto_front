@@ -6,15 +6,16 @@ export type StatusDia =
   | 'presente'
   | 'falta'
   | 'folga'
-  | 'feriado'
   | 'futuro'
   | 'sem_escala'
   | 'ocorrencia'
-  | 'atestado'
-  | 'abono'
-  | 'falta_justificada'
-  | 'licenca'
-  | 'outros'
+
+export type ModifierDia =
+  | 'feriado'
+  | 'incompleto'
+  | 'escala_ausente'
+  | 'sem_regime'
+  | 'trabalho_em_folga'
 
 export type MarcacaoEspelho = {
   id: number
@@ -45,6 +46,8 @@ export type DiaEspelho = {
   dia_semana: number
   dia_semana_label: string
   status: StatusDia
+  modifiers: ModifierDia[]
+  dia_trabalho: boolean
   feriado: FeriadoDia | null
   ocorrencia: OcorrenciaDia | null
   marcacoes: MarcacaoEspelho[]

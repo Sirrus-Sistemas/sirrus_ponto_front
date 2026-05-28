@@ -55,12 +55,13 @@ function statusPresenca(dia: DiaEspelho | undefined, hojeStr: string): StatusPre
   if (!dia || dia.data !== hojeStr) return { label: 'Sem batida', variant: 'aguardando' }
   if (dia.status === 'falta') return { label: 'Falta', variant: 'falta' }
   if (dia.status === 'folga') return { label: 'Folga', variant: 'folga' }
-  if (dia.status === 'feriado') return { label: 'Feriado', variant: 'folga' }
+  if (dia.modifiers?.includes('feriado')) return { label: 'Feriado', variant: 'folga' }
   const n = dia.marcacoes.length
   if (n === 0) return { label: 'Sem batida', variant: 'aguardando' }
-  if (dia.incompleto && n % 2 === 1) return { label: 'Trabalhando', variant: 'trabalhando' }
-  if (dia.incompleto && n % 2 === 0) return { label: 'Intervalo', variant: 'intervalo' }
-  if (!dia.incompleto) return { label: 'Encerrado', variant: 'encerrado' }
+  const incompleto = dia.modifiers?.includes('incompleto') ?? false
+  if (incompleto && n % 2 === 1) return { label: 'Trabalhando', variant: 'trabalhando' }
+  if (incompleto && n % 2 === 0) return { label: 'Intervalo', variant: 'intervalo' }
+  if (!incompleto) return { label: 'Encerrado', variant: 'encerrado' }
   return { label: 'Sem batida', variant: 'aguardando' }
 }
 
@@ -241,10 +242,14 @@ export function DashboardGestorView({ me, switcherNode }: { me: FuncionarioMe; s
 
   // ── Ocorrências recentes (fila de aprovação) ────────────────────────────────
   const filaAprovacao = useMemo(() => {
+    const idsLotacao = lotacaoFiltro !== null
+      ? new Set(teamFiltered.map((m) => m.funcionario.id))
+      : null
     return [...ocorrencias]
+      .filter((o) => idsLotacao === null || idsLotacao.has(o.funcionario_id))
       .sort((a, b) => b.data_inicio.localeCompare(a.data_inicio))
       .slice(0, 6)
-  }, [ocorrencias])
+  }, [ocorrencias, lotacaoFiltro, teamFiltered])
 
   const primeiroPrimeiroNome = me.nome.split(' ')[0]
 

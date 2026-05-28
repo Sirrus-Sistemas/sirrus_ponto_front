@@ -1,4 +1,4 @@
-import { ChevronDown, RefreshCw } from 'lucide-react';
+import { Printer, RefreshCw } from 'lucide-react';
 import { Avatar } from '../ui/Avatar';
 import styles from './FilterBar.module.css';
 import type { Employee } from '../../types';
@@ -28,6 +28,7 @@ interface FilterBarProps {
   selectedLotacaoId: number | undefined;
   onLotacaoChange: (id: number | undefined) => void;
   onLoad: () => void;
+  onPrint?: () => void;
 }
 
 export function FilterBar({
@@ -38,15 +39,11 @@ export function FilterBar({
   funcionarios, selectedFuncId, onFuncChange,
   lotacoes, selectedLotacaoId, onLotacaoChange,
   onLoad,
+  onPrint,
 }: FilterBarProps) {
   return (
     <div className={styles.bar}>
       <div className={styles.left}>
-        <button type="button" className={styles.filterBtn}>
-          <ChevronDown size={14} />
-          Filtros
-        </button>
-
         {lotacoes.length > 0 && (
           <select
             className={styles.select}
@@ -127,6 +124,13 @@ export function FilterBar({
           <RefreshCw size={14} />
           Carregar
         </button>
+
+        {onPrint && (
+          <button type="button" className={styles.printBtn} onClick={onPrint}>
+            <Printer size={14} />
+            Imprimir
+          </button>
+        )}
       </div>
 
     </div>

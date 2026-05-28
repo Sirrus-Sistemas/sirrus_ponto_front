@@ -52,36 +52,24 @@ const STATUS_LABEL: Record<StatusDia, string> = {
   presente: 'Presente',
   falta: 'Falta',
   folga: 'Folga',
-  feriado: 'Feriado',
   futuro: '—',
   sem_escala: 'S/ escala',
   ocorrencia: 'Ocorrência',
-  atestado: 'Atestado',
-  abono: 'Abono',
-  falta_justificada: 'F. Justif.',
-  licenca: 'Licença',
-  outros: 'Ocorrência',
 }
 
 const STATUS_CLASS: Partial<Record<StatusDia, string>> = {
   presente: styles.statusPresente,
   falta: styles.statusFalta,
   folga: styles.statusFolga,
-  feriado: styles.statusFeriado,
   sem_escala: styles.statusSemEscala,
   ocorrencia: styles.statusOcorrencia,
-  atestado: styles.statusOcorrencia,
-  abono: styles.statusOcorrencia,
-  falta_justificada: styles.statusOcorrencia,
-  licenca: styles.statusOcorrencia,
-  outros: styles.statusOcorrencia,
 }
 
 function obsForRow(dia: DiaEspelho, batidasTurno: number | null | undefined): string {
   if (dia.ocorrencia?.tipo_ocorrencia_descricao) return dia.ocorrencia.tipo_ocorrencia_descricao
   if (dia.ocorrencia?.descricao) return dia.ocorrencia.descricao
   if (dia.feriado) return dia.feriado.descricao
-  if (dia.incompleto && dia.marcacoes.length) {
+  if (dia.modifiers?.includes('incompleto') && dia.marcacoes.length) {
     const n = dia.marcacoes.length
     if (n % 2 === 1) return 'Batidas ímpares (intervalo aberto)'
     if (dia.minutos_previstos != null && batidasTurno != null) {
@@ -94,7 +82,7 @@ function obsForRow(dia: DiaEspelho, batidasTurno: number | null | undefined): st
 }
 
 function previstoCell(dia: DiaEspelho): string {
-  if (dia.feriado) return 'Feriado'
+  if (dia.modifiers?.includes('feriado')) return 'Feriado'
   if (dia.minutos_previstos != null) return formatMinutos(dia.minutos_previstos)
   return '—'
 }
@@ -180,12 +168,10 @@ export function EspelhoPontoPage() {
 
   const rowClass = (dia: DiaEspelho) => {
     if (dia.status === 'falta') return styles.rowFalta
-    if (dia.status === 'feriado') return styles.rowFeriado
+    if (dia.modifiers?.includes('feriado')) return styles.rowFeriado
     if (dia.status === 'folga') return styles.rowFolga
-    if (['atestado', 'abono', 'falta_justificada', 'licenca', 'outros'].includes(dia.status)) {
-      return styles.rowOcorrencia
-    }
-    if (dia.incompleto && dia.marcacoes.length) return styles.rowWarn
+    if (dia.status === 'ocorrencia') return styles.rowOcorrencia
+    if (dia.modifiers?.includes('incompleto') && dia.marcacoes.length) return styles.rowWarn
     return undefined
   }
 
@@ -364,7 +350,7 @@ export function EspelhoPontoPage() {
                           STATUS_CLASS[dia.status] ?? '',
                         ].join(' ')}
                       >
-                        {STATUS_LABEL[dia.status] ?? dia.status}
+                        {dia.modifiers?.includes('feriado') ? 'Feriado' : (STATUS_LABEL[dia.status] ?? dia.status)}
                       </span>
                     </td>
                     <td className={styles.colBatidas}>
@@ -416,7 +402,7 @@ export function EspelhoPontoPage() {
                         STATUS_CLASS[dia.status] ?? '',
                       ].join(' ')}
                     >
-                      {STATUS_LABEL[dia.status] ?? dia.status}
+                      {dia.modifiers?.includes('feriado') ? 'Feriado' : (STATUS_LABEL[dia.status] ?? dia.status)}
                     </span>
                   </span>
                   <span className={styles.cardDaySub}>

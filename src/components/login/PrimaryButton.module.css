@@ -6,10 +6,10 @@
   font-size: 1rem;
   font-weight: 700;
   color: #fff;
-  background: var(--login-primary, #14918b);
+  background: var(--login-primary, #064E3B);
   padding: 14px 24px;
   border-radius: 9999px;
-  box-shadow: 0 8px 20px rgba(20, 145, 139, 0.35);
+  box-shadow: 0 8px 20px rgba(6, 78, 59, 0.30);
   transition:
     background 0.15s ease,
     box-shadow 0.15s ease,
@@ -17,8 +17,8 @@
 }
 
 .button:hover {
-  background: #11837e;
-  box-shadow: 0 10px 24px rgba(20, 145, 139, 0.42);
+  background: #047857;
+  box-shadow: 0 10px 24px rgba(6, 78, 59, 0.38);
 }
 
 .button:active {

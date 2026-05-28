@@ -135,6 +135,8 @@
 
   .trFeriado   td { background: #e8f0ff; }
   .trFolga     td { background: #f5f5f5; }
+
+  .tdDiaLabel { text-align: left !important; }
   .trFalta     td { background: #fff0f0; }
   .trOcorrencia td { background: #fffbe6; font-style: italic; }
 

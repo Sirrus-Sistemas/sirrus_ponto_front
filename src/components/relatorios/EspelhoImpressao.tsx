@@ -33,7 +33,7 @@ function fmtCpf(cpf: string | null): string {
 
 // ─── Per-day row logic ────────────────────────────────────────────────────────
 
-const NUM_SLOTS = 4 // Ent1 Sai1 Ent2 Sai2
+const NUM_SLOTS = 8 // Ent1 Sai1 Ent2 Sai2 Ent3 Sai3 Ent4 Sai4
 
 function buildSlots(marcacoes: MarcacaoEspelho[]) {
   // REP-only punches in time order
@@ -156,10 +156,14 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
         <colgroup>
           <col className={styles.cData} />
           <col className={styles.cDia} />
-          {/* REP × 4 */}
+          {/* REP × 8 */}
           <col className={styles.cTime} /><col className={styles.cTime} />
           <col className={styles.cTime} /><col className={styles.cTime} />
-          {/* Jornada × 4 */}
+          <col className={styles.cTime} /><col className={styles.cTime} />
+          <col className={styles.cTime} /><col className={styles.cTime} />
+          {/* Jornada × 8 */}
+          <col className={styles.cTime} /><col className={styles.cTime} />
+          <col className={styles.cTime} /><col className={styles.cTime} />
           <col className={styles.cTime} /><col className={styles.cTime} />
           <col className={styles.cTime} /><col className={styles.cTime} />
           {/* CH / Horário / Ocor */}
@@ -175,53 +179,39 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
           <col className={styles.cTotal} />
           <col className={styles.cAdn} />
           <col className={styles.cNoc} />
-          <col className={styles.cRef} />
-          <col className={styles.cTotal} />
           <col className={styles.cTotal} />
         </colgroup>
         <thead>
           <tr className={styles.thSection}>
             <th colSpan={2}></th>
-            <th colSpan={4} className={styles.thSectionLabel}>MARCAÇÕES REP</th>
-            <th colSpan={7} className={styles.thSectionLabel}>Jornada Realizada</th>
+            <th colSpan={8} className={styles.thSectionLabel}>MARCAÇÕES REP</th>
+            <th colSpan={11} className={styles.thSectionLabel}>Jornada Realizada</th>
             <th colSpan={1} className={styles.thSectionLabel}>Tratamento Efetuado Sobre os Dados Originais</th>
-            <th colSpan={9}></th>
+            <th colSpan={7}></th>
           </tr>
           <tr className={styles.thCols}>
             <th>Data</th>
             <th>Dia</th>
-            <th>Ent 1</th><th>Sai 1</th><th>Ent 2</th><th>Sai 2</th>
-            <th>Ent. 1</th><th>Sai. 1</th><th>Ent. 2</th><th>Sai. 2</th>
+            <th>Ent 1</th><th>Sai 1</th><th>Ent 2</th><th>Sai 2</th><th>Ent 3</th><th>Sai 3</th><th>Ent 4</th><th>Sai 4</th>
+            <th>Ent. 1</th><th>Sai. 1</th><th>Ent. 2</th><th>Sai. 2</th><th>Ent. 3</th><th>Sai. 3</th><th>Ent. 4</th><th>Sai. 4</th>
             <th>CH</th><th>Horário</th><th>Ocor.</th>
             <th>Motivo</th>
             <th>Total</th><th>Extras</th><th>100%</th><th>Débito</th>
-            <th>ADN</th><th>N.OC.</th><th>Ref.</th><th>Horas</th><th>Total</th>
+            <th>ADN</th><th>N.OC.</th><th>Total</th>
           </tr>
         </thead>
         <tbody>
           {dias.map((dia) => {
-            const isOcorrencia =
-              dia.status === 'ocorrencia' ||
-              dia.status === 'atestado' ||
-              dia.status === 'abono' ||
-              dia.status === 'falta_justificada' ||
-              dia.status === 'licenca' ||
-              dia.status === 'outros'
-
-            const ocorrenciaLabel =
-              dia.ocorrencia?.tipo_ocorrencia_descricao ||
-              dia.ocorrencia?.descricao ||
-              'OCORRÊNCIA'
+            const isOcorrencia = dia.status === 'ocorrencia'
+            const isFeriado = dia.modifiers?.includes('feriado') ?? false
 
             const diaLabel =
-              dia.status === 'folga'
-                ? `${dia.dia_semana_label.toUpperCase()} FOLGA`
-                : dia.status === 'feriado'
+              isFeriado
                 ? 'FERIADO'
+                : dia.status === 'folga'
+                ? `${dia.dia_semana_label.toUpperCase()} FOLGA`
                 : dia.status === 'falta'
                 ? `${dia.dia_semana_label.toUpperCase()} FALTA`
-                : isOcorrencia
-                ? `${dia.dia_semana_label.toUpperCase()} — ${ocorrenciaLabel.toUpperCase()}`
                 : dia.dia_semana_label.toUpperCase()
 
             const extras50dia = dia.extras_50pct_minutos ?? 0
@@ -234,7 +224,7 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
 
             const trClass = [
               styles.trData,
-              dia.status === 'feriado' ? styles.trFeriado : '',
+              isFeriado ? styles.trFeriado : '',
               dia.status === 'falta' ? styles.trFalta : '',
               dia.status === 'folga' ? styles.trFolga : '',
               isOcorrencia ? styles.trOcorrencia : '',
@@ -248,7 +238,7 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
               return (
                 <tr key={dia.data} className={trClass}>
                   <td>{formatDataPrint(dia.data)}</td>
-                  <td colSpan={22}>{diaLabel}</td>
+                  <td colSpan={28} className={styles.tdDiaLabel}>{diaLabel}</td>
                 </tr>
               )
             }
@@ -261,12 +251,19 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
                   ? dia.minutos_previstos
                   : null
 
-            const { repSlots, allSlots, motivoStr } = buildSlots(dia.marcacoes)
+            const ocorrenciaLabel =
+              dia.ocorrencia?.tipo_ocorrencia_descricao ||
+              dia.ocorrencia?.descricao ||
+              'OCORRÊNCIA'
+            const { repSlots, allSlots, motivoStr: motivoMarcacao } = buildSlots(dia.marcacoes)
+            const motivoStr = isOcorrencia
+              ? [ocorrenciaLabel, motivoMarcacao].filter(Boolean).join(' — ')
+              : motivoMarcacao
 
             return (
               <tr key={dia.data} className={trClass}>
                 <td>{formatDataPrint(dia.data)}</td>
-                <td>{diaLabel}</td>
+                <td className={styles.tdDiaLabel}>{diaLabel}</td>
                 {/* REP */}
                 {repSlots.map((p, i) => (
                   <td key={`rep${i}`} className={styles.tdTime}>
@@ -294,10 +291,6 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
                 <td className={styles.tdTime}>{debito ? minToHHMM(debito) : '00:00'}</td>
                 <td className={styles.tdTime}>{noturno ? minToHHMM(noturno) : '00:00'}</td>
                 <td>0</td>
-                <td>000000</td>
-                <td className={styles.tdTime}>
-                  {totalExibicao != null ? minToHHMM(totalExibicao) : '00:00'}
-                </td>
                 <td className={styles.tdTime}>
                   {totalExibicao != null ? minToHHMM(totalExibicao) : '00:00'}
                 </td>

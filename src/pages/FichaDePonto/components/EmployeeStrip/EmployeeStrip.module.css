@@ -131,3 +131,38 @@
   border: 1px solid #CBD5E1;
 }
 .status_fechada .statusDot { background: #94A3B8; }
+
+/* Nav arrows */
+.navBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid #E2E8F0;
+  background: #fff;
+  color: #334155;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  user-select: none;
+}
+.navBtn:hover:not(:disabled) {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+.navBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.navCounter {
+  font-family: var(--sp-font-mono);
+  font-size: 10px;
+  color: #94A3B8;
+  font-variant-numeric: tabular-nums;
+}

@@ -5,6 +5,8 @@ export { horaParaInput }
 
 export type DomingoTipo = 'nao_calcular' | '50pct' | '100pct_extra' | '100pct_total'
 export type FeriadoTipo = 'nao_calcular' | '50pct' | '100pct_extra' | '100pct_total'
+export type DomingoNaoPrevistoTipo = 'nao_calcular' | '50pct' | '100pct_total' | 'igual_feriado'
+export type DiaNaoPrevistoTipo = 'nao_calcular' | '50pct' | '100pct_total' | 'igual_domingo'
 export type TipoExtra = '50_clt' | '60' | '80' | '100'
 
 export type Lotacao = {
@@ -15,6 +17,8 @@ export type Lotacao = {
   calcular_extras_escalonado: number
   domingo_tipo: DomingoTipo
   feriado_tipo: FeriadoTipo
+  domingo_nao_previsto_tipo: DomingoNaoPrevistoTipo
+  dia_nao_previsto_tipo: DiaNaoPrevistoTipo
   somar_esq_horas_trabalhadas: number
   converter_falta_banco_horas: number
   lancar_100pct_banco_horas: number

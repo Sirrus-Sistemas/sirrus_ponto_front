@@ -35,41 +35,23 @@ const STATUS_LABEL: Record<StatusDia, string> = {
   presente: 'Presente',
   falta: 'Falta',
   folga: 'Folga',
-  feriado: 'Feriado',
   futuro: '—',
   sem_escala: 'S/ escala',
   ocorrencia: 'Ocorrência',
-  atestado: 'Atestado',
-  abono: 'Abono',
-  falta_justificada: 'F. Justif.',
-  licenca: 'Licença',
-  outros: 'Ocorrência',
 }
 
 const STATUS_ROW: Partial<Record<StatusDia, string>> = {
   falta: styles.rowFalta,
-  feriado: styles.rowFeriado,
   folga: styles.rowFolga,
   ocorrencia: styles.rowOcorrencia,
-  atestado: styles.rowOcorrencia,
-  abono: styles.rowOcorrencia,
-  falta_justificada: styles.rowOcorrencia,
-  licenca: styles.rowOcorrencia,
-  outros: styles.rowOcorrencia,
 }
 
 const STATUS_BADGE: Partial<Record<StatusDia, string>> = {
   presente: styles.sBadgePresente,
   falta: styles.sBadgeFalta,
   folga: styles.sBadgeFolga,
-  feriado: styles.sBadgeFeriado,
   sem_escala: styles.sBadgeSemEscala,
   ocorrencia: styles.sBadgeOcorrencia,
-  atestado: styles.sBadgeOcorrencia,
-  abono: styles.sBadgeOcorrencia,
-  falta_justificada: styles.sBadgeOcorrencia,
-  licenca: styles.sBadgeOcorrencia,
-  outros: styles.sBadgeOcorrencia,
 }
 
 function obsRow(
@@ -79,7 +61,7 @@ function obsRow(
   if (dia.ocorrencia?.tipo_ocorrencia_descricao) return dia.ocorrencia.tipo_ocorrencia_descricao
   if (dia.ocorrencia?.descricao) return dia.ocorrencia.descricao
   if (dia.feriado) return dia.feriado.descricao
-  if (dia.incompleto && dia.marcacoes.length) {
+  if ((dia.modifiers?.includes('incompleto') ?? false) && dia.marcacoes.length) {
     const n = dia.marcacoes.length
     if (n % 2 === 1) return 'Batidas ímpares'
     if (dia.minutos_previstos != null && batidasTurno != null) {
@@ -181,15 +163,17 @@ function EspelhoBlock({
           </thead>
           <tbody>
             {dias.map((dia) => {
+              const isFeriado = dia.modifiers?.includes('feriado') ?? false
+              const isIncompleto = (dia.modifiers?.includes('incompleto') ?? false) && dia.marcacoes.length > 0
               const rowCls = [
-                dia.incompleto && dia.marcacoes.length ? styles.rowWarn : '',
-                STATUS_ROW[dia.status] ?? '',
+                isIncompleto ? styles.rowWarn : '',
+                isFeriado ? styles.rowFeriado : (STATUS_ROW[dia.status] ?? ''),
               ]
                 .filter(Boolean)
                 .join(' ')
 
               const previsto =
-                dia.feriado
+                isFeriado
                   ? 'Feriado'
                   : dia.minutos_previstos != null
                   ? formatMinutos(dia.minutos_previstos)
@@ -202,9 +186,9 @@ function EspelhoBlock({
                   </td>
                   <td>
                     <span
-                      className={`${styles.sBadge} ${STATUS_BADGE[dia.status] ?? ''}`}
+                      className={`${styles.sBadge} ${isFeriado ? styles.sBadgeFeriado : (STATUS_BADGE[dia.status] ?? '')}`}
                     >
-                      {STATUS_LABEL[dia.status] ?? dia.status}
+                      {isFeriado ? 'Feriado' : (STATUS_LABEL[dia.status] ?? dia.status)}
                     </span>
                   </td>
                   <td className={styles.colBatidas}>

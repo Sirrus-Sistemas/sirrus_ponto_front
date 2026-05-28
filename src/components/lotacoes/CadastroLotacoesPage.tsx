@@ -7,6 +7,8 @@ import {
   fetchLotacoes,
   horaParaInput,
   updateLotacao,
+  type DiaNaoPrevistoTipo,
+  type DomingoNaoPrevistoTipo,
   type DomingoTipo,
   type FeriadoTipo,
   type Lotacao,
@@ -26,6 +28,8 @@ const emptyForm = () => ({
   calcular_extras_escalonado: false,
   domingo_tipo: '100pct_extra' as DomingoTipo,
   feriado_tipo: '100pct_total' as FeriadoTipo,
+  domingo_nao_previsto_tipo: '100pct_total' as DomingoNaoPrevistoTipo,
+  dia_nao_previsto_tipo: 'nao_calcular' as DiaNaoPrevistoTipo,
   somar_esq_horas_trabalhadas: false,
   converter_falta_banco_horas: false,
   lancar_100pct_banco_horas: false,
@@ -51,6 +55,8 @@ function lotacaoParaForm(l: Lotacao): ReturnType<typeof emptyForm> {
     calcular_extras_escalonado: l.calcular_extras_escalonado === 1,
     domingo_tipo: l.domingo_tipo,
     feriado_tipo: l.feriado_tipo,
+    domingo_nao_previsto_tipo: l.domingo_nao_previsto_tipo ?? '100pct_total',
+    dia_nao_previsto_tipo: l.dia_nao_previsto_tipo ?? 'nao_calcular',
     somar_esq_horas_trabalhadas: l.somar_esq_horas_trabalhadas === 1,
     converter_falta_banco_horas: l.converter_falta_banco_horas === 1,
     lancar_100pct_banco_horas: l.lancar_100pct_banco_horas === 1,
@@ -77,6 +83,8 @@ function formParaPayload(f: ReturnType<typeof emptyForm>): LotacaoPayload {
     calcular_extras_escalonado: f.calcular_extras_escalonado ? 1 : 0,
     domingo_tipo: f.domingo_tipo,
     feriado_tipo: f.feriado_tipo,
+    domingo_nao_previsto_tipo: f.domingo_nao_previsto_tipo,
+    dia_nao_previsto_tipo: f.dia_nao_previsto_tipo,
     somar_esq_horas_trabalhadas: f.somar_esq_horas_trabalhadas ? 1 : 0,
     converter_falta_banco_horas: f.converter_falta_banco_horas ? 1 : 0,
     lancar_100pct_banco_horas: f.lancar_100pct_banco_horas ? 1 : 0,
@@ -311,6 +319,40 @@ export function CadastroLotacoesPage() {
                   </label>
                 ))}
               </div>
+            </div>
+            <div className={styles.field}>
+              <label>
+                Domingo não previsto na escala
+                <span style={{ fontWeight: 400, fontSize: '0.82em', color: 'var(--sp-text-muted)', marginLeft: 6 }}>
+                  — quando o funcionário trabalha num domingo sem escala/turno prevendo esse dia
+                </span>
+              </label>
+              <select
+                value={form.domingo_nao_previsto_tipo}
+                onChange={(e) => setForm((f) => ({ ...f, domingo_nao_previsto_tipo: e.target.value as DomingoNaoPrevistoTipo }))}
+              >
+                <option value="nao_calcular">Não calcular extra</option>
+                <option value="50pct">50% sobre o excedente</option>
+                <option value="100pct_total">100% sobre tudo trabalhado (padrão CLT)</option>
+                <option value="igual_feriado">Igual ao tratamento de feriado</option>
+              </select>
+            </div>
+            <div className={styles.field}>
+              <label>
+                Dia útil não previsto na escala
+                <span style={{ fontWeight: 400, fontSize: '0.82em', color: 'var(--sp-text-muted)', marginLeft: 6 }}>
+                  — quando o funcionário trabalha num dia útil sem escala/turno prevendo esse dia
+                </span>
+              </label>
+              <select
+                value={form.dia_nao_previsto_tipo}
+                onChange={(e) => setForm((f) => ({ ...f, dia_nao_previsto_tipo: e.target.value as DiaNaoPrevistoTipo }))}
+              >
+                <option value="nao_calcular">Não calcular extra (padrão conservador)</option>
+                <option value="50pct">50% sobre o excedente</option>
+                <option value="100pct_total">100% sobre tudo trabalhado</option>
+                <option value="igual_domingo">Igual ao tratamento de domingo</option>
+              </select>
             </div>
           </div>
 

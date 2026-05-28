@@ -12,7 +12,6 @@ export type DayStatus =
   | 'abonado'
   | 'justificado'
   | 'pendente'
-  | 'feriado'
   | 'folga';
 
 export interface DayRow {
@@ -21,6 +20,7 @@ export interface DayRow {
   year: number;
   dow: number; // 0=Dom..6=Sáb
   status: DayStatus;
+  modifiers: string[];
   punches: (Punch | null)[]; // always length 8: E1 S1 E2 S2 E3 S3 E4 S4
   punchIds: number[];        // IDs das marcações existentes (ordem asc)
   punchMotivos: (string | null)[]; // motivo_edicao de cada marcação (mesma ordem que punchIds)

@@ -17,7 +17,7 @@ export function PunchRow({ row, onCellOpen }: PunchRowProps) {
   const isSat = row.dow === 6;
   const isSun = row.dow === 0;
   const isWeekend = isSat || isSun;
-  const isFeriado = row.status === 'feriado';
+  const isFeriado = row.modifiers?.includes('feriado') ?? false;
 
   const rowClass = [
     styles.row,
@@ -55,7 +55,7 @@ export function PunchRow({ row, onCellOpen }: PunchRowProps) {
       })}
 
       <td className={styles.tdStatus}>
-        <DayStatusBadge status={row.status} />
+        <DayStatusBadge status={row.status} modifiers={row.modifiers} />
       </td>
 
       <td className={styles.tdActions}>
