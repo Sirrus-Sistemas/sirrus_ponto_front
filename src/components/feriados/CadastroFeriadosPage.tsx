@@ -75,6 +75,7 @@ export function CadastroFeriadosPage() {
   const [total, setTotal]           = useState(0)
   const [page, setPage]             = useState(1)
   const [loadingLista, setLoading]  = useState(true)
+  const [listaError, setListaError] = useState<string | null>(null)
 
   const [search, setSearch]         = useState('')
   const [tipoFiltro, setTipoFiltro] = useState('')
@@ -99,9 +100,14 @@ export function CadastroFeriadosPage() {
   const loadLista = useCallback(
     (p: number, s: string, tipo: string, ano: string, silent = false) => {
       if (!silent) setLoading(true)
+      setListaError(null)
       return fetchFeriados({ search: s, tipo: tipo || undefined, ano: ano || undefined, page: p, limit: PAGE_SIZE })
         .then((res) => { setLista(res.rows); setTotal(res.total) })
-        .catch(() => { setLista([]); setTotal(0) })
+        .catch((err: unknown) => {
+          setLista([])
+          setTotal(0)
+          setListaError(err instanceof ApiError ? err.message : 'Não foi possível carregar os feriados. Verifique a conexão com o servidor.')
+        })
         .finally(() => { if (!silent) setLoading(false) })
     },
     []
@@ -411,6 +417,9 @@ export function CadastroFeriadosPage() {
           </select>
         </div>
 
+        {listaError && (
+          <p className={`${styles.feedback} ${styles.feedbackError}`} role="alert">{listaError}</p>
+        )}
         {loadingLista ? (
           <p className={styles.loading}>Carregando lista…</p>
         ) : (

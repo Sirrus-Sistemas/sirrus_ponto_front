@@ -49,16 +49,11 @@ function buildSlots(marcacoes: MarcacaoEspelho[]) {
   const repSlots: (MarcacaoEspelho | null)[] = Array.from({ length: NUM_SLOTS }, (_, i) => repPunches[i] ?? null)
   const allSlots: (MarcacaoEspelho | null)[] = Array.from({ length: NUM_SLOTS }, (_, i) => allPunches[i] ?? null)
 
-  // Motivo: only for slots that have a non-REP punch
-  const motivoParts: string[] = Array.from({ length: NUM_SLOTS }, (_, i) => {
-    const rep = repSlots[i]
-    const all = allSlots[i]
-    if (!all) return ''            // empty slot → no motivo
-    if (rep) return ''             // REP punch → no motivo needed
-    return all.motivo_edicao || 'ESQUECIMENTO'
-  })
+  const motivoParts: string[] = allPunches
+    .filter((all) => all.tipo !== 'rep')
+    .map((all) => (all.tipo === 'manual' && all.motivo_edicao) ? all.motivo_edicao : all.tipo_label)
 
-  const motivoStr = motivoParts.filter(Boolean).join(' – ')
+  const motivoStr = motivoParts.join(' / ')
 
   return { repSlots, allSlots, motivoStr }
 }
