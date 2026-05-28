@@ -49,6 +49,8 @@
   gap: 2px;
   padding: 0 16px;
   border-left: 1px solid #E2E8F0;
+  min-width: 0;
+  overflow: hidden;
 }
 .col:first-child { border-left: none; padding-left: 0; }
 
@@ -67,6 +69,8 @@
   color: #334155;
   font-weight: 500;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .colValueMono {
@@ -75,6 +79,8 @@
   color: #334155;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .statusWrap {
@@ -83,6 +89,7 @@
   align-items: flex-end;
   gap: 3px;
   flex-shrink: 0;
+  min-width: 80px;
 }
 
 .statusLabel {

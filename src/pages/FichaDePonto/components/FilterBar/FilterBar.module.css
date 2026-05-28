@@ -2,12 +2,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 50px;
-  padding: 0 16px;
+  min-height: 50px;
+  height: auto;
+  padding: 8px 16px;
   background: #fff;
   border-bottom: 1px solid #E2E8F0;
   flex-shrink: 0;
-  gap: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .left {
@@ -15,7 +17,7 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
-  overflow: hidden;
+  flex-wrap: wrap;
 }
 
 .lotacaoBadge {
@@ -182,4 +184,28 @@
   color: #CBD5E1;
   font-size: 11px;
   margin: 0 2px;
+}
+
+/* Tablet e telas menores */
+@media (max-width: 768px) {
+  .bar {
+    padding: 8px 12px;
+  }
+
+  .left {
+    width: 100%;
+    gap: 6px;
+  }
+
+  .select {
+    font-size: 12px;
+    height: 32px;
+  }
+
+  .loadBtn,
+  .printBtn {
+    height: 32px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
 }
