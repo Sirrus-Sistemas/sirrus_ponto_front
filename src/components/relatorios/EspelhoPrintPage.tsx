@@ -29,9 +29,8 @@ export function EspelhoPrintPage() {
   const ZOOM_MAX = 150
   const [zoom, setZoom] = useState(100)
 
-  const zoomIn    = () => setZoom(z => Math.min(z + ZOOM_STEP, ZOOM_MAX))
-  const zoomOut   = () => setZoom(z => Math.max(z - ZOOM_STEP, ZOOM_MIN))
-  const zoomReset = () => setZoom(100)
+  const zoomIn  = () => setZoom(z => Math.min(z + ZOOM_STEP, ZOOM_MAX))
+  const zoomOut = () => setZoom(z => Math.max(z - ZOOM_STEP, ZOOM_MIN))
 
   useEffect(() => {
     document.title = `Espelho de Ponto — ${labelMes(mes)} de ${ano}`
