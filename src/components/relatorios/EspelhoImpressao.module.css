@@ -1,4 +1,4 @@
-/* Visível apenas no print */
+/* ── Visibilidade do bloco ───────────────────────────────────────────── */
 .block {
   display: none;
 }
@@ -13,15 +13,205 @@
   break-after: page;
 }
 
+/* ── Cabeçalho ─────────────────────────────────────────────────────── */
+.pageHeader {
+  border: 1px solid #000;
+  border-bottom: none;
+  padding: 1mm 1.5mm;
+  line-height: 1.35;
+}
+
+.phRow1 {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  font-size: 7pt;
+  border-bottom: 1px solid #000;
+  padding-bottom: 0.5mm;
+  margin-bottom: 0.5mm;
+}
+
+.phBrand { font-weight: bold; }
+.phEmissao { font-weight: normal; }
+
+.phRow2 {
+  display: flex;
+  justify-content: space-between;
+  font-size: 6.5pt;
+  border-bottom: 1px solid #000;
+  padding-bottom: 0.5mm;
+  margin-bottom: 0.5mm;
+}
+
+.phTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 6.5pt;
+  border-bottom: 1px solid #000;
+  margin-bottom: 0.3mm;
+}
+
+.phTable tr td {
+  padding: 0.2mm 0;
+  vertical-align: top;
+}
+
+.phLeft { width: 68%; }
+.phRight { width: 32%; text-align: right; }
+
+.phTurno {
+  font-size: 6.5pt;
+  padding-top: 0.3mm;
+}
+
+/* ── Tabela principal ────────────────────────────────────────────── */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 6.5pt;
+  border: 1px solid #000;
+}
+
+.table th,
+.table td {
+  border: 1px solid #888;
+  padding: 0.4mm 0.5mm;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* Column section header row */
+.thSection th {
+  background: #e8e8e8;
+  text-align: center;
+  font-size: 6pt;
+  font-weight: bold;
+  padding: 0.3mm 0.5mm;
+  border: 1px solid #000;
+}
+
+.thSectionLabel {
+  border-bottom: 2px solid #000 !important;
+}
+
+/* Column name row */
+.thCols th {
+  background: #f0f0f0;
+  text-align: center;
+  font-weight: bold;
+  font-size: 5.5pt;
+  padding: 0.4mm 0.3mm;
+  border: 1px solid #555;
+  white-space: nowrap;
+}
+
+/* Data rows */
+.trData td {
+  font-size: 6.5pt;
+  text-align: center;
+}
+
+.trFeriado   td { background: #e8f0ff; }
+.trFolga     td { background: #f5f5f5; }
+
+.tdDiaLabel { text-align: left !important; }
+.trFalta     td { background: #fff0f0; }
+.trOcorrencia td { background: #fffbe6; font-style: italic; }
+
+.tdTime { text-align: center; font-variant-numeric: tabular-nums; }
+.tdCh   { text-align: center; }
+.tdMotivo { text-align: left; white-space: normal !important; overflow: visible; font-size: 5.5pt; }
+
+/* Column widths */
+.cData    { width: 16mm; }
+.cDia     { width: 11mm; }
+.cTime    { width: 11mm; }
+.cCh      { width: 5mm; }
+.cHorario { width: 11mm; }
+.cOcor    { width: 8mm; }
+.cMotivo  { width: 38mm; }
+.cTotal   { width: 11mm; }
+.cAdn     { width: 10mm; }
+.cNoc     { width: 8mm; }
+.cRef     { width: 12mm; }
+
+/* ── Rodapé ─────────────────────────────────────────────────────── */
+.footerTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 6.5pt;
+  border: 1px solid #000;
+  border-top: 2px solid #000;
+  margin-top: -1px;
+}
+
+.footerTable td {
+  border: 1px solid #888;
+  padding: 0.4mm 1mm;
+  vertical-align: top;
+  width: 20%;
+}
+
+.footerSection td {
+  background: #f0f0f0;
+  font-weight: bold;
+  font-size: 6pt;
+  text-align: center;
+  border: 1px solid #555;
+}
+
+.footerSectionLabel {
+  border-bottom: 2px solid #000 !important;
+}
+
+.footerOcor {
+  background: #f9f9f9;
+  font-weight: bold;
+  font-size: 6pt;
+  text-align: center;
+}
+
+/* ── Assinaturas ─────────────────────────────────────────────────── */
+.signatures {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6mm;
+  padding: 0 10mm;
+}
+
+.sigBlock {
+  width: 40%;
+  text-align: center;
+}
+
+.sigLine {
+  border-bottom: 1px solid #000;
+  margin-bottom: 1mm;
+  height: 6mm;
+}
+
+.sigBlock p {
+  margin: 0;
+  font-size: 6.5pt;
+  line-height: 1.4;
+}
+
+/* ── Nota legal ──────────────────────────────────────────────────── */
+.legal {
+  margin-top: 3mm;
+  font-size: 5.5pt;
+  text-align: center;
+  color: #333;
+  border-top: 1px solid #ccc;
+  padding-top: 1mm;
+}
+
+/* ── Print-only ──────────────────────────────────────────────────── */
 @media print {
   .block,
   .blockInline {
     display: block;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 6.5pt;
-    color: #000;
-    page-break-after: always;
-    break-after: page;
   }
 
   .block:last-child {
@@ -32,199 +222,5 @@
   @page {
     size: A4 landscape;
     margin: 7mm 6mm;
-  }
-
-  /* ── Cabeçalho ─────────────────────────────────────────────────── */
-  .pageHeader {
-    border: 1px solid #000;
-    border-bottom: none;
-    padding: 1mm 1.5mm;
-    line-height: 1.35;
-  }
-
-  .phRow1 {
-    display: flex;
-    justify-content: space-between;
-    font-weight: bold;
-    font-size: 7pt;
-    border-bottom: 1px solid #000;
-    padding-bottom: 0.5mm;
-    margin-bottom: 0.5mm;
-  }
-
-  .phBrand { font-weight: bold; }
-  .phEmissao { font-weight: normal; }
-
-  .phRow2 {
-    display: flex;
-    justify-content: space-between;
-    font-size: 6.5pt;
-    border-bottom: 1px solid #000;
-    padding-bottom: 0.5mm;
-    margin-bottom: 0.5mm;
-  }
-
-  .phTable {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 6.5pt;
-    border-bottom: 1px solid #000;
-    margin-bottom: 0.3mm;
-  }
-
-  .phTable tr td {
-    padding: 0.2mm 0;
-    vertical-align: top;
-  }
-
-  .phLeft { width: 68%; }
-  .phRight { width: 32%; text-align: right; }
-
-  .phTurno {
-    font-size: 6.5pt;
-    padding-top: 0.3mm;
-  }
-
-  /* ── Tabela principal ────────────────────────────────────────────── */
-  .table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 6.5pt;
-    border: 1px solid #000;
-  }
-
-  .table th,
-  .table td {
-    border: 1px solid #888;
-    padding: 0.4mm 0.5mm;
-    vertical-align: middle;
-    white-space: nowrap;
-    overflow: hidden;
-  }
-
-  /* Column section header row */
-  .thSection th {
-    background: #e8e8e8;
-    text-align: center;
-    font-size: 6pt;
-    font-weight: bold;
-    padding: 0.3mm 0.5mm;
-    border: 1px solid #000;
-  }
-
-  .thSectionLabel {
-    border-bottom: 2px solid #000 !important;
-  }
-
-  /* Column name row */
-  .thCols th {
-    background: #f0f0f0;
-    text-align: center;
-    font-weight: bold;
-    font-size: 5.5pt;
-    padding: 0.4mm 0.3mm;
-    border: 1px solid #555;
-    white-space: nowrap;
-  }
-
-  /* Data rows */
-  .trData td {
-    font-size: 6.5pt;
-    text-align: center;
-  }
-
-  .trFeriado   td { background: #e8f0ff; }
-  .trFolga     td { background: #f5f5f5; }
-
-  .tdDiaLabel { text-align: left !important; }
-  .trFalta     td { background: #fff0f0; }
-  .trOcorrencia td { background: #fffbe6; font-style: italic; }
-
-  .tdTime { text-align: center; font-variant-numeric: tabular-nums; }
-  .tdCh   { text-align: center; }
-  .tdMotivo { text-align: left; white-space: normal !important; overflow: visible; font-size: 5.5pt; }
-
-  /* Column widths */
-  .cData    { width: 16mm; }
-  .cDia     { width: 11mm; }
-  .cTime    { width: 11mm; }
-  .cCh      { width: 5mm; }
-  .cHorario { width: 11mm; }
-  .cOcor    { width: 8mm; }
-  .cMotivo  { width: 38mm; }
-  .cTotal   { width: 11mm; }
-  .cAdn     { width: 10mm; }
-  .cNoc     { width: 8mm; }
-  .cRef     { width: 12mm; }
-
-  /* ── Rodapé ─────────────────────────────────────────────────────── */
-  .footerTable {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 6.5pt;
-    border: 1px solid #000;
-    border-top: 2px solid #000;
-    margin-top: -1px;
-  }
-
-  .footerTable td {
-    border: 1px solid #888;
-    padding: 0.4mm 1mm;
-    vertical-align: top;
-    width: 20%;
-  }
-
-  .footerSection td {
-    background: #f0f0f0;
-    font-weight: bold;
-    font-size: 6pt;
-    text-align: center;
-    border: 1px solid #555;
-  }
-
-  .footerSectionLabel {
-    border-bottom: 2px solid #000 !important;
-  }
-
-  .footerOcor {
-    background: #f9f9f9;
-    font-weight: bold;
-    font-size: 6pt;
-    text-align: center;
-  }
-
-  /* ── Assinaturas ─────────────────────────────────────────────────── */
-  .signatures {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 6mm;
-    padding: 0 10mm;
-  }
-
-  .sigBlock {
-    width: 40%;
-    text-align: center;
-  }
-
-  .sigLine {
-    border-bottom: 1px solid #000;
-    margin-bottom: 1mm;
-    height: 6mm;
-  }
-
-  .sigBlock p {
-    margin: 0;
-    font-size: 6.5pt;
-    line-height: 1.4;
-  }
-
-  /* ── Nota legal ──────────────────────────────────────────────────── */
-  .legal {
-    margin-top: 3mm;
-    font-size: 5.5pt;
-    text-align: center;
-    color: #333;
-    border-top: 1px solid #ccc;
-    padding-top: 1mm;
   }
 }
