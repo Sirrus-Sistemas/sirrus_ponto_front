@@ -49,18 +49,60 @@ function buildEmployee(payload: EspelhoPayload): Employee {
   };
 }
 
+type MarcacaoItem = EspelhoPayload['dias'][0]['marcacoes'][0];
+
+/**
+ * Distribui as marcações do dia em 8 slots posicionais (índice = coluna no grid).
+ * Retorna array de tamanho 8 com null nos slots vazios — posições absolutas preservadas.
+ *
+ * Regras:
+ *  - Marcações com slot_override definido ficam fixas na posição indicada.
+ *  - As demais preenchem os slots livres restantes em ordem cronológica.
+ */
+function buildSlots(marcacoes: MarcacaoItem[]): (MarcacaoItem | null)[] {
+  const slots: (MarcacaoItem | null)[] = new Array(8).fill(null);
+
+  const overridden = marcacoes
+    .filter(m => m.slot_override !== null && m.slot_override !== undefined)
+    .sort((a, b) => (a.slot_override ?? 0) - (b.slot_override ?? 0));
+
+  const normal = marcacoes
+    .filter(m => m.slot_override === null || m.slot_override === undefined)
+    .sort((a, b) => parseDataHoraUtc(a.data_hora).getTime() - parseDataHoraUtc(b.data_hora).getTime());
+
+  // 1. Posiciona as batidas com override fixo
+  for (const m of overridden) {
+    const pos = m.slot_override!;
+    if (pos < 8 && slots[pos] === null) slots[pos] = m;
+  }
+
+  // 2. Preenche slots livres com as demais, em ordem cronológica
+  let ni = 0;
+  for (let i = 0; i < 8 && ni < normal.length; i++) {
+    if (slots[i] === null) slots[i] = normal[ni++];
+  }
+
+  return slots; // tamanho 8, nulls onde não há batida
+}
+
 function buildDays(payload: EspelhoPayload): DayRow[] {
   return payload.dias.map((dia) => {
-    const sorted = [...dia.marcacoes].sort((a, b) =>
-      parseDataHoraUtc(a.data_hora).getTime() - parseDataHoraUtc(b.data_hora).getTime()
-    );
+    // slots[i] = marcação que deve aparecer na coluna i (ou null se vazia)
+    const slots = buildSlots(dia.marcacoes);
 
     const punches: (Punch | null)[] = Array(8).fill(null);
-    sorted.slice(0, 8).forEach((m, i) => {
-      const d = parseDataHoraUtc(m.data_hora);
-      const hh = String(d.getHours()).padStart(2, '0');
-      const mm = String(d.getMinutes()).padStart(2, '0');
-      punches[i] = { time: `${hh}:${mm}`, source: mapTipo(m.tipo) };
+    const punchIds: number[] = [];
+    const punchMotivos: (string | null)[] = [];
+
+    slots.forEach((m, i) => {
+      if (m) {
+        const d = parseDataHoraUtc(m.data_hora);
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mm = String(d.getMinutes()).padStart(2, '0');
+        punches[i] = { time: `${hh}:${mm}`, source: mapTipo(m.tipo) };
+        punchIds[i] = m.id;          // índice = posição no grid
+        punchMotivos[i] = m.motivo_edicao ?? null;
+      }
     });
 
     return {
@@ -71,8 +113,8 @@ function buildDays(payload: EspelhoPayload): DayRow[] {
       status: mapStatus(dia.status, dia.modifiers ?? []),
       modifiers: dia.modifiers ?? [],
       punches,
-      punchIds: sorted.map((m) => m.id),
-      punchMotivos: sorted.map((m) => m.motivo_edicao ?? null),
+      punchIds,
+      punchMotivos,
       ocorrenciaId: dia.ocorrencia?.id,
       holidayName: dia.feriado?.descricao,
     };

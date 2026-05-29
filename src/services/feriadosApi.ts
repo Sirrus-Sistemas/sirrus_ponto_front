@@ -56,7 +56,7 @@ export async function createFeriado(payload: FeriadoPayload): Promise<Feriado> {
   return res.data
 }
 
-export async function updateFeriado(id: number, payload: Partial<FeriadoPayload>): Promise<Feriado> {
+export async function updateFeriado(id: number, payload: Partial<Feriado>): Promise<Feriado> {
   const res = await apiRequest<Wrapped<Feriado>>(`/api/feriados/${id}`, {
     method: 'PUT',
     body: JSON.stringify(payload),

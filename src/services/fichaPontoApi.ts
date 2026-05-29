@@ -55,7 +55,7 @@ export async function lancarBatida(payload: {
 
 export async function editarBatida(
   id: number,
-  payload: { data_hora: string; motivo?: string },
+  payload: { data_hora: string; motivo?: string; slot_override?: number | null },
 ): Promise<void> {
   await apiRequest<SimpleResponse>(`/api/marcacoes/${id}`, {
     method: 'PUT',

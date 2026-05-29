@@ -24,6 +24,7 @@ export type MarcacaoEspelho = {
   tipo_label: string
   motivo_edicao: string | null
   original: number
+  slot_override: number | null
 }
 
 export type FeriadoDia = {

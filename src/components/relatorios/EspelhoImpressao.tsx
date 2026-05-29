@@ -35,21 +35,48 @@ function fmtCpf(cpf: string | null): string {
 
 const NUM_SLOTS = 8 // Ent1 Sai1 Ent2 Sai2 Ent3 Sai3 Ent4 Sai4
 
+/** Aplica slot_override: posiciona batidas fixas e preenche lacunas em ordem cronológica. */
+function applySlotOverride(sorted: MarcacaoEspelho[]): (MarcacaoEspelho | null)[] {
+  const slots: (MarcacaoEspelho | null)[] = new Array(NUM_SLOTS).fill(null)
+  const hasOverride = sorted.some(m => m.slot_override !== null && m.slot_override !== undefined)
+
+  if (!hasOverride) {
+    // Sem override: preenche sequencialmente
+    sorted.forEach((m, i) => { if (i < NUM_SLOTS) slots[i] = m })
+    return slots
+  }
+
+  const overridden = sorted
+    .filter(m => m.slot_override !== null && m.slot_override !== undefined)
+    .sort((a, b) => (a.slot_override ?? 0) - (b.slot_override ?? 0))
+  const normal = sorted.filter(m => m.slot_override === null || m.slot_override === undefined)
+
+  for (const m of overridden) {
+    const pos = m.slot_override!
+    if (pos < NUM_SLOTS && slots[pos] === null) slots[pos] = m
+  }
+  let ni = 0
+  for (let i = 0; i < NUM_SLOTS && ni < normal.length; i++) {
+    if (slots[i] === null) slots[i] = normal[ni++]
+  }
+  return slots
+}
+
 function buildSlots(marcacoes: MarcacaoEspelho[]) {
-  // REP-only punches in time order
+  // REP-only punches — coluna "Marcações REP" sempre em ordem cronológica (batidas originais)
   const repPunches = marcacoes
     .filter((m) => m.tipo === 'rep')
     .sort((a, b) => new Date(a.data_hora).getTime() - new Date(b.data_hora).getTime())
 
-  // All treated punches in time order
-  const allPunches = [...marcacoes].sort(
+  // All treated punches — coluna "Tratamento Efetuado" respeita slot_override
+  const allSorted = [...marcacoes].sort(
     (a, b) => new Date(a.data_hora).getTime() - new Date(b.data_hora).getTime(),
   )
 
   const repSlots: (MarcacaoEspelho | null)[] = Array.from({ length: NUM_SLOTS }, (_, i) => repPunches[i] ?? null)
-  const allSlots: (MarcacaoEspelho | null)[] = Array.from({ length: NUM_SLOTS }, (_, i) => allPunches[i] ?? null)
+  const allSlots = applySlotOverride(allSorted)
 
-  const motivoParts: string[] = allPunches
+  const motivoParts: string[] = allSorted
     .filter((all) => all.tipo !== 'rep')
     .map((all) => (all.tipo === 'manual' && all.motivo_edicao) ? all.motivo_edicao : all.tipo_label)
 
