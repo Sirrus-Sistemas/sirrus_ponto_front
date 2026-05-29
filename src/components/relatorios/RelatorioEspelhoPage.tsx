@@ -1,223 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { fetchFuncionarios, type FuncionarioListItem } from '../../services/funcionariosApi'
 import { fetchLotacoes, type Lotacao } from '../../services/lotacoesApi'
-import { fetchEspelho, type EspelhoPayload, type StatusDia } from '../../services/espelhoApi'
-import { formatHoraLocalPtBr } from '../../lib/parseDataHora'
-import { normalizarBatidasEsperadas } from '../dashboard/dashboardDiaUtils'
+import { fetchEspelho, type EspelhoPayload } from '../../services/espelhoApi'
 import { EspelhoImpressao } from './EspelhoImpressao'
 import styles from './RelatorioEspelhoPage.module.css'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function pad2(n: number) {
-  return String(n).padStart(2, '0')
-}
-
 function labelMes(m: number) {
   return new Date(2000, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long' })
-}
-
-function formatMinutos(min: number): string {
-  const h = Math.floor(min / 60)
-  const m = min % 60
-  if (h <= 0) return `${m}m`
-  if (m === 0) return `${h}h`
-  return `${h}h ${pad2(m)}m`
-}
-
-function formatSaldo(min: number | null): string {
-  if (min === null) return '—'
-  const sign = min >= 0 ? '+' : '−'
-  return `${sign}${formatMinutos(Math.abs(min))}`
-}
-
-const STATUS_LABEL: Record<StatusDia, string> = {
-  presente: 'Presente',
-  falta: 'Falta',
-  folga: 'Folga',
-  futuro: '—',
-  sem_escala: 'S/ escala',
-  ocorrencia: 'Ocorrência',
-}
-
-const STATUS_ROW: Partial<Record<StatusDia, string>> = {
-  falta: styles.rowFalta,
-  folga: styles.rowFolga,
-  ocorrencia: styles.rowOcorrencia,
-}
-
-const STATUS_BADGE: Partial<Record<StatusDia, string>> = {
-  presente: styles.sBadgePresente,
-  falta: styles.sBadgeFalta,
-  folga: styles.sBadgeFolga,
-  sem_escala: styles.sBadgeSemEscala,
-  ocorrencia: styles.sBadgeOcorrencia,
-}
-
-function obsRow(
-  dia: EspelhoPayload['dias'][number],
-  batidasTurno: number | null | undefined,
-): string {
-  if (dia.ocorrencia?.tipo_ocorrencia_descricao) return dia.ocorrencia.tipo_ocorrencia_descricao
-  if (dia.ocorrencia?.descricao) return dia.ocorrencia.descricao
-  if (dia.feriado) return dia.feriado.descricao
-  if ((dia.modifiers?.includes('incompleto') ?? false) && dia.marcacoes.length) {
-    const n = dia.marcacoes.length
-    if (n % 2 === 1) return 'Batidas ímpares'
-    if (dia.minutos_previstos != null && batidasTurno != null) {
-      const b = normalizarBatidasEsperadas(batidasTurno)
-      if (n % b !== 0) return `Ciclo incompleto (${n}/${b})`
-    }
-    return 'Pendência'
-  }
-  return ''
-}
-
-// ─── Bloco de espelho de um funcionário ──────────────────────────────────────
-
-function EspelhoBlock({
-  funcionario,
-  espelho,
-  periodo,
-}: {
-  funcionario: FuncionarioListItem
-  espelho: EspelhoPayload
-  periodo: string
-}) {
-  const { meta, resumo, dias } = espelho
-
-  return (
-    <section className={styles.block}>
-      <div className={styles.blockHeader}>
-        <div className={styles.blockEmployee}>
-          <span className={styles.blockNome}>{funcionario.nome}</span>
-          {funcionario.cargo ? (
-            <span className={styles.blockSub}>{funcionario.cargo}</span>
-          ) : null}
-          {funcionario.lotacao_nome ? (
-            <span className={styles.blockSub}>Lotação: {funcionario.lotacao_nome}</span>
-          ) : null}
-          {meta.turno_nome ? (
-            <span className={styles.blockSub}>Turno: {meta.turno_nome}</span>
-          ) : null}
-        </div>
-        <div className={styles.blockPeriodo}>
-          <span className={styles.blockPeriodoLabel}>Espelho de ponto</span>
-          <span className={styles.blockPeriodoVal}>{periodo}</span>
-        </div>
-      </div>
-
-      <div className={styles.blockSummary}>
-        <div className={styles.sc}>
-          <p className={styles.scLabel}>Trabalhadas</p>
-          <p className={styles.scVal}>{formatMinutos(resumo.minutos_trabalhados_mes)}</p>
-        </div>
-        <div className={styles.sc}>
-          <p className={styles.scLabel}>Saldo</p>
-          <p className={`${styles.scVal} ${styles.scMono}`}>{formatSaldo(resumo.saldo_mes_minutos)}</p>
-        </div>
-        <div className={styles.sc}>
-          <p className={styles.scLabel}>Presentes</p>
-          <p className={`${styles.scVal} ${styles.scPresente}`}>{resumo.dias_presentes}</p>
-        </div>
-        <div className={styles.sc}>
-          <p className={styles.scLabel}>Faltas</p>
-          <p className={`${styles.scVal} ${resumo.dias_falta ? styles.scFalta : ''}`}>
-            {resumo.dias_falta}
-          </p>
-        </div>
-        <div className={styles.sc}>
-          <p className={styles.scLabel}>Folgas</p>
-          <p className={styles.scVal}>{resumo.dias_folga}</p>
-        </div>
-        {resumo.dias_ocorrencia > 0 ? (
-          <div className={styles.sc}>
-            <p className={styles.scLabel}>Ocorrências</p>
-            <p className={`${styles.scVal} ${styles.scOcorrencia}`}>{resumo.dias_ocorrencia}</p>
-          </div>
-        ) : null}
-        <div className={styles.sc}>
-          <p className={styles.scLabel}>Feriados</p>
-          <p className={styles.scVal}>{meta.dias_feriado_calendario}</p>
-        </div>
-        {resumo.dias_incompletos > 0 ? (
-          <div className={styles.sc}>
-            <p className={styles.scLabel}>Incompletos</p>
-            <p className={`${styles.scVal} ${styles.scWarn}`}>{resumo.dias_incompletos}</p>
-          </div>
-        ) : null}
-      </div>
-
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Dia</th>
-              <th>Status</th>
-              <th>Entradas / saídas</th>
-              <th>Trabalhadas</th>
-              <th>Previsto</th>
-              <th>Saldo</th>
-              <th>Obs.</th>
-            </tr>
-          </thead>
-          <tbody>
-            {dias.map((dia) => {
-              const isFeriado = dia.modifiers?.includes('feriado') ?? false
-              const isIncompleto = (dia.modifiers?.includes('incompleto') ?? false) && dia.marcacoes.length > 0
-              const rowCls = [
-                isIncompleto ? styles.rowWarn : '',
-                isFeriado ? styles.rowFeriado : (STATUS_ROW[dia.status] ?? ''),
-              ]
-                .filter(Boolean)
-                .join(' ')
-
-              const previsto =
-                isFeriado
-                  ? 'Feriado'
-                  : dia.minutos_previstos != null
-                  ? formatMinutos(dia.minutos_previstos)
-                  : '—'
-
-              return (
-                <tr key={dia.data} className={rowCls || undefined}>
-                  <td className={styles.colDia}>
-                    {dia.dia_semana_label} {dia.data.slice(8, 10)}/{dia.data.slice(5, 7)}
-                  </td>
-                  <td>
-                    <span
-                      className={`${styles.sBadge} ${isFeriado ? styles.sBadgeFeriado : (STATUS_BADGE[dia.status] ?? '')}`}
-                    >
-                      {isFeriado ? 'Feriado' : (STATUS_LABEL[dia.status] ?? dia.status)}
-                    </span>
-                  </td>
-                  <td className={styles.colBatidas}>
-                    {dia.marcacoes.length === 0
-                      ? '—'
-                      : dia.marcacoes.map((m, i) => (
-                          <span key={m.id}>
-                            {i > 0 ? ' · ' : null}
-                            <span className={styles.tipoBadge}>{m.tipo_label}</span>
-                            {formatHoraLocalPtBr(m.data_hora)}
-                          </span>
-                        ))}
-                  </td>
-                  <td className={styles.colNum}>
-                    {dia.marcacoes.length ? formatMinutos(dia.minutos_trabalhados) : '—'}
-                  </td>
-                  <td className={styles.colNum}>{previsto}</td>
-                  <td className={styles.colNum}>{formatSaldo(dia.saldo_minutos)}</td>
-                  <td className={styles.colObs}>
-                    {obsRow(dia, meta.batidas_esperadas_dia)}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  )
 }
 
 // ─── Tipos internos ───────────────────────────────────────────────────────────
@@ -247,6 +38,11 @@ export function RelatorioEspelhoPage() {
   const [error, setError] = useState<string | null>(null)
   const abortRef = useRef(false)
 
+  const ZOOM_STEP = 10
+  const ZOOM_MIN = 50
+  const ZOOM_MAX = 150
+  const [zoom, setZoom] = useState(100)
+
   useEffect(() => {
     fetchLotacoes().then(setLotacoes).catch(() => {})
     fetchFuncionarios({ limit: 500, ativo: 1 })
@@ -263,8 +59,6 @@ export function RelatorioEspelhoPage() {
     () => Array.from({ length: 12 }, (_, i) => ({ v: i + 1, l: labelMes(i + 1) })),
     [],
   )
-
-  const periodo = `${labelMes(mes)} de ${ano}`
 
   const gerar = useCallback(async () => {
     setEntries([])
@@ -405,18 +199,37 @@ export function RelatorioEspelhoPage() {
               : 'Gerar relatório'}
           </button>
           {entries.length > 0 ? (
-            <button
-              type="button"
-              className={styles.btnImprimir}
-              onClick={() => {
-                const qs = new URLSearchParams({ mes: String(mes), ano: String(ano), escopo })
-                if (escopo === 'lotacao' && lotacaoId) qs.set('lotacao_id', String(lotacaoId))
-                if (escopo === 'funcionario' && funcId) qs.set('func_id', String(funcId))
-                window.open(`/relatorios/espelho/print?${qs.toString()}`, '_blank')
-              }}
-            >
-              Imprimir / PDF
-            </button>
+            <>
+              <div className={styles.zoomControls}>
+                <button
+                  type="button"
+                  className={styles.btnZoom}
+                  onClick={() => setZoom(z => Math.max(z - ZOOM_STEP, ZOOM_MIN))}
+                  disabled={zoom <= ZOOM_MIN}
+                  title="Diminuir zoom"
+                >−</button>
+                <span className={styles.zoomLabel}>{zoom}%</span>
+                <button
+                  type="button"
+                  className={styles.btnZoom}
+                  onClick={() => setZoom(z => Math.min(z + ZOOM_STEP, ZOOM_MAX))}
+                  disabled={zoom >= ZOOM_MAX}
+                  title="Aumentar zoom"
+                >+</button>
+              </div>
+              <button
+                type="button"
+                className={styles.btnImprimir}
+                onClick={() => {
+                  const qs = new URLSearchParams({ mes: String(mes), ano: String(ano), escopo })
+                  if (escopo === 'lotacao' && lotacaoId) qs.set('lotacao_id', String(lotacaoId))
+                  if (escopo === 'funcionario' && funcId) qs.set('func_id', String(funcId))
+                  window.open(`/relatorios/espelho/print?${qs.toString()}`, '_blank')
+                }}
+              >
+                Imprimir / PDF
+              </button>
+            </>
           ) : null}
         </div>
 
@@ -430,30 +243,19 @@ export function RelatorioEspelhoPage() {
         ) : null}
       </div>
 
-      {/* ── Conteúdo do relatório (tela) ──────────────────────────── */}
+      {/* ── Pré-visualização do espelho (tela + impressão) ───────── */}
       {entries.length > 0 ? (
-        <div className={styles.report}>
-          {entries.map(({ funcionario, espelho }) => (
-            <EspelhoBlock
-              key={funcionario.id}
-              funcionario={funcionario}
-              espelho={espelho}
-              periodo={periodo}
-            />
-          ))}
-        </div>
-      ) : null}
-
-      {/* ── Versão impressão (Portaria MTPS 3626/91) ──────────────── */}
-      {entries.length > 0 ? (
-        <div className={styles.printOnly}>
-          {entries.map(({ espelho }, idx) => (
-            <EspelhoImpressao
-              key={espelho.meta.funcionario_id}
-              espelho={espelho}
-              pageNum={idx + 1}
-            />
-          ))}
+        <div className={styles.previewArea}>
+          <div style={{ zoom: `${zoom}%`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
+            {entries.map(({ espelho }, idx) => (
+              <EspelhoImpressao
+                key={espelho.meta.funcionario_id}
+                espelho={espelho}
+                pageNum={idx + 1}
+                inline
+              />
+            ))}
+          </div>
         </div>
       ) : null}
     </div>

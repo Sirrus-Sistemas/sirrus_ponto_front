@@ -24,6 +24,15 @@ export function EspelhoPrintPage() {
   const [error, setError] = useState<string | null>(null)
   const abortRef = useRef(false)
 
+  const ZOOM_STEP = 10
+  const ZOOM_MIN = 50
+  const ZOOM_MAX = 150
+  const [zoom, setZoom] = useState(100)
+
+  const zoomIn    = () => setZoom(z => Math.min(z + ZOOM_STEP, ZOOM_MAX))
+  const zoomOut   = () => setZoom(z => Math.max(z - ZOOM_STEP, ZOOM_MIN))
+  const zoomReset = () => setZoom(100)
+
   useEffect(() => {
     document.title = `Espelho de Ponto — ${labelMes(mes)} de ${ano}`
 
@@ -83,6 +92,23 @@ export function EspelhoPrintPage() {
           {entries.length > 0 ? ` (${entries.length} funcionário${entries.length !== 1 ? 's' : ''})` : ''}
         </span>
         <div className={styles.toolbarActions}>
+          <div className={styles.zoomControls}>
+            <button
+              type="button"
+              className={styles.btnZoom}
+              onClick={zoomOut}
+              disabled={zoom <= ZOOM_MIN}
+              title="Diminuir zoom"
+            >−</button>
+            <span className={styles.zoomLabel}>{zoom}%</span>
+            <button
+              type="button"
+              className={styles.btnZoom}
+              onClick={zoomIn}
+              disabled={zoom >= ZOOM_MAX}
+              title="Aumentar zoom"
+            >+</button>
+          </div>
           <button
             type="button"
             className={styles.btnPrint}
@@ -115,9 +141,11 @@ export function EspelhoPrintPage() {
         ) : entries.length === 0 ? (
           <p className={styles.loadingText}>Nenhum dado para exibir.</p>
         ) : (
-          entries.map(({ id, espelho }, idx) => (
-            <EspelhoImpressao key={id} espelho={espelho} pageNum={idx + 1} inline />
-          ))
+          <div style={{ zoom: `${zoom}%`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
+            {entries.map(({ id, espelho }, idx) => (
+              <EspelhoImpressao key={id} espelho={espelho} pageNum={idx + 1} inline />
+            ))}
+          </div>
         )}
       </div>
     </div>
