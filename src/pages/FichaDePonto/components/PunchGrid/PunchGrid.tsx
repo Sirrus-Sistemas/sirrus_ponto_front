@@ -69,7 +69,6 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, onRel
   const pendingDragRef = useRef<(DragState & { startX: number; startY: number }) | null>(null);
   const ghostRef = useRef<HTMLDivElement | null>(null);
   const daysRef = useRef<DayRow[]>(days);
-  const DRAG_THRESHOLD = 5; // px mínimos de movimento para ativar o drag
   const [draggingKey, setDraggingKey] = useState<string | null>(null);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
   const [confirmMove, setConfirmMove] = useState<ConfirmMoveState | null>(null);
@@ -129,13 +128,6 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, onRel
     if (!key || key === srcKey) return null;
     return { td, key };
   }, []);
-
-  const cancelDrag = useCallback(() => {
-    dragStateRef.current = null;
-    removeGhost();
-    setDraggingKey(null);
-    setDragOverKey(null);
-  }, [removeGhost]);
 
   // Listeners globais — registrados uma vez, usam refs para acesso ao estado
   useEffect(() => {
