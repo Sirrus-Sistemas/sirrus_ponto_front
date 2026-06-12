@@ -20,6 +20,7 @@ export type ModifierDia =
 export type MarcacaoEspelho = {
   id: number
   data_hora: string
+  data_hora_local: string | null
   tipo: string
   tipo_label: string
   motivo_edicao: string | null

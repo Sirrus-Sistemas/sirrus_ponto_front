@@ -76,7 +76,6 @@ export function AppShell() {
   const podeGerarEscala = me?.role === 'admin' || me?.role === 'gestor'
   const podeFichaPonto = me?.role === 'admin' || me?.role === 'gestor'
   const podeRelatorios = me?.role === 'admin' || me?.role === 'gestor'
-  const podeLancarOcorrencia = me?.role === 'admin' || me?.role === 'gestor'
   const podeGerirDepartamentos = me?.role === 'admin'
   const podeGerirTabelaHorarios = me?.role === 'admin'
   const podeGerirLotacoes = me?.role === 'admin'
@@ -153,16 +152,6 @@ export function AppShell() {
               >
                 <span className={styles.navIcon} aria-hidden><IconEscala /></span>
                 Gerar Escala
-              </NavLink>
-            ) : null}
-            {podeLancarOcorrencia ? (
-              <NavLink
-                to="/ocorrencias/lancamento"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconOcorrencia /></span>
-                Ocorrências
               </NavLink>
             ) : null}
             {podeRelatorios ? (
@@ -494,15 +483,6 @@ function IconLotacao() {
       <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" strokeLinecap="round" />
       <rect x="9" y="3" width="6" height="4" rx="1" />
       <path d="M9 12h6M9 16h4" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function IconOcorrencia() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 8v4M12 16h.01" strokeLinecap="round" />
     </svg>
   )
 }

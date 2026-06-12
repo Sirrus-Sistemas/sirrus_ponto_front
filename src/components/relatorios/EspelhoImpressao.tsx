@@ -19,8 +19,8 @@ function formatDataPrint(iso: string): string {
   return `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(2, 4)}`
 }
 
-function horaMin(iso: string): string {
-  // returns "HH:MM" in local time
+function horaMin(m: MarcacaoEspelho): string {
+  const iso = m.data_hora_local ?? m.data_hora
   return formatHoraLocalPtBr(iso)
 }
 
@@ -102,26 +102,20 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
   const periodoInicio = dias[0]?.data ? formatDataPrint(dias[0].data) : ''
   const periodoFim = dias[dias.length - 1]?.data ? formatDataPrint(dias[dias.length - 1].data) : ''
 
-  // Footer calculations
+  // Footer — usa exclusivamente os valores calculados pelo backend (resumo)
   const totalCargaMin = dias
     .filter((d) => d.minutos_previstos != null)
     .reduce((s, d) => s + d.minutos_previstos!, 0)
 
-  const totalExtrasMin = dias
-    .filter((d) => d.saldo_minutos != null && d.saldo_minutos > 0)
-    .reduce((s, d) => s + d.saldo_minutos!, 0)
-
-  const totalDebitoMin = dias
-    .filter((d) => d.saldo_minutos != null && d.saldo_minutos < 0)
-    .reduce((s, d) => s + Math.abs(d.saldo_minutos!), 0)
-
-  const saldoMin = totalExtrasMin - totalDebitoMin
+  const saldoMin       = resumo.saldo_mes_minutos ?? 0
+  const totalExtrasMin = saldoMin > 0 ? saldoMin : 0
+  const totalDebitoMin = saldoMin < 0 ? Math.abs(saldoMin) : 0
 
   const totalExtras100pctMin = resumo.total_extras_100pct_minutos ?? 0
-  const totalExtras50pctMin = resumo.total_extras_50pct_minutos ?? 0
-  const totalNoturnoMin = resumo.total_minutos_noturno ?? 0
+  const totalExtras50pctMin  = resumo.total_extras_50pct_minutos ?? 0
+  const totalNoturnoMin      = resumo.total_minutos_noturno ?? 0
   // CLT art. 73 §1: 52min30s = 1h noturna → acréscimo = round(noturno / 7)
-  const totalAcrescimoMin = Math.round(totalNoturnoMin / 7)
+  const totalAcrescimoMin       = Math.round(totalNoturnoMin / 7)
   const totalHorasEmAdicionalMin = totalNoturnoMin + totalAcrescimoMin
 
   const empresaEndereco = [meta.empresa_endereco, meta.empresa_cidade, meta.empresa_uf]
@@ -289,13 +283,13 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
                 {/* REP */}
                 {repSlots.map((p, i) => (
                   <td key={`rep${i}`} className={styles.tdTime}>
-                    {p ? horaMin(p.data_hora) : '-'}
+                    {p ? horaMin(p) : '-'}
                   </td>
                 ))}
                 {/* Jornada */}
                 {allSlots.map((p, i) => (
                   <td key={`jrn${i}`} className={styles.tdTime}>
-                    {p ? horaMin(p.data_hora) : '-'}
+                    {p ? horaMin(p) : '-'}
                   </td>
                 ))}
                 <td className={styles.tdCh}>{meta.turno_id ?? '-'}</td>
@@ -343,7 +337,7 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
           </tr>
           <tr>
             <td>Total 1/2 Faltas:&nbsp;0</td>
-            <td>Total Extras:&nbsp;50%:&nbsp;<strong>{minToHHMM(totalExtras50pctMin > 0 ? totalExtras50pctMin : totalExtrasMin)}</strong></td>
+            <td>Total Extras:&nbsp;50%:&nbsp;<strong>{minToHHMM(totalExtras50pctMin)}</strong></td>
             <td className={styles.footerOcor}>CRÉDITOS (+)</td>
             <td>Acréscimo:&nbsp;{totalAcrescimoMin ? minToHHMM(totalAcrescimoMin) : '00:00'}</td>
             <td>Horas 50%:&nbsp;{saldoMin >= 0 ? `(+) ${minToHHMM(saldoMin)}` : `(-) ${minToHHMM(Math.abs(saldoMin))}`}</td>

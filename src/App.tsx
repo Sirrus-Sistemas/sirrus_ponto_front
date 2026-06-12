@@ -12,7 +12,6 @@ import { AjustarEscalaPage } from './components/escalas/AjustarEscalaPage'
 import { RelatorioEspelhoPage } from './components/relatorios/RelatorioEspelhoPage'
 import { RelatoriosPage } from './components/relatorios/RelatoriosPage'
 import { CadastroTiposOcorrenciaPage } from './components/ocorrencias/CadastroTiposOcorrenciaPage'
-import { LancamentoOcorrenciaPage } from './components/ocorrencias/LancamentoOcorrenciaPage'
 import { EspelhoPrintPage } from './components/relatorios/EspelhoPrintPage'
 import { IntegracaoMobilePage } from './components/mobile/IntegracaoMobilePage'
 import { CadastroMunicipioPage } from './components/municipios/CadastroMunicipioPage'
@@ -51,7 +50,6 @@ function App() {
             <Route path="/relatorios/espelho" element={<RelatorioEspelhoPage />} />
             <Route path="/filiais" element={<CadastroFiliaisPage />} />
             <Route path="/ocorrencias/tipos" element={<CadastroTiposOcorrenciaPage />} />
-            <Route path="/ocorrencias/lancamento" element={<LancamentoOcorrenciaPage />} />
             <Route path="/mobile/integracao" element={<IntegracaoMobilePage />} />
             <Route path="/municipios" element={<CadastroMunicipioPage />} />
             <Route path="/usuarios" element={<GerenciarUsuariosPage />} />
