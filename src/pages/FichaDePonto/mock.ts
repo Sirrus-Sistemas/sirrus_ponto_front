@@ -35,8 +35,8 @@ const EMPLOYEE: Employee = {
 const MOCK_MONTH = 10;
 const MOCK_YEAR = 2025;
 const d = (day: number, dow: number, status: DayRow['status'], punches: DayRow['punches'], extra?: Partial<DayRow>): DayRow => {
-  const { modifiers, ...rest } = extra ?? {};
-  return { day, month: MOCK_MONTH, year: MOCK_YEAR, dow, status, punches, punchIds: [], punchMotivos: [], modifiers: modifiers ?? [], ...rest };
+  const { modifiers, horariosPrevistos, ...rest } = extra ?? {};
+  return { day, month: MOCK_MONTH, year: MOCK_YEAR, dow, status, punches, punchIds: [], punchMotivos: [], horariosPrevistos: horariosPrevistos ?? [], modifiers: modifiers ?? [], ...rest };
 };
 
 const DAYS: DayRow[] = [
@@ -94,4 +94,5 @@ export const MOCK_FICHA: FichaDePontoData = {
   year: MOCK_YEAR,
   funcionarioId: 80,
   turnoId: null,
+  tzOffset: null,
 };

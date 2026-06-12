@@ -45,6 +45,8 @@ export async function lancarBatida(payload: {
   funcionario_id: number
   data_hora: string
   motivo?: string
+  justificativa?: string
+  slot_override?: number | null
 }): Promise<{ id: number; data_hora: string; tipo: string; motivo_edicao: string | null }> {
   const res = await apiRequest<MarcacaoResponse>('/api/marcacoes/lancar', {
     method: 'POST',
@@ -55,7 +57,7 @@ export async function lancarBatida(payload: {
 
 export async function editarBatida(
   id: number,
-  payload: { data_hora: string; motivo?: string; slot_override?: number | null },
+  payload: { data_hora: string; motivo?: string; justificativa?: string; slot_override?: number | null },
 ): Promise<void> {
   await apiRequest<SimpleResponse>(`/api/marcacoes/${id}`, {
     method: 'PUT',

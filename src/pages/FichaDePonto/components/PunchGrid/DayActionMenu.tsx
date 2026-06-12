@@ -18,11 +18,13 @@ interface DayActionMenuProps {
   onAbonar: (ctx: DayActionMenuContext) => void;
   onLancarOcorrencia: (ctx: DayActionMenuContext) => void;
   onJustificativaAutomatica: (ctx: DayActionMenuContext) => void;
+  onJustificativaManual: (ctx: DayActionMenuContext) => void;
   onExcluirOcorrencia: (ctx: DayActionMenuContext) => void;
   onExcluirJustificativaAutomatica: (ctx: DayActionMenuContext) => void;
+  onExcluirJustificativaManual: (ctx: DayActionMenuContext) => void;
 }
 
-export function DayActionMenu({ ctx, onClose, onAbonar, onLancarOcorrencia, onJustificativaAutomatica, onExcluirOcorrencia, onExcluirJustificativaAutomatica }: DayActionMenuProps) {
+export function DayActionMenu({ ctx, onClose, onAbonar, onLancarOcorrencia, onJustificativaAutomatica, onJustificativaManual, onExcluirOcorrencia, onExcluirJustificativaAutomatica, onExcluirJustificativaManual }: DayActionMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -43,7 +45,7 @@ export function DayActionMenu({ ctx, onClose, onAbonar, onLancarOcorrencia, onJu
   }, [onClose]);
 
   const menuWidth = 260;
-  const menuHeight = 280;
+  const menuHeight = 320;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const left = ctx.x + menuWidth > vw ? ctx.x - menuWidth : ctx.x;
@@ -86,6 +88,14 @@ export function DayActionMenu({ ctx, onClose, onAbonar, onLancarOcorrencia, onJu
 
         <button
           type="button"
+          className={styles.item}
+          onClick={() => { onClose(); onJustificativaManual(ctx); }}
+        >
+          <span className={styles.itemLabel}>Justificativa Manual</span>
+        </button>
+
+        <button
+          type="button"
           className={`${styles.item} ${styles.itemDanger}`}
           onClick={() => { onClose(); onExcluirOcorrencia(ctx); }}
         >
@@ -98,6 +108,14 @@ export function DayActionMenu({ ctx, onClose, onAbonar, onLancarOcorrencia, onJu
           onClick={() => { onClose(); onExcluirJustificativaAutomatica(ctx); }}
         >
           <span className={styles.itemLabel}>Excluir Justificativa Automática</span>
+        </button>
+
+        <button
+          type="button"
+          className={`${styles.item} ${styles.itemDanger}`}
+          onClick={() => { onClose(); onExcluirJustificativaManual(ctx); }}
+        >
+          <span className={styles.itemLabel}>Excluir Justificativa Manual</span>
         </button>
       </div>
     </div>

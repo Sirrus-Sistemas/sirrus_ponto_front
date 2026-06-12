@@ -191,6 +191,12 @@ export function CadastroTabelaHorariosPage() {
     setForm((f) => {
       const next = [...f.batidaTimes]
       next[i] = value
+      const { entrada, saida_intervalo, retorno_intervalo, saida } = dbFieldsFromBatidas(next)
+      setHorariosDia((dias) =>
+        dias.map((d) =>
+          d.trabalha ? { ...d, entrada, saida_intervalo, retorno_intervalo, saida } : d
+        )
+      )
       return { ...f, batidaTimes: next }
     })
   }

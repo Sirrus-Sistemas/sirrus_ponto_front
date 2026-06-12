@@ -25,6 +25,7 @@ export interface DayRow {
   punches: (Punch | null)[]; // always length 8: E1 S1 E2 S2 E3 S3 E4 S4
   punchIds: number[];        // IDs das marcações existentes (ordem asc)
   punchMotivos: (string | null)[]; // motivo_edicao de cada marcação (mesma ordem que punchIds)
+  horariosPrevistos: string[]; // horários esperados do turno/escala para justificativa automática (HH:MM)
   ocorrenciaId?: number;
   note?: string;
   isToday?: boolean;
@@ -67,4 +68,5 @@ export interface FichaDePontoData {
   year: number;
   funcionarioId: number;
   turnoId: number | null;
+  tzOffset: string | null; // ex: "-03:00", "-04:00"
 }

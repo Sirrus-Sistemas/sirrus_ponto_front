@@ -115,6 +115,7 @@ function buildDays(payload: EspelhoPayload): DayRow[] {
       punches,
       punchIds,
       punchMotivos,
+      horariosPrevistos: dia.horarios_previstos ?? [],
       ocorrenciaId: dia.ocorrencia?.id,
       holidayName: dia.feriado?.descricao,
     };
@@ -206,6 +207,7 @@ export function useFichaDePonto(params: Params): UseFichaDePontoResult {
           year: payload1.ano,
           funcionarioId: payload1.meta.funcionario_id,
           turnoId: payload1.meta.turno_id ?? null,
+          tzOffset: payload1.meta.tz_offset ?? null,
         });
       } else {
         const payload2 = await fetchEspelho(endYear, endMonth, employeeId);
@@ -218,6 +220,7 @@ export function useFichaDePonto(params: Params): UseFichaDePontoResult {
           year: payload1.ano,
           funcionarioId: payload1.meta.funcionario_id,
           turnoId: payload1.meta.turno_id ?? null,
+          tzOffset: payload1.meta.tz_offset ?? null,
         });
       }
     } catch (e) {

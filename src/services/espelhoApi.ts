@@ -67,6 +67,8 @@ export type DiaEspelho = {
   minutos_noturno: number
   /** Batida ímpar (intervalo aberto) ou ciclo incompleto. */
   incompleto: boolean
+  /** Horários previstos do turno/escala para o dia (HH:MM), em hora local. */
+  horarios_previstos: string[]
 }
 
 export type ResumoEspelho = {
@@ -106,6 +108,8 @@ export type EspelhoMeta = {
   dias_feriado_calendario: number
   /** Par 2–24; vem do turno do funcionário. */
   batidas_esperadas_dia?: number | null
+  /** Offset de fuso horário do funcionário, ex: "-03:00". */
+  tz_offset: string | null
 }
 
 export type EspelhoPayload = {

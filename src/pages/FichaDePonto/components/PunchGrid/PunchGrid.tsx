@@ -4,9 +4,9 @@ import type { DayRow } from '../../types';
 import { PunchRow, type CellDragHandlers } from './PunchRow';
 import { DayActionMenu, type DayActionMenuContext } from './DayActionMenu';
 import { OcorrenciaModal } from './OcorrenciaModal';
+import { JustificativaManualModal } from './JustificativaManualModal';
 import { excluirBatida, editarBatida } from '../../../../services/fichaPontoApi';
 import { lancarBatida } from '../../../../services/fichaPontoApi';
-import { fetchTurnoById, fetchTurnoHorarios } from '../../../../services/turnosApi';
 import { deleteOcorrencia } from '../../../../services/ocorrenciasApi';
 import styles from './PunchGrid.module.css';
 
@@ -15,6 +15,7 @@ interface PunchGridProps {
   funcionarioId: number;
   funcionarioNome: string;
   turnoId: number | null;
+  tzOffset: string | null;
   onReload: () => void;
   reloading?: boolean;
 }
@@ -58,9 +59,10 @@ const makeCellKey = (row: DayRow, slotIndex: number) =>
 const formatDay = (row: DayRow) =>
   `${String(row.day).padStart(2, '0')}/${String(row.month).padStart(2, '0')}`;
 
-export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, onReload, reloading }: PunchGridProps) {
+export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOffset, onReload, reloading }: PunchGridProps) {
   const [menuCtx, setMenuCtx] = useState<DayActionMenuContext | null>(null);
   const [ocorrenciaModal, setOcorrenciaModal] = useState<OcorrenciaModalState | null>(null);
+  const [justManualCtx, setJustManualCtx] = useState<DayActionMenuContext | null>(null);
   const [actionMsg, setActionMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
   const gridWrapRef = useRef<HTMLDivElement>(null);
 
@@ -270,41 +272,22 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, onRel
   }
 
   async function handleJustificativaAutomatica(ctx: DayActionMenuContext) {
-    const { row, funcionarioId: funcId, turnoId: tId } = ctx;
-    if (!tId) {
-      showMsg('error', 'Funcionário sem turno definido. Não é possível gerar justificativa automática.');
+    const { row, funcionarioId: funcId } = ctx;
+    const times = row.horariosPrevistos;
+
+    if (times.length === 0) {
+      showMsg('error', 'Nenhum horário previsto configurado para este dia. Verifique o turno ou escala do funcionário.');
       return;
     }
+
     try {
       const pad = (n: number) => String(n).padStart(2, '0');
       const datePrefix = `${row.year}-${pad(row.month)}-${pad(row.day)}`;
-
-      const diaSemana = new Date(row.year, row.month - 1, row.day).getDay();
-      const [horarios, turno] = await Promise.all([fetchTurnoHorarios(tId), fetchTurnoById(tId)]);
-      const horarioDia = horarios.find((h) => h.dia_semana === diaSemana);
-
-      if (horarioDia && !horarioDia.trabalha) {
-        showMsg('error', 'Este dia é folga no turno do funcionário.');
-        return;
-      }
-
-      const fonte = horarioDia ?? turno;
-      if (!fonte) {
-        showMsg('error', 'Turno do funcionário não encontrado.');
-        return;
-      }
-
-      const times = [fonte.entrada, fonte.saida_intervalo, fonte.retorno_intervalo, fonte.saida]
-        .filter(Boolean) as string[];
-
-      if (times.length === 0) {
-        showMsg('error', 'Nenhum horário configurado no turno deste funcionário.');
-        return;
-      }
+      const offset = tzOffset ?? '-03:00';
 
       const toUtc = (localTime: string): string => {
         const full = localTime.length === 5 ? localTime + ':00' : localTime;
-        const d = new Date(`${datePrefix}T${full}-03:00`);
+        const d = new Date(`${datePrefix}T${full}${offset}`);
         return d.toISOString().replace('T', ' ').slice(0, 19);
       };
 
@@ -322,6 +305,10 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, onRel
     }
   }
 
+  function handleJustificativaManual(ctx: DayActionMenuContext) {
+    setJustManualCtx(ctx);
+  }
+
   async function handleExcluirOcorrencia(ctx: DayActionMenuContext) {
     const { row } = ctx;
     if (!row.ocorrenciaId) {
@@ -334,6 +321,29 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, onRel
       onReload();
     } catch {
       showMsg('error', 'Não foi possível excluir a ocorrência.');
+    }
+  }
+
+  async function handleExcluirJustificativaManual(ctx: DayActionMenuContext) {
+    const slotIndex = SLOT_LABELS.indexOf(ctx.slotLabel);
+    const punchId = ctx.row.punchIds[slotIndex];
+    const motivo = ctx.row.punchMotivos[slotIndex];
+
+    if (punchId == null) {
+      showMsg('error', `Célula ${ctx.slotLabel} de ${ctx.dayLabel} não possui marcação.`);
+      return;
+    }
+    const MOTIVOS_SISTEMA = ['Justificativa automática', 'Movido manualmente', 'ESQUECIMENTO'];
+    if (!motivo || MOTIVOS_SISTEMA.includes(motivo)) {
+      showMsg('error', `Célula ${ctx.slotLabel} de ${ctx.dayLabel} não possui justificativa manual.`);
+      return;
+    }
+    try {
+      await excluirBatida(punchId);
+      showMsg('ok', `Justificativa manual da célula ${ctx.slotLabel} de ${ctx.dayLabel} excluída com sucesso.`);
+      onReload();
+    } catch {
+      showMsg('error', 'Não foi possível excluir a justificativa manual.');
     }
   }
 
@@ -444,8 +454,10 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, onRel
           onAbonar={(ctx) => void handleAbonar(ctx)}
           onLancarOcorrencia={handleLancarOcorrencia}
           onJustificativaAutomatica={(ctx) => void handleJustificativaAutomatica(ctx)}
+          onJustificativaManual={handleJustificativaManual}
           onExcluirOcorrencia={(ctx) => void handleExcluirOcorrencia(ctx)}
           onExcluirJustificativaAutomatica={(ctx) => void handleExcluirJustificativaAutomatica(ctx)}
+          onExcluirJustificativaManual={(ctx) => void handleExcluirJustificativaManual(ctx)}
         />
       )}
 
@@ -459,6 +471,20 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, onRel
           onSuccess={() => {
             setOcorrenciaModal(null);
             showMsg('ok', 'Ocorrência lançada com sucesso.');
+            onReload();
+          }}
+        />
+      )}
+
+      {justManualCtx && (
+        <JustificativaManualModal
+          ctx={justManualCtx}
+          funcionarioNome={funcionarioNome}
+          tzOffset={tzOffset}
+          onClose={() => setJustManualCtx(null)}
+          onSuccess={() => {
+            setJustManualCtx(null);
+            showMsg('ok', 'Justificativa manual salva com sucesso.');
             onReload();
           }}
         />

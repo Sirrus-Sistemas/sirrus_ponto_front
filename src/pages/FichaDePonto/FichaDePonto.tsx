@@ -152,6 +152,7 @@ export function FichaDePonto() {
             funcionarioId={dataComLotacao.funcionarioId}
             funcionarioNome={dataComLotacao.employee.fullName}
             turnoId={dataComLotacao.turnoId}
+            tzOffset={dataComLotacao.tzOffset}
             onReload={reload}
             reloading={loading}
           />
