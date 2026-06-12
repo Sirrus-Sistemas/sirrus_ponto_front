@@ -23,32 +23,6 @@ import styles from './IntegracaoMobilePage.module.css'
 
 dayjs.locale('pt-br')
 
-// Estilo do campo input (dentro do card escuro)
-const muiDarkSx = {
-  '& .MuiInputBase-root': {
-    color: '#1f2937 !important',
-    backgroundColor: '#ffffff !important',
-    borderRadius: '8px',
-    fontSize: '0.9rem',
-    minWidth: '148px',
-  },
-  '& .MuiOutlinedInput-root': {
-    backgroundColor: '#ffffff !important',
-  },
-  '& .MuiOutlinedInput-notchedOutline': {
-    borderColor: 'rgba(255,255,255,0.4) !important',
-  },
-  '& .MuiInputBase-input': {
-    color: '#1f2937 !important',
-    padding: '0.5rem 0.65rem',
-    backgroundColor: '#ffffff !important',
-  },
-  '& .MuiIconButton-root': {
-    color: '#4b5563 !important',
-    backgroundColor: 'transparent !important',
-  },
-}
-
 // Estilo do popup do calendário (branco, alinhado com o sistema)
 const muiPopupSlotProps = {
   popper: {

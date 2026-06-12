@@ -108,7 +108,6 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
     .reduce((s, d) => s + d.minutos_previstos!, 0)
 
   const saldoMin       = resumo.saldo_mes_minutos ?? 0
-  const totalExtrasMin = saldoMin > 0 ? saldoMin : 0
   const totalDebitoMin = saldoMin < 0 ? Math.abs(saldoMin) : 0
 
   const totalExtras100pctMin = resumo.total_extras_100pct_minutos ?? 0
