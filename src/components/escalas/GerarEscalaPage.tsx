@@ -174,22 +174,23 @@ export function GerarEscalaPage() {
         if (cancelled) return
         if (dias.length > 0) {
           setIsEditing(true)
-          // Pre-populate time pairs from the first work day only if form is still at defaults
+          // Pre-populate tipo_ciclo, inicio_ciclo and time pairs from the saved escala
+          const anyDay = dias[0]
           const workDay = dias.find((d) => d.tipo === 'trabalho')
-          if (workDay) {
-            setForm((prev) => ({
-              ...prev,
-              entrada1: workDay.entrada1?.slice(0, 5) || prev.entrada1,
-              saida1:   workDay.saida1?.slice(0, 5)   || prev.saida1,
-              entrada2: workDay.entrada2?.slice(0, 5) || prev.entrada2,
-              saida2:   workDay.saida2?.slice(0, 5)   || prev.saida2,
-              entrada3: workDay.entrada3?.slice(0, 5) || prev.entrada3,
-              saida3:   workDay.saida3?.slice(0, 5)   || prev.saida3,
-              entrada4: workDay.entrada4?.slice(0, 5) || prev.entrada4,
-              saida4:   workDay.saida4?.slice(0, 5)   || prev.saida4,
-              fim_noturno: workDay.fim_noturno?.slice(0, 5) || prev.fim_noturno,
-            }))
-          }
+          setForm((prev) => ({
+            ...prev,
+            tipo_ciclo:  anyDay.tipo_ciclo  ?? prev.tipo_ciclo,
+            inicio_ciclo: anyDay.inicio_ciclo ?? prev.inicio_ciclo,
+            entrada1: workDay?.entrada1?.slice(0, 5) || prev.entrada1,
+            saida1:   workDay?.saida1?.slice(0, 5)   || prev.saida1,
+            entrada2: workDay?.entrada2?.slice(0, 5) || prev.entrada2,
+            saida2:   workDay?.saida2?.slice(0, 5)   || prev.saida2,
+            entrada3: workDay?.entrada3?.slice(0, 5) || prev.entrada3,
+            saida3:   workDay?.saida3?.slice(0, 5)   || prev.saida3,
+            entrada4: workDay?.entrada4?.slice(0, 5) || prev.entrada4,
+            saida4:   workDay?.saida4?.slice(0, 5)   || prev.saida4,
+            fim_noturno: workDay?.fim_noturno?.slice(0, 5) || prev.fim_noturno,
+          }))
         } else {
           setIsEditing(false)
         }

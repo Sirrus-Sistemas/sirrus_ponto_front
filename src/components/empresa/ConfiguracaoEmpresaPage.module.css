@@ -1,0 +1,36 @@
+.page { --primary: #14918b; max-width: 680px; }
+.title { margin: 0 0 .35rem; font-size: 1.35rem; font-weight: 700; color: var(--sp-text); }
+.subtitle { margin: 0 0 1.5rem; font-size: .9rem; color: var(--sp-text-3); line-height: 1.45; }
+.card { background: var(--sp-bg-card); border-radius: 16px; padding: 1.5rem 1.35rem; margin-bottom: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06); }
+.sectionTitle { margin: 0 0 1rem; font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--sp-text-3); }
+.infoGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem 1.1rem; margin-bottom: 1.25rem; }
+.infoItem { display: flex; flex-direction: column; gap: .15rem; }
+.infoLabel { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--sp-text-3); }
+.infoValue { font-size: .95rem; color: var(--sp-text); font-weight: 500; }
+@media (max-width: 560px) { .infoGrid { grid-template-columns: 1fr; } }
+.field { display: flex; flex-direction: column; gap: .35rem; }
+.field label { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--sp-text-3); }
+.hint { margin: .25rem 0 0; font-size: .75rem; color: var(--sp-text-3); }
+.actions { margin-top: 1.5rem; display: flex; gap: .75rem; align-items: center; }
+.btnPrimary { border: none; border-radius: 9999px; padding: .75rem 1.75rem; font: inherit; font-size: .95rem; font-weight: 700; color: #fff; background: var(--primary); cursor: pointer; box-shadow: 0 8px 20px rgba(20,145,139,.35); }
+.btnPrimary:hover:not(:disabled) { background: #11837e; }
+.btnPrimary:disabled { opacity: .65; cursor: not-allowed; }
+.feedback { margin: 0 0 1rem; padding: .75rem 1rem; border-radius: var(--sp-radius-md); font-size: .88rem; }
+.feedbackError { background: var(--sp-sirrus-soft); color: var(--sp-sirrus); }
+.feedbackOk { background: #ecfdf5; color: var(--sp-status-presente-text); }
+.loading { color: var(--sp-text-3); font-size: .95rem; }
+.fusoTag { display: inline-flex; align-items: center; gap: .4rem; margin-top: .5rem; padding: .3rem .75rem; border-radius: 9999px; background: #ecfdf5; color: var(--sp-status-presente-text); font-size: .8rem; font-weight: 600; }
+
+/* ── Combo município ── */
+.comboWrap { position: relative; }
+.comboSearchIcon { position: absolute; left: .65rem; top: 50%; transform: translateY(-50%); font-size: .75rem; color: var(--sp-text-3); pointer-events: none; line-height: 1; z-index: 1; }
+.comboWrap input { width: 100%; border: 1px solid var(--sp-border); border-radius: 10px; padding: .55rem 2.2rem .55rem 2rem; font: inherit; font-size: .9rem; color: var(--sp-text); background: var(--sp-bg-card); min-height: 48px; box-sizing: border-box; transition: border-color .15s, box-shadow .15s; }
+.comboWrap input:focus { outline: none; border-color: #14918b; box-shadow: 0 0 0 1px #14918b; }
+.comboClear { position: absolute; right: .7rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: .85rem; color: var(--sp-text-3); padding: .2rem; line-height: 1; }
+.comboClear:hover { color: var(--sp-text); }
+.comboList { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--sp-bg-card); border: 1px solid var(--sp-border); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.1); list-style: none; margin: 0; padding: .3rem 0; z-index: 100; max-height: 260px; overflow-y: auto; }
+.comboItem { display: flex; align-items: center; gap: .5rem; padding: .6rem .9rem; cursor: pointer; font-size: .9rem; }
+.comboItem:hover { background: var(--sp-bg-card-soft); }
+.comboNome { flex: 1; font-weight: 500; color: var(--sp-text); }
+.comboUf { font-size: .75rem; font-weight: 700; color: var(--sp-text-2); background: var(--sp-bg-canvas); padding: 1px 6px; border-radius: 4px; }
+.comboFuso { font-size: .75rem; color: var(--sp-text-3); }

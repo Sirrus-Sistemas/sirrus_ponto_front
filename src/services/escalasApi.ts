@@ -22,6 +22,8 @@ export type EscalaPayload = {
 export type DiaEscala = {
   data: string
   tipo: 'trabalho' | 'folga'
+  tipo_ciclo: TipoCiclo | null
+  inicio_ciclo: string | null
   entrada1: string | null
   saida1: string | null
   entrada2: string | null

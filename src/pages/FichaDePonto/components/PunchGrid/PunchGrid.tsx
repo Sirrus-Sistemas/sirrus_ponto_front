@@ -280,6 +280,14 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOff
       return;
     }
 
+    // Só lança batidas nos slots que ainda estão vazios
+    const timesToFill = times.filter((_: string, i: number) => row.punches[i] == null);
+
+    if (timesToFill.length === 0) {
+      showMsg('error', 'Todos os horários previstos já estão preenchidos.');
+      return;
+    }
+
     try {
       const pad = (n: number) => String(n).padStart(2, '0');
       const datePrefix = `${row.year}-${pad(row.month)}-${pad(row.day)}`;
@@ -292,13 +300,13 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOff
       };
 
       await Promise.all(
-        times.map((t) => lancarBatida({
+        timesToFill.map((t: string) => lancarBatida({
           funcionario_id: funcId,
           data_hora: toUtc(t),
           motivo: 'Justificativa automática',
         }))
       );
-      showMsg('ok', `${times.length} batida(s) lançada(s) manualmente (${times.join(', ')}).`);
+      showMsg('ok', `${timesToFill.length} batida(s) lançada(s) manualmente (${timesToFill.join(', ')}).`);
       onReload();
     } catch {
       showMsg('error', 'Não foi possível lançar as batidas automáticas.');

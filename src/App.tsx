@@ -18,6 +18,7 @@ import { CadastroMunicipioPage } from './components/municipios/CadastroMunicipio
 import { GerenciarUsuariosPage } from './components/usuarios/GerenciarUsuariosPage'
 import { CadastroFeriadosPage } from './components/feriados/CadastroFeriadosPage'
 import { FichaDePonto } from './pages/FichaDePonto/FichaDePonto'
+import { ConfiguracaoEmpresaPage } from './components/empresa/ConfiguracaoEmpresaPage'
 import { LoginPage } from './components/login/LoginPage'
 import { PasswordRecoveryPage } from './components/login/PasswordRecoveryPage'
 import { getStoredToken } from './lib/api'
@@ -55,6 +56,7 @@ function App() {
             <Route path="/usuarios" element={<GerenciarUsuariosPage />} />
             <Route path="/feriados" element={<CadastroFeriadosPage />} />
             <Route path="/ficha-ponto" element={<FichaDePonto />} />
+            <Route path="/configuracoes/empresa" element={<ConfiguracaoEmpresaPage />} />
           </Route>
         </Route>
 

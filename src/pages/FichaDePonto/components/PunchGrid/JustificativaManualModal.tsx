@@ -40,9 +40,9 @@ export function JustificativaManualModal({
 
   function buildDataHora(time: string): string {
     const full = time.length === 5 ? time + ':00' : time;
-    const offset = tzOffset ?? '-03:00';
-    const d = new Date(`${dateStr}T${full}${offset}`);
-    return d.toISOString().replace('T', ' ').slice(0, 19);
+    // Sem offset explícito: browser interpreta como horário local e converte para UTC,
+    // consistente com parseDataHoraUtc + getHours() usados na exibição.
+    return new Date(`${dateStr}T${full}`).toISOString().replace('T', ' ').slice(0, 19);
   }
 
   async function handleSubmit(e: FormEvent) {
