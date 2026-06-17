@@ -18,7 +18,7 @@ interface JustificativaManualModalProps {
 export function JustificativaManualModal({
   ctx,
   funcionarioNome,
-  tzOffset,
+  tzOffset: _tzOffset,
   onClose,
   onSuccess,
 }: JustificativaManualModalProps) {
