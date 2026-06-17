@@ -130,6 +130,7 @@ export function IntegracaoMobilePage() {
 
   const [filtroFilialId, setFiltroFilialId] = useState<number | ''>('')
   const [filtroLotacaoId, setFiltroLotacaoId] = useState<number | ''>('')
+  const [filtroNome, setFiltroNome] = useState('')
   const [lotacoes, setLotacoes] = useState<Lotacao[]>([])
   const [funcPage, setFuncPage] = useState(0)
   const FUNC_PAGE_SIZE = 10
@@ -248,7 +249,10 @@ export function IntegracaoMobilePage() {
   }
 
   const filiaisAtivas = filiais.filter((f) => f.ativa)
-  const totalPages = Math.ceil(funcionarios.length / FUNC_PAGE_SIZE)
+  const funcionariosFiltrados = filtroNome.trim()
+    ? funcionarios.filter((f) => f.nome.toLowerCase().includes(filtroNome.trim().toLowerCase()))
+    : funcionarios
+  const totalPages = Math.ceil(funcionariosFiltrados.length / FUNC_PAGE_SIZE)
 
   return (
     <div className={styles.page}>
@@ -380,10 +384,20 @@ export function IntegracaoMobilePage() {
           <div className={styles.funcBar}>
             <div className={styles.funcBarFilters}>
               <div className={styles.fieldGroup}>
+                <label className={styles.filterLabel}>BUSCAR POR NOME</label>
+                <input
+                  type="search"
+                  placeholder="Digite o nome…"
+                  value={filtroNome}
+                  onChange={(e) => { setFiltroNome(e.target.value); setFuncPage(0) }}
+                  className={styles.inputSearch}
+                />
+              </div>
+              <div className={styles.fieldGroup}>
                 <label className={styles.filterLabel}>FILTRAR POR FILIAL</label>
                 <select
                   value={filtroFilialId}
-                  onChange={(e) => setFiltroFilialId(e.target.value ? Number(e.target.value) : '')}
+                  onChange={(e) => { setFiltroFilialId(e.target.value ? Number(e.target.value) : ''); setFuncPage(0) }}
                   className={styles.select}
                 >
                   <option value="">Todas as filiais</option>
@@ -396,7 +410,7 @@ export function IntegracaoMobilePage() {
                 <label className={styles.filterLabel}>LOTAÇÃO</label>
                 <select
                   value={filtroLotacaoId}
-                  onChange={(e) => setFiltroLotacaoId(e.target.value ? Number(e.target.value) : '')}
+                  onChange={(e) => { setFiltroLotacaoId(e.target.value ? Number(e.target.value) : ''); setFuncPage(0) }}
                   className={`${styles.select} ${styles.selectSm}`}
                 >
                   <option value="">Todas</option>
@@ -439,19 +453,28 @@ export function IntegracaoMobilePage() {
                 </tr>
               </thead>
               <tbody>
-                {funcionarios.length === 0 ? (
+                {funcionariosFiltrados.length === 0 ? (
                   <tr>
                     <td colSpan={4} className={styles.emptyRow}>Nenhum funcionário encontrado.</td>
                   </tr>
                 ) : (
-                  funcionarios.slice(funcPage * FUNC_PAGE_SIZE, (funcPage + 1) * FUNC_PAGE_SIZE).map((f) => {
-                    const synced = syncFuncMsg[f.id]?.startsWith('ok:')
+                  funcionariosFiltrados.slice(funcPage * FUNC_PAGE_SIZE, (funcPage + 1) * FUNC_PAGE_SIZE).map((f) => {
+                    const msg = syncFuncMsg[f.id] ?? ''
+                    const synced = msg.startsWith('ok:')
+                    const mobileId = synced ? msg.slice(3) : null
+                    const errored = msg && !synced
                     return (
                       <tr key={f.id}>
                         <td>{f.nome}</td>
                         <td className={styles.tdCpf}>{f.cpf ?? '—'}</td>
                         <td>
-                          <span className={synced ? styles.dotGreen : styles.dotGrey} />
+                          {synced ? (
+                            <span className={styles.syncOkMsg}>✓ ID {mobileId}</span>
+                          ) : errored ? (
+                            <span className={styles.syncErrMsg}>{msg}</span>
+                          ) : (
+                            <span className={styles.dotGrey} />
+                          )}
                         </td>
                         <td className={styles.tdAcao}>
                           <button
@@ -471,7 +494,7 @@ export function IntegracaoMobilePage() {
             </table>
           </div>
 
-          {funcionarios.length > FUNC_PAGE_SIZE && (
+          {funcionariosFiltrados.length > FUNC_PAGE_SIZE && (
             <div className={styles.pagination}>
               <button
                 className={styles.pageBtn}
@@ -482,7 +505,7 @@ export function IntegracaoMobilePage() {
               <button
                 className={styles.pageBtn}
                 onClick={() => setFuncPage((p) => p + 1)}
-                disabled={(funcPage + 1) * FUNC_PAGE_SIZE >= funcionarios.length}
+                disabled={(funcPage + 1) * FUNC_PAGE_SIZE >= funcionariosFiltrados.length}
               >›</button>
             </div>
           )}

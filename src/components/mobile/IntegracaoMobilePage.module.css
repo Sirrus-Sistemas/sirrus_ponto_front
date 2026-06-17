@@ -348,6 +348,18 @@
   text-transform: uppercase;
 }
 
+.inputSearch {
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--sp-border);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.88rem;
+  color: var(--sp-text);
+  background: var(--sp-bg-card);
+  min-width: 180px;
+}
+.inputSearch:focus { outline: none; border-color: #14918b; box-shadow: 0 0 0 1px #14918b; }
+
 .select {
   padding: 0.45rem 0.65rem;
   border: 1px solid var(--sp-border);
@@ -474,6 +486,22 @@
   height: 10px;
   border-radius: 50%;
   background: #c9d3d2;
+}
+
+.syncOkMsg {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #2a9d8f;
+  white-space: nowrap;
+}
+
+.syncErrMsg {
+  font-size: 0.78rem;
+  color: var(--sp-sirrus, #e05252);
+  white-space: nowrap;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ── Mobile ID badge ─────────────────────────────────────────────────────── */
