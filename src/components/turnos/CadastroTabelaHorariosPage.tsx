@@ -154,6 +154,8 @@ export function CadastroTabelaHorariosPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
+  const [busca, setBusca] = useState('')
+
   const [horariosDia, setHorariosDia] = useState<TurnoHorarioDia[]>([])
   const [loadingHorarios, setLoadingHorarios] = useState(false)
   const [savingHorarios, setSavingHorarios] = useState(false)
@@ -376,6 +378,10 @@ export function CadastroTabelaHorariosPage() {
     )
   }
 
+  const listaFiltrada = lista.filter((t) =>
+    t.nome.toLowerCase().includes(busca.toLowerCase()),
+  )
+
   const turnoAtual = lista.find((t) => t.id === editingId)
   const isEditing = editingId != null && editingId > 0
   const isCreating = editingId === 0
@@ -401,16 +407,32 @@ export function CadastroTabelaHorariosPage() {
         <aside className={styles.sidebar}>
           <div className={styles.sidebarHeader}>
             <span className={styles.sidebarLabel}>TURNOS ATIVOS</span>
-            <span className={styles.countChip}>{lista.length}</span>
+            <span className={styles.countChip}>{listaFiltrada.length}</span>
+          </div>
+
+          <div className={styles.searchWrapper}>
+            <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
+            <input
+              className={styles.searchInput}
+              type="search"
+              placeholder="Pesquisar por nome…"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+            />
           </div>
 
           {loadingLista ? (
             <p className={styles.loading}>Carregando…</p>
-          ) : lista.length === 0 ? (
-            <p className={styles.emptyList}>Nenhum turno cadastrado.</p>
+          ) : listaFiltrada.length === 0 ? (
+            <p className={styles.emptyList}>
+              {lista.length === 0 ? 'Nenhum turno cadastrado.' : 'Nenhum turno encontrado.'}
+            </p>
           ) : (
             <ul className={styles.turnoList}>
-              {lista.map((t) => (
+              {listaFiltrada.map((t) => (
                 <li
                   key={t.id}
                   className={`${styles.turnoCard} ${editingId === t.id ? styles.turnoCardActive : ''}`}

@@ -1,0 +1,35 @@
+.track {
+  display: flex;
+  background: var(--sp-bg-canvas);
+  border: 1px solid var(--sp-border-strong);
+  border-radius: var(--sp-radius-md);
+  padding: 3px;
+  gap: 2px;
+}
+
+.option {
+  flex: 1;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--sp-text-2);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, box-shadow 0.12s;
+  white-space: nowrap;
+}
+
+.option:hover:not(.active) {
+  background: var(--sp-bg-card-soft);
+  color: var(--sp-text);
+}
+
+.active {
+  background: var(--sp-bg-card);
+  color: var(--sp-primary-dark);
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(20, 32, 29, 0.1);
+}

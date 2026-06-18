@@ -1,378 +1,96 @@
+/* ── Página ──────────────────────────────────────────────────────────────── */
 .page {
-  --primary: #14918b;
-  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
 
-/* ─── Cabeçalho ────────────────────────────────────────────────────────────── */
+.loading {
+  color: var(--sp-text-3);
+  font-size: 0.95rem;
+  padding: 1.5rem;
+}
+
+.errorBanner {
+  margin-bottom: 0.8rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--sp-radius-md);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 0.88rem;
+}
+
+/* ── Breadcrumb ──────────────────────────────────────────────────────────── */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.78rem;
+  color: var(--sp-text-3);
+}
+
+.breadcrumbItem {
+  color: var(--sp-text-3);
+}
+
+.breadcrumbSep {
+  color: var(--sp-border-strong);
+  font-size: 0.9rem;
+}
+
+.breadcrumbCurrent {
+  color: var(--sp-text-2);
+  font-weight: 600;
+}
+
+/* ── Cabeçalho da página ─────────────────────────────────────────────────── */
+.pageHeader {
+  margin-bottom: 1.1rem;
+}
+
 .title {
-  margin: 0 0 0.35rem;
-  font-size: 1.35rem;
-  font-weight: 700;
+  margin: 0 0 0.3rem;
+  font-size: 1.5rem;
+  font-weight: 800;
   color: var(--sp-text);
+  line-height: 1.15;
 }
 
 .subtitle {
-  margin: 0 0 1.5rem;
-  font-size: 0.9rem;
+  margin: 0;
+  font-size: 0.88rem;
   color: var(--sp-text-3);
-  line-height: 1.45;
+  line-height: 1.5;
+  max-width: 560px;
 }
 
-/* ─── Card ──────────────────────────────────────────────────────────────────── */
-.card {
-  background: var(--sp-bg-card);
-  border-radius: 16px;
-  padding: 1.5rem 1.35rem;
-  margin-bottom: 1.25rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
-}
-
-.sectionTitle {
-  margin: 0 0 1rem;
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--sp-text-3);
-}
-
-/* ─── Grid de formulário ─────────────────────────────────────────────────── */
+/* ── Grid 2 colunas ──────────────────────────────────────────────────────── */
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem 1.1rem;
+  grid-template-columns: 380px 1fr;
+  gap: 1.1rem;
+  flex: 1;
+  min-height: 0;
+  align-items: start;
 }
 
-.gridFull  { grid-column: 1 / -1; }
-.gridThree { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-
-@media (max-width: 640px) {
-  .grid,
-  .gridThree { grid-template-columns: 1fr; }
+/* A coluna da tabela cresce até preencher a altura */
+.grid > :last-child {
+  align-self: stretch;
 }
 
-/* ─── Campos ─────────────────────────────────────────────────────────────── */
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
+/* ── Responsividade ──────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: 340px 1fr;
+  }
 }
 
-.field label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--sp-text-3);
+@media (max-width: 860px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }
-
-.field input,
-.field select,
-.field textarea {
-  width: 100%;
-  border: 1px solid var(--sp-border);
-  border-radius: 12px;
-  padding: 0.65rem 0.85rem;
-  font: inherit;
-  font-size: 0.95rem;
-  color: var(--sp-text);
-  background: var(--sp-bg-card);
-  min-height: 48px;
-  box-sizing: border-box;
-  resize: vertical;
-}
-
-.field textarea { min-height: 72px; }
-
-.field input:focus,
-.field select:focus,
-.field textarea:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 1px var(--primary);
-}
-
-/* ─── Toggle recorrente ──────────────────────────────────────────────────── */
-.toggleRow {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-top: 0.25rem;
-}
-
-.toggleRow input[type='checkbox'] {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--primary);
-  cursor: pointer;
-  min-height: unset;
-  flex-shrink: 0;
-}
-
-.toggleLabel {
-  font-size: 0.88rem;
-  color: var(--sp-text);
-  cursor: pointer;
-  user-select: none;
-}
-
-/* ─── Ações ──────────────────────────────────────────────────────────────── */
-.actions {
-  margin-top: 1.5rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-.btnPrimary {
-  border: none;
-  border-radius: 9999px;
-  padding: 0.75rem 1.75rem;
-  font: inherit;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #fff;
-  background: var(--primary);
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(20,145,139,.35);
-}
-
-.btnPrimary:hover:not(:disabled) { background: #11837e; }
-.btnPrimary:disabled { opacity: .65; cursor: not-allowed; }
-
-.btnGhost {
-  border: 1px solid var(--sp-border);
-  border-radius: 9999px;
-  padding: 0.75rem 1.25rem;
-  font: inherit;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--sp-text-2);
-  background: var(--sp-bg-card);
-  cursor: pointer;
-}
-
-.btnGhost:hover:not(:disabled) { background: var(--sp-bg-card-soft); }
-.btnGhost:disabled { opacity: .55; cursor: not-allowed; }
-
-.btnLink {
-  border: none;
-  background: none;
-  padding: 0;
-  font: inherit;
-  font-size: inherit;
-  font-weight: 600;
-  color: var(--primary);
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.btnLink:hover { color: #11837e; }
-
-.btnDanger {
-  border: none;
-  background: none;
-  padding: 0;
-  font: inherit;
-  font-size: inherit;
-  font-weight: 600;
-  color: var(--sp-sirrus, #dc2626);
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.btnDanger:hover { opacity: .75; }
-
-/* ─── Feedback ───────────────────────────────────────────────────────────── */
-.feedback {
-  margin: 0 0 1rem;
-  padding: 0.75rem 1rem;
-  border-radius: 10px;
-  font-size: 0.88rem;
-}
-
-.feedbackError { background: var(--sp-sirrus-soft); color: var(--sp-sirrus); }
-.feedbackOk    { background: #ecfdf5; color: var(--sp-status-presente-text); }
-
-/* ─── Acesso negado ──────────────────────────────────────────────────────── */
-.denied {
-  background: #fffbeb;
-  border: 1px solid #fcd34d;
-  border-radius: var(--sp-radius-lg);
-  padding: 1.25rem 1.1rem;
-  color: var(--sp-status-ocorrencia-text);
-}
-
-.denied h2 { margin: 0 0 0.5rem; font-size: 1.1rem; }
-.denied p  { margin: 0; font-size: 0.9rem; line-height: 1.5; }
-.denied a  { color: var(--sp-status-presente-text); font-weight: 600; }
-
-/* ─── Lista ──────────────────────────────────────────────────────────────── */
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.filters input,
-.filters select {
-  border: 1px solid var(--sp-border);
-  border-radius: 12px;
-  padding: 0.55rem 0.85rem;
-  font: inherit;
-  font-size: 0.9rem;
-  color: var(--sp-text);
-  background: var(--sp-bg-card);
-  min-height: 42px;
-}
-
-.filters input { flex: 1 1 200px; }
-.filters select { flex: 0 0 150px; }
-
-.filters input:focus,
-.filters select:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 1px var(--primary);
-}
-
-.tableWrap { overflow-x: auto; margin: 0 -0.25rem; }
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.88rem;
-}
-
-.table th,
-.table td {
-  text-align: left;
-  padding: 0.65rem 0.5rem;
-  border-bottom: 1px solid var(--sp-border);
-  white-space: nowrap;
-}
-
-.table th {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--sp-text-3);
-  font-weight: 700;
-}
-
-.table tbody tr:hover { background: var(--sp-bg-card-soft); }
-
-.emptyRow td { color: var(--sp-text-3); font-style: italic; }
-
-/* ─── Badge tipo ─────────────────────────────────────────────────────────── */
-.badge {
-  display: inline-block;
-  padding: 0.2rem 0.55rem;
-  border-radius: 9999px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.badgeNacional    { background: #dbeafe; color: #1d4ed8; }
-.badgeEstadual    { background: #ede9fe; color: #5b21b6; }
-.badgeMunicipal   { background: #fef9c3; color: #713f12; }
-.badgeEmpresarial { background: #d1fae5; color: #065f46; }
-
-/* ─── Recorrente icon ────────────────────────────────────────────────────── */
-.recorrenteIcon {
-  font-size: 1rem;
-  line-height: 1;
-}
-
-/* ─── Paginação ──────────────────────────────────────────────────────────── */
-.pagination {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
-  font-size: 0.88rem;
-  color: var(--sp-text-3);
-}
-
-.pagination button {
-  border: 1px solid var(--sp-border);
-  border-radius: 8px;
-  padding: 0.3rem 0.75rem;
-  font: inherit;
-  font-size: 0.85rem;
-  background: var(--sp-bg-card);
-  cursor: pointer;
-}
-
-.pagination button:hover:not(:disabled) { background: var(--sp-bg-canvas); }
-.pagination button:disabled { opacity: .4; cursor: not-allowed; }
-
-/* ─── Hint / Loading ─────────────────────────────────────────────────────── */
-.hint {
-  margin: 0.25rem 0 0;
-  font-size: 0.75rem;
-  color: var(--sp-text-3);
-}
-
-.loading { color: var(--sp-text-3); font-size: 0.95rem; }
-
-/* ─── Modal de confirmação ───────────────────────────────────────────────── */
-.modalOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-}
-
-.modal {
-  background: var(--sp-bg-card);
-  border-radius: 16px;
-  padding: 1.75rem 1.5rem;
-  max-width: 420px;
-  width: calc(100% - 2rem);
-  box-shadow: 0 20px 60px rgba(0,0,0,.2);
-}
-
-.modal h3 {
-  margin: 0 0 0.75rem;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--sp-text);
-}
-
-.modal p {
-  margin: 0 0 1.5rem;
-  font-size: 0.9rem;
-  color: var(--sp-text-2);
-  line-height: 1.5;
-}
-
-.modalActions {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: flex-end;
-}
-
-.btnDeleteConfirm {
-  border: none;
-  border-radius: 9999px;
-  padding: 0.65rem 1.5rem;
-  font: inherit;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #fff;
-  background: #dc2626;
-  cursor: pointer;
-}
-
-.btnDeleteConfirm:hover:not(:disabled) { background: #b91c1c; }
-.btnDeleteConfirm:disabled { opacity: .65; cursor: not-allowed; }

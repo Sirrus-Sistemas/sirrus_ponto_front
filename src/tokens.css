@@ -61,4 +61,26 @@
   /* ── Shadows ──────────────────────────────────────────────────────── */
   --sp-shadow-sm: 0 1px 0 rgba(20, 32, 29, .04);
   --sp-shadow-md: 0 1px 0 rgba(20, 32, 29, .04), 0 4px 16px rgba(20, 32, 29, .06);
+  --sp-shadow-card: 0 1px 2px rgba(20, 32, 29, .03), 0 12px 30px rgba(20, 32, 29, .05);
+
+  /* ── Primário (teal) ──────────────────────────────────────────────────── */
+  --sp-primary:      #14918B;
+  --sp-primary-dark: #11837E;
+  --sp-primary-soft: #E2F1EF;
+
+  /* ── Chips de tipo de feriado ─────────────────────────────────────────── */
+  --sp-fer-nacional-bg:    #E3EBF6;
+  --sp-fer-nacional-fg:    #2A4D7E;
+  --sp-fer-estadual-bg:    #FBEED3;
+  --sp-fer-estadual-fg:    #84561A;
+  --sp-fer-municipal-bg:   #E2F1EF;
+  --sp-fer-municipal-fg:   #11837E;
+  --sp-fer-empresarial-bg: #EDE7F6;
+  --sp-fer-empresarial-fg: #5A4191;
+
+  /* ── OK / recorrente ──────────────────────────────────────────────────── */
+  --sp-ok-fg: #2F7A53;
+
+  /* ── Raio extra-grande ────────────────────────────────────────────────── */
+  --sp-radius-card: 18px;
 }
