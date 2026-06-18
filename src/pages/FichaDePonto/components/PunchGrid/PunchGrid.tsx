@@ -224,18 +224,31 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOff
       from.row.month === toRow.month &&
       from.row.day === toRow.day;
 
-    const [hh, mm] = from.time.split(':').map(Number);
-    const localDate = new Date(toRow.year, toRow.month - 1, toRow.day, hh, mm, 0);
-    const data_hora = localDate.toISOString().replace('T', ' ').slice(0, 19);
+    const pad = (n: number) => String(n).padStart(2, '0');
 
     setMoving(true);
     try {
-      await editarBatida(from.punchId, {
-        data_hora,
-        motivo: 'Movido manualmente',
-        // Para moves no mesmo dia, persiste a posição desejada no slot_override
-        slot_override: isSameDay ? confirmMove.toSlotIndex : null,
-      });
+      if (isSameDay) {
+        // Mesmo dia: altera data_hora para reordenar + slot_override para fixar posição
+        const [hh, mm] = from.time.split(':').map(Number);
+        const localDate = new Date(toRow.year, toRow.month - 1, toRow.day, hh, mm, 0);
+        const data_hora = localDate.toISOString().replace('T', ' ').slice(0, 19);
+        await editarBatida(from.punchId, {
+          data_hora,
+          motivo: 'Movido manualmente',
+          slot_override: confirmMove.toSlotIndex,
+        });
+      } else {
+        // Dia diferente (turno noturno): mantém data_hora original intacta para cálculo
+        // correto de horas no espelho. Usa dia_referencia para agrupar a batida no dia
+        // destino na exibição da ficha.
+        const dia_referencia = `${toRow.year}-${pad(toRow.month)}-${pad(toRow.day)}`;
+        await editarBatida(from.punchId, {
+          dia_referencia,
+          motivo: 'Movido manualmente',
+          slot_override: confirmMove.toSlotIndex,
+        });
+      }
       showMsg('ok', `Batida ${from.time} movida do dia ${formatDay(from.row)} para ${formatDay(toRow)} com sucesso.`);
       setConfirmMove(null);
       onReload();
