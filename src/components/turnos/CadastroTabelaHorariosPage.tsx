@@ -48,13 +48,26 @@ function labelBatida(i: number, total: number): string {
 /** Monta array de horários a partir dos campos do turno */
 function batidaTimesFromTurno(t: Turno): string[] {
   const n = t.batidas_esperadas_dia ?? 4
-  const base = [
-    horaParaInput(t.entrada),
-    horaParaInput(t.saida_intervalo),
-    horaParaInput(t.retorno_intervalo),
-    horaParaInput(t.saida),
-  ]
-  return Array.from({ length: n }, (_, i) => base[i] ?? '')
+
+  // Coluna JSON tem o array completo (suporta > 4 batidas)
+  if (t.batida_times_json) {
+    try {
+      const parsed: unknown = JSON.parse(t.batida_times_json)
+      if (Array.isArray(parsed) && parsed.length === n) {
+        return (parsed as unknown[]).map((v) => (typeof v === 'string' ? v : ''))
+      }
+    } catch { /* fall through */ }
+  }
+
+  // Fallback legado: 4 colunas — coloca entrada, intervalo e saída nas posições corretas
+  const arr: string[] = Array.from({ length: n }, () => '')
+  arr[0] = horaParaInput(t.entrada)
+  if (n >= 4) {
+    arr[1] = horaParaInput(t.saida_intervalo)
+    arr[2] = horaParaInput(t.retorno_intervalo)
+  }
+  arr[n - 1] = horaParaInput(t.saida)
+  return arr
 }
 
 /** Extrai os 4 campos de DB a partir do array de batidas */
@@ -309,6 +322,8 @@ export function CadastroTabelaHorariosPage() {
 
     setSubmitting(true)
     try {
+      const batidaTimesJson = JSON.stringify(form.batidaTimes)
+
       if (editingId != null && editingId > 0) {
         const payload: UpdateTurnoPayload = {
           nome,
@@ -322,6 +337,7 @@ export function CadastroTabelaHorariosPage() {
           tipo: form.tipo,
           batidas_esperadas_dia: batidas,
           ativo: form.ativo === '0' ? 0 : 1,
+          batida_times_json: batidaTimesJson,
         }
         await updateTurno(editingId, payload)
         await salvarHorariosSilent(editingId)
@@ -338,6 +354,7 @@ export function CadastroTabelaHorariosPage() {
           intervalo_minimo_min: parseMin(form.intervalo_minimo_min, 60),
           tipo: form.tipo,
           batidas_esperadas_dia: batidas,
+          batida_times_json: batidaTimesJson,
         }
         await createTurno(payload)
         setSuccess('Turno cadastrado com sucesso.')
