@@ -314,6 +314,11 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOff
   }
 
   function handleJustificativaManual(ctx: DayActionMenuContext) {
+    const slotIndex = SLOT_LABELS.indexOf(ctx.slotLabel);
+    if (ctx.row.punchIds[slotIndex] != null) {
+      showMsg('error', `A célula ${ctx.slotLabel} de ${ctx.dayLabel} já possui uma batida. Abona a batida primeiro e depois lance a justificativa.`);
+      return;
+    }
     setJustManualCtx(ctx);
   }
 
