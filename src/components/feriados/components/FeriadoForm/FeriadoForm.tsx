@@ -1,14 +1,16 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { TipoFeriado, FeriadoPayload } from '../../types'
 import { ApiError } from '../../../../lib/api'
 import { UFS } from '../../data'
 import { Segmented } from '../ui/Segmented'
+import { fetchMunicipios, type Municipio } from '../../../../services/municipiosApi'
 import styles from './FeriadoForm.module.css'
 
 interface FormState {
   nome: string
   tipo: TipoFeriado
   uf: string
+  municipioId: string
   dia: number
   mes: number
   ano: number
@@ -22,6 +24,7 @@ const INITIAL: FormState = {
   nome: '',
   tipo: 'nacional',
   uf: '',
+  municipioId: '',
   dia: 1,
   mes: 1,
   ano: ANO_ATUAL,
@@ -54,15 +57,68 @@ export function FeriadoForm({ onSubmit }: FeriadoFormProps) {
   const [form, setForm] = useState<FormState>(INITIAL)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [municipios, setMunicipios] = useState<Municipio[]>([])
+  const [municipioQuery, setMunicipioQuery] = useState('')
+  const [loadingMun, setLoadingMun] = useState(false)
 
   const showUF = form.tipo === 'estadual' || form.tipo === 'municipal'
+  const showMunicipio = form.tipo === 'municipal'
+
+  useEffect(() => {
+    if (!showMunicipio || !form.uf) {
+      setMunicipios([])
+      return
+    }
+    let cancelled = false
+    setLoadingMun(true)
+
+    async function loadAll() {
+      try {
+        const first = await fetchMunicipios({ estado: form.uf, limit: 100, page: 1 })
+        if (cancelled) return
+        let all = [...first.rows]
+        const pages = Math.ceil(first.total / 100)
+        if (pages > 1) {
+          const rest = await Promise.all(
+            Array.from({ length: pages - 1 }, (_, i) =>
+              fetchMunicipios({ estado: form.uf, limit: 100, page: i + 2 })
+            )
+          )
+          if (cancelled) return
+          all = [...all, ...rest.flatMap(r => r.rows)]
+        }
+        setMunicipios(all)
+      } catch {
+        // silently ignore
+      } finally {
+        if (!cancelled) setLoadingMun(false)
+      }
+    }
+    loadAll()
+    return () => { cancelled = true }
+  }, [showMunicipio, form.uf])
 
   const isValid =
     form.nome.trim() !== '' &&
-    (showUF ? form.uf !== '' : true)
+    (showUF ? form.uf !== '' : true) &&
+    (showMunicipio ? form.municipioId !== '' : true)
 
   function handleTipoChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    setForm((f) => ({ ...f, tipo: e.target.value as TipoFeriado, uf: '' }))
+    setForm((f) => ({ ...f, tipo: e.target.value as TipoFeriado, uf: '', municipioId: '' }))
+    setMunicipioQuery('')
+    setMunicipios([])
+  }
+
+  function handleUFChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    setForm((f) => ({ ...f, uf: e.target.value, municipioId: '' }))
+    setMunicipioQuery('')
+  }
+
+  function handleMunicipioChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const val = e.target.value
+    setMunicipioQuery(val)
+    const match = municipios.find(m => m.NOMEMUNICIPIO === val)
+    setForm(f => ({ ...f, municipioId: match ? String(match.CODMUNICIPIO) : '' }))
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -77,14 +133,17 @@ export function FeriadoForm({ onSubmit }: FeriadoFormProps) {
 
     try {
       await onSubmit({
-        nome:       form.nome.trim(),
-        tipo:       form.tipo,
+        nome:           form.nome.trim(),
+        tipo:           form.tipo,
         data,
-        recorrente: form.recorrente,
-        uf:         form.uf || null,
-        observacao: form.observacao.trim() || null,
+        recorrente:     form.recorrente,
+        uf:             form.uf || null,
+        municipio_ibge: form.municipioId || null,
+        observacao:     form.observacao.trim() || null,
       })
       setForm(INITIAL)
+      setMunicipioQuery('')
+      setMunicipios([])
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Não foi possível cadastrar o feriado.')
     } finally {
@@ -136,22 +195,63 @@ export function FeriadoForm({ onSubmit }: FeriadoFormProps) {
           </select>
         </div>
 
-        {/* UF (estadual ou municipal) */}
+        {/* UF + Município (municipal) | apenas UF (estadual) */}
         {showUF && (
-          <div className={styles.field}>
-            <label htmlFor="fer-uf" className={styles.label}>UF</label>
-            <select
-              id="fer-uf"
-              className={styles.select}
-              value={form.uf}
-              onChange={(e) => setForm((f) => ({ ...f, uf: e.target.value }))}
-            >
-              <option value="">Selecione a UF…</option>
-              {UFS.map((uf) => (
-                <option key={uf} value={uf}>{uf}</option>
-              ))}
-            </select>
-          </div>
+          showMunicipio ? (
+            <div className={styles.ufMunRow}>
+              <div className={styles.field}>
+                <label htmlFor="fer-uf" className={styles.label}>UF</label>
+                <select
+                  id="fer-uf"
+                  className={styles.select}
+                  value={form.uf}
+                  onChange={handleUFChange}
+                >
+                  <option value="">UF…</option>
+                  {UFS.map((uf) => (
+                    <option key={uf} value={uf}>{uf}</option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.field}>
+                <label htmlFor="fer-municipio" className={styles.label}>Município</label>
+                <input
+                  id="fer-municipio"
+                  className={styles.input}
+                  list="fer-mun-list"
+                  value={municipioQuery}
+                  onChange={handleMunicipioChange}
+                  placeholder={
+                    !form.uf        ? 'Selecione a UF primeiro' :
+                    loadingMun      ? 'Carregando municípios…'  :
+                                      'Digite o município…'
+                  }
+                  disabled={!form.uf || loadingMun}
+                  autoComplete="off"
+                />
+                <datalist id="fer-mun-list">
+                  {municipios.map(m => (
+                    <option key={m.CODMUNICIPIO} value={m.NOMEMUNICIPIO} />
+                  ))}
+                </datalist>
+              </div>
+            </div>
+          ) : (
+            <div className={styles.field}>
+              <label htmlFor="fer-uf" className={styles.label}>UF</label>
+              <select
+                id="fer-uf"
+                className={styles.select}
+                value={form.uf}
+                onChange={(e) => setForm((f) => ({ ...f, uf: e.target.value }))}
+              >
+                <option value="">Selecione a UF…</option>
+                {UFS.map((uf) => (
+                  <option key={uf} value={uf}>{uf}</option>
+                ))}
+              </select>
+            </div>
+          )
         )}
 
         {/* Data */}

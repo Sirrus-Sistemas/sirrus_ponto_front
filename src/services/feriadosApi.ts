@@ -9,6 +9,8 @@ export interface Feriado {
   tipo: TipoFeriado
   recorrente: boolean   // se true, repete todo ano
   uf?: string | null
+  municipio_ibge?: string | null
+  municipio_nome?: string | null
   observacao?: string | null
   criado_em?: string
 }
@@ -19,6 +21,7 @@ export interface FeriadoPayload {
   tipo: TipoFeriado
   recorrente: boolean
   uf?: string | null
+  municipio_ibge?: string | null
   observacao?: string | null
 }
 

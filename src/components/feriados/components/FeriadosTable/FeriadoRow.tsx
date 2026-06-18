@@ -14,8 +14,18 @@ function formatData(f: Feriado): string {
   return `${dd}/${mm}/${yyyy}`
 }
 
-function formatLocal(f: Feriado): string {
-  if ((f.tipo === 'estadual' || f.tipo === 'municipal') && f.uf) return f.uf
+function formatLocal(f: Feriado) {
+  if (f.tipo === 'municipal' && f.uf) {
+    return (
+      <span>
+        {f.uf}
+        {f.municipio_nome && (
+          <> · <span style={{ color: 'var(--sp-text-2, inherit)' }}>{f.municipio_nome}</span></>
+        )}
+      </span>
+    )
+  }
+  if (f.tipo === 'estadual' && f.uf) return f.uf
   return '—'
 }
 
