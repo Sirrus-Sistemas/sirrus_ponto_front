@@ -16,6 +16,7 @@ export type Filial = {
   num_registradora?: string | null
   ativa?: number
   total_funcionarios?: number
+  updated_at?: string | null
 }
 
 type ListaResponse<T> = { success?: boolean; data: T }
