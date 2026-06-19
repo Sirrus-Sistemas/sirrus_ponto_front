@@ -36,6 +36,7 @@ export type Lotacao = {
   hora_inicio_adicional_noturno: string
   ativo?: number
   total_funcionarios?: number
+  updated_at?: string | null
 }
 
 type ListaResponse<T> = { success?: boolean; data: T }
@@ -45,7 +46,7 @@ export async function fetchLotacoes(signal?: AbortSignal): Promise<Lotacao[]> {
   return Array.isArray(res.data) ? res.data : []
 }
 
-export type LotacaoPayload = Omit<Lotacao, 'id' | 'empresa_id' | 'ativo' | 'total_funcionarios'>
+export type LotacaoPayload = Omit<Lotacao, 'id' | 'empresa_id' | 'ativo' | 'total_funcionarios' | 'updated_at'>
 
 export async function createLotacao(payload: LotacaoPayload): Promise<Record<string, unknown>> {
   const res = await apiRequest<ListaResponse<Record<string, unknown>>>('/api/lotacoes', {
