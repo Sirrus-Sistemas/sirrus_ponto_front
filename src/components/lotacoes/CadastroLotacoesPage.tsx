@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ChangeEvent } from 'react'
+import { useCallback, useEffect, useState, type ChangeEvent, type ReactElement } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import { ApiError } from '../../lib/api'
 import type { AppShellOutletContext } from '../layout/appShellContext'
@@ -122,7 +122,7 @@ function formParaPayload(f: ReturnType<typeof emptyForm>): LotacaoPayload {
 
 type Tab = 'geral' | 'domingo' | 'parametros' | 'horarios'
 
-const TABS: { id: Tab; label: string; icon: () => JSX.Element }[] = [
+const TABS: { id: Tab; label: string; icon: () => ReactElement }[] = [
   { id: 'geral',      label: 'Geral',             icon: TagIcon },
   { id: 'domingo',    label: 'Domingo & feriado',  icon: CalendarIcon },
   { id: 'parametros', label: 'Parâmetros',         icon: SlidersIcon },
