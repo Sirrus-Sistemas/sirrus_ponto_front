@@ -51,6 +51,7 @@ export async function fetchTiposOcorrencia(): Promise<TipoOcorrencia[]> {
 export async function createTipoOcorrencia(payload: {
   descricao: string
   tipo_lancamento: TipoLancamento
+  ativo?: number
 }): Promise<TipoOcorrencia> {
   const res = await apiRequest<{ data: TipoOcorrencia }>('/api/tipos-ocorrencia', {
     method: 'POST',
