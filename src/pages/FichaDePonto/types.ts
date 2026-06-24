@@ -26,6 +26,7 @@ export interface DayRow {
   punchIds: number[];        // IDs das marcações existentes (ordem asc)
   punchMotivos: (string | null)[]; // motivo_edicao de cada marcação (mesma ordem que punchIds)
   horariosPrevistos: string[]; // horários esperados do turno/escala para justificativa automática (HH:MM)
+  batidasEsperadas?: number | null; // quantidade de batidas esperadas conforme turno
   ocorrenciaId?: number;
   note?: string;
   isToday?: boolean;

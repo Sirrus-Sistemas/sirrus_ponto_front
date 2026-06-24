@@ -46,7 +46,7 @@ export function PunchRow({ row, onCellOpen, dragHandlers, draggingKey, dragOverK
       </td>
 
       {row.punches.map((punch, i) => {
-        const isMissing = isInconsistente && punch === null && i < 4;
+        const isMissing = isInconsistente && punch === null && i < (row.batidasEsperadas ?? 4);
         const slotLabel = SLOT_LABELS[i];
         const handleOpen = (e: React.MouseEvent) => onCellOpen?.(dayLabel, slotLabel, row, e);
 

@@ -67,6 +67,8 @@ export type DiaEspelho = {
   minutos_noturno: number
   /** Batida ímpar (intervalo aberto) ou ciclo incompleto. */
   incompleto: boolean
+  /** Quantidade de batidas esperadas para o dia conforme turno do colaborador. */
+  batidas_esperadas?: number | null
   /** Horários previstos do turno/escala para o dia (HH:MM), em hora local. */
   horarios_previstos: string[]
 }

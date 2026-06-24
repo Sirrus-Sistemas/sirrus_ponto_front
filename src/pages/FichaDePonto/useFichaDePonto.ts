@@ -116,6 +116,7 @@ function buildDays(payload: EspelhoPayload): DayRow[] {
       punchIds,
       punchMotivos,
       horariosPrevistos: dia.horarios_previstos ?? [],
+      batidasEsperadas: dia.batidas_esperadas ?? null,
       ocorrenciaId: dia.ocorrencia?.id,
       holidayName: dia.feriado?.descricao,
     };
