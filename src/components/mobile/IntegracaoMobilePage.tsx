@@ -146,7 +146,9 @@ export function IntegracaoMobilePage() {
 
   const [pullFilialId, setPullFilialId] = useState<number | ''>('')
   const [pullLotacaoId, setPullLotacaoId] = useState<number | ''>('')
-  const [dataInicio, setDataInicio] = useState<Dayjs | null>(() => dayjs().subtract(1, 'month').startOf('month'))
+  const [pullFuncionarioId, setPullFuncionarioId] = useState<number | ''>('')
+  const [pullFuncionarios, setPullFuncionarios] = useState<FuncionarioListItem[]>([])
+  const [dataInicio, setDataInicio] = useState<Dayjs | null>(() => dayjs().startOf('month'))
   const [dataFim, setDataFim] = useState<Dayjs | null>(() => dayjs())
   const [pullLoading, setPullLoading] = useState(false)
   const [pullResult, setPullResult] = useState<{ importados: number; ignorados: number; erros: { id: number; error: string }[] } | null>(null)
@@ -182,6 +184,19 @@ export function IntegracaoMobilePage() {
       .then((r) => { setFuncionarios(r.data); setFuncPage(0) })
       .catch(() => {})
   }, [filtroFilialId, filtroLotacaoId])
+
+  useEffect(() => {
+    setPullFuncionarioId('')
+    if (!pullFilialId) { setPullFuncionarios([]); return }
+    fetchFuncionarios({
+      limit: 1000,
+      ativo: 1,
+      filial_id: pullFilialId,
+      lotacao_id: pullLotacaoId || undefined,
+    })
+      .then((r) => setPullFuncionarios(r.data))
+      .catch(() => {})
+  }, [pullFilialId, pullLotacaoId])
 
   async function handleSyncFilial(id: number) {
     setSyncFilialLoading(id)
@@ -233,6 +248,7 @@ export function IntegracaoMobilePage() {
         dataInicio?.format('YYYY-MM-DD') ?? '',
         dataFim?.format('YYYY-MM-DD') ?? '',
         pullLotacaoId || undefined,
+        pullFuncionarioId || undefined,
       )
       setPullResult(r)
       setPullTimestamp(new Date())
@@ -292,7 +308,7 @@ export function IntegracaoMobilePage() {
             <label>FILIAL</label>
             <select
               value={pullFilialId}
-              onChange={(e) => setPullFilialId(e.target.value ? Number(e.target.value) : '')}
+              onChange={(e) => { setPullFilialId(e.target.value ? Number(e.target.value) : ''); setPullLotacaoId('') }}
               className={styles.selectDark}
             >
               <option value="">Selecione a filial</option>
@@ -311,6 +327,21 @@ export function IntegracaoMobilePage() {
               <option value="">Todas as lotações</option>
               {lotacoes.map((l) => (
                 <option key={l.id} value={l.id}>{l.nome}</option>
+              ))}
+            </select>
+          </div>
+          <div className={styles.fieldDark}>
+            <label>COLABORADOR</label>
+            <select
+              value={pullFuncionarioId}
+              onChange={(e) => setPullFuncionarioId(e.target.value ? Number(e.target.value) : '')}
+              className={styles.selectDark}
+              disabled={!pullFilialId}
+              style={{ minWidth: '200px' }}
+            >
+              <option value="">Todos os colaboradores</option>
+              {pullFuncionarios.map((f) => (
+                <option key={f.id} value={f.id}>{f.nome}</option>
               ))}
             </select>
           </div>

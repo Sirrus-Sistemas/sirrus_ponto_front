@@ -58,6 +58,7 @@ export async function pullMarcacoes(
   dataInicio: string,
   dataFim: string,
   lotacaoId?: number,
+  funcionarioId?: number,
 ): Promise<PullResult> {
   const r = await apiRequest<{ data: PullResult }>('/api/mobile/pull-marcacoes', {
     method: 'POST',
@@ -66,6 +67,7 @@ export async function pullMarcacoes(
       data_inicio: dataInicio,
       data_fim: dataFim,
       ...(lotacaoId ? { lotacao_id: lotacaoId } : {}),
+      ...(funcionarioId ? { funcionario_id: funcionarioId } : {}),
     }),
   })
   return r.data
