@@ -10,6 +10,7 @@ export type MarcacaoFicha = {
 
 export type DiaFicha = {
   data: string
+  bloqueado?: boolean
   marcacoes: MarcacaoFicha[]
 }
 
@@ -73,4 +74,17 @@ export async function editarBatida(
 
 export async function excluirBatida(id: number): Promise<void> {
   await apiRequest<SimpleResponse>(`/api/marcacoes/${id}`, { method: 'DELETE' })
+}
+
+export async function bloquearDia(payload: { funcionario_id: number; data: string }): Promise<void> {
+  await apiRequest<{ success?: boolean }>('/api/marcacoes/bloquear-dia', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function desbloquearDia(funcionarioId: number, data: string): Promise<void> {
+  await apiRequest<{ success?: boolean }>(`/api/marcacoes/bloquear-dia/${funcionarioId}/${data}`, {
+    method: 'DELETE',
+  })
 }

@@ -18,6 +18,8 @@ interface PunchGridProps {
   tzOffset: string | null;
   onReload: () => void;
   reloading?: boolean;
+  canEdit?: boolean;
+  onToggleBloqueio?: (row: DayRow) => Promise<void>;
 }
 
 const COL_HEADERS = ['E1', 'S1', 'E2', 'S2', 'E3', 'S3', 'E4', 'S4'];
@@ -59,7 +61,7 @@ const makeCellKey = (row: DayRow, slotIndex: number) =>
 const formatDay = (row: DayRow) =>
   `${String(row.day).padStart(2, '0')}/${String(row.month).padStart(2, '0')}`;
 
-export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOffset, onReload, reloading }: PunchGridProps) {
+export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOffset, onReload, reloading, canEdit, onToggleBloqueio }: PunchGridProps) {
   const [menuCtx, setMenuCtx] = useState<DayActionMenuContext | null>(null);
   const [ocorrenciaModal, setOcorrenciaModal] = useState<OcorrenciaModalState | null>(null);
   const [justManualCtx, setJustManualCtx] = useState<DayActionMenuContext | null>(null);
@@ -458,6 +460,8 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOff
                     dragHandlers={dragHandlers}
                     draggingKey={draggingKey}
                     dragOverKey={dragOverKey}
+                    canEdit={canEdit}
+                    onToggleBloqueio={onToggleBloqueio}
                   />
                 </>
               );

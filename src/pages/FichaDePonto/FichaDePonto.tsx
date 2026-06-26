@@ -17,7 +17,7 @@ export function FichaDePonto() {
   const [lotacoes, setLotacoes] = useState<Lotacao[]>([]);
   const [selectedLotacaoId, setSelectedLotacaoId] = useState<number | undefined>(undefined);
 
-  const { data, loading, error, me, funcionarios, reload } = useFichaDePonto({
+  const { data, loading, error, me, funcionarios, reload, toggleBloqueio } = useFichaDePonto({
     employeeId: selectedFuncId,
     startMonth,
     startYear,
@@ -155,6 +155,8 @@ export function FichaDePonto() {
             tzOffset={dataComLotacao.tzOffset}
             onReload={reload}
             reloading={loading}
+            canEdit={canSelectFunc}
+            onToggleBloqueio={toggleBloqueio}
           />
         )}
       </div>

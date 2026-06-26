@@ -1,4 +1,5 @@
-import { MoreHorizontal } from 'lucide-react';
+import { useState } from 'react';
+import { Lock, LockOpen, MoreHorizontal } from 'lucide-react';
 import type { DayRow } from '../../types';
 import { PunchCell } from './PunchCell';
 import { DayStatusBadge } from './DayStatusBadge';
@@ -17,9 +18,23 @@ interface PunchRowProps {
   dragHandlers?: CellDragHandlers;
   draggingKey?: string | null;
   dragOverKey?: string | null;
+  canEdit?: boolean;
+  onToggleBloqueio?: (row: DayRow) => Promise<void>;
 }
 
-export function PunchRow({ row, onCellOpen, dragHandlers, draggingKey, dragOverKey }: PunchRowProps) {
+export function PunchRow({ row, onCellOpen, dragHandlers, draggingKey, dragOverKey, canEdit, onToggleBloqueio }: PunchRowProps) {
+  const [toggling, setToggling] = useState(false);
+
+  async function handleLockClick(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!onToggleBloqueio || toggling) return;
+    setToggling(true);
+    try {
+      await onToggleBloqueio(row);
+    } finally {
+      setToggling(false);
+    }
+  }
   const month = row.month;
   const isSat = row.dow === 6;
   const isSun = row.dow === 0;
@@ -31,6 +46,7 @@ export function PunchRow({ row, onCellOpen, dragHandlers, draggingKey, dragOverK
     isSun ? styles.rowSun : isSat ? styles.rowSat : '',
     isFeriado ? styles.rowFeriado : '',
     row.isToday ? styles.rowToday : '',
+    row.bloqueado ? styles.rowBloqueado : '',
   ].filter(Boolean).join(' ');
 
   const dayLabel = `${String(row.day).padStart(2, '0')}/${String(month).padStart(2, '0')}`;
@@ -43,6 +59,17 @@ export function PunchRow({ row, onCellOpen, dragHandlers, draggingKey, dragOverK
         <span className={`${styles.dateDow} ${isWeekend ? styles.weekend : ''}`}>
           {DOW_LABELS[row.dow]}
         </span>
+        {canEdit && (
+          <button
+            type="button"
+            className={`${styles.lockBtn} ${row.bloqueado ? styles.lockBtnActive : ''}`}
+            title={row.bloqueado ? 'Dia bloqueado — clique para desbloquear' : 'Clique para bloquear o dia'}
+            onClick={(e) => void handleLockClick(e)}
+            disabled={toggling}
+          >
+            {row.bloqueado ? <Lock size={12} /> : <LockOpen size={12} />}
+          </button>
+        )}
       </td>
 
       {row.punches.map((punch, i) => {

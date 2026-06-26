@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchEspelho, type EspelhoPayload, type StatusDia } from '../../services/espelhoApi';
 import { fetchMe, type FuncionarioMe } from '../../services/userApi';
 import { fetchFuncionarios, type FuncionarioListItem } from '../../services/funcionariosApi';
+import { fetchFicha, bloquearDia, desbloquearDia } from '../../services/fichaPontoApi';
 import { ApiError } from '../../lib/api';
 import { parseDataHoraUtc } from '../../lib/parseDataHora';
 import type { DayRow, DayStatus, Employee, FichaDePontoData, MonthlySummary, Punch, PunchSource } from './types';
@@ -60,15 +61,38 @@ type MarcacaoItem = EspelhoPayload['dias'][0]['marcacoes'][0];
  *  - As demais preenchem os slots livres restantes em ordem cronológica.
  */
 function buildSlots(marcacoes: MarcacaoItem[]): (MarcacaoItem | null)[] {
+  // 1. Deduplica por ID — defesa contra o mesmo registro enviado duas vezes
+  const seenIds = new Set<number>();
+  const dedupById = marcacoes.filter(m => {
+    if (seenIds.has(m.id)) return false;
+    seenIds.add(m.id);
+    return true;
+  });
+
+  // 2. Ordena cronologicamente antes de deduplicar por horário (mantém a mais antiga)
+  const sorted = [...dedupById].sort(
+    (a, b) => parseDataHoraUtc(a.data_hora).getTime() - parseDataHoraUtc(b.data_hora).getTime(),
+  );
+
+  // 3. Deduplica por HH:MM — batidas no mesmo minuto exibem apenas uma
+  const seenTimes = new Set<string>();
+  const deduped = sorted.filter(m => {
+    const d = parseDataHoraUtc(m.data_hora);
+    const key = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    if (seenTimes.has(key)) return false;
+    seenTimes.add(key);
+    return true;
+  });
+
   const slots: (MarcacaoItem | null)[] = new Array(8).fill(null);
 
-  const overridden = marcacoes
+  const overridden = deduped
     .filter(m => m.slot_override !== null && m.slot_override !== undefined)
     .sort((a, b) => (a.slot_override ?? 0) - (b.slot_override ?? 0));
 
-  const normal = marcacoes
-    .filter(m => m.slot_override === null || m.slot_override === undefined)
-    .sort((a, b) => parseDataHoraUtc(a.data_hora).getTime() - parseDataHoraUtc(b.data_hora).getTime());
+  // normal já está ordenada pelo sort acima — filtra sem re-ordenar
+  const normal = deduped
+    .filter(m => m.slot_override === null || m.slot_override === undefined);
 
   // 1. Posiciona as batidas com override fixo
   for (const m of overridden) {
@@ -82,10 +106,10 @@ function buildSlots(marcacoes: MarcacaoItem[]): (MarcacaoItem | null)[] {
     if (slots[i] === null) slots[i] = normal[ni++];
   }
 
-  return slots; // tamanho 8, nulls onde não há batida
+  return slots;
 }
 
-function buildDays(payload: EspelhoPayload): DayRow[] {
+function buildDays(payload: EspelhoPayload, bloqueadoMap: Record<string, boolean> = {}): DayRow[] {
   return payload.dias.map((dia) => {
     // slots[i] = marcação que deve aparecer na coluna i (ou null se vazia)
     const slots = buildSlots(dia.marcacoes);
@@ -117,6 +141,7 @@ function buildDays(payload: EspelhoPayload): DayRow[] {
       punchMotivos,
       horariosPrevistos: dia.horarios_previstos ?? [],
       batidasEsperadas: dia.batidas_esperadas ?? null,
+      bloqueado: bloqueadoMap[dia.data] ?? dia.bloqueado ?? false,
       ocorrenciaId: dia.ocorrencia?.id,
       holidayName: dia.feriado?.descricao,
     };
@@ -169,6 +194,7 @@ export interface UseFichaDePontoResult {
   me: FuncionarioMe | null;
   funcionarios: FuncionarioListItem[];
   reload: () => void;
+  toggleBloqueio: (row: DayRow) => Promise<void>;
 }
 
 export function useFichaDePonto(params: Params): UseFichaDePontoResult {
@@ -191,17 +217,27 @@ export function useFichaDePonto(params: Params): UseFichaDePontoResult {
       .catch(() => {});
   }, []);
 
+  const makeBloqueadoMap = (dias: { data: string; bloqueado?: boolean }[]): Record<string, boolean> => {
+    const map: Record<string, boolean> = {};
+    dias.forEach(d => { map[d.data] = d.bloqueado ?? false; });
+    return map;
+  };
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const payload1 = await fetchEspelho(startYear, startMonth, employeeId);
       const isSameMonth = startMonth === endMonth && startYear === endYear;
 
       if (isSameMonth) {
+        const [payload1, ficha1] = await Promise.all([
+          fetchEspelho(startYear, startMonth, employeeId),
+          fetchFicha(startYear, startMonth, employeeId),
+        ]);
+        const bloqueadoMap1 = makeBloqueadoMap(ficha1.dias);
         setData({
           employee: buildEmployee(payload1),
-          days: buildDays(payload1),
+          days: buildDays(payload1, bloqueadoMap1),
           summary: buildSummary(payload1),
           folhaStatus: 'aberta',
           month: payload1.mes,
@@ -211,10 +247,17 @@ export function useFichaDePonto(params: Params): UseFichaDePontoResult {
           tzOffset: payload1.meta.tz_offset ?? null,
         });
       } else {
-        const payload2 = await fetchEspelho(endYear, endMonth, employeeId);
+        const [payload1, ficha1, payload2, ficha2] = await Promise.all([
+          fetchEspelho(startYear, startMonth, employeeId),
+          fetchFicha(startYear, startMonth, employeeId),
+          fetchEspelho(endYear, endMonth, employeeId),
+          fetchFicha(endYear, endMonth, employeeId),
+        ]);
+        const bloqueadoMap1 = makeBloqueadoMap(ficha1.dias);
+        const bloqueadoMap2 = makeBloqueadoMap(ficha2.dias);
         setData({
           employee: buildEmployee(payload1),
-          days: [...buildDays(payload1), ...buildDays(payload2)],
+          days: [...buildDays(payload1, bloqueadoMap1), ...buildDays(payload2, bloqueadoMap2)],
           summary: mergeSummaries(buildSummary(payload1), buildSummary(payload2)),
           folhaStatus: 'aberta',
           month: payload1.mes,
@@ -234,5 +277,31 @@ export function useFichaDePonto(params: Params): UseFichaDePontoResult {
 
   useEffect(() => { void load(); }, [load]);
 
-  return useMemo(() => ({ data, loading, error, me, funcionarios, reload: load }), [data, loading, error, me, funcionarios, load]);
+  const toggleBloqueio = useCallback(async (row: DayRow) => {
+    const funcId = data?.funcionarioId;
+    if (!funcId) return;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const dateStr = `${row.year}-${pad(row.month)}-${pad(row.day)}`;
+    if (row.bloqueado) {
+      await desbloquearDia(funcId, dateStr);
+    } else {
+      await bloquearDia({ funcionario_id: funcId, data: dateStr });
+    }
+    setData(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        days: prev.days.map(d =>
+          d.year === row.year && d.month === row.month && d.day === row.day
+            ? { ...d, bloqueado: !d.bloqueado }
+            : d
+        ),
+      };
+    });
+  }, [data?.funcionarioId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return useMemo(
+    () => ({ data, loading, error, me, funcionarios, reload: load, toggleBloqueio }),
+    [data, loading, error, me, funcionarios, load, toggleBloqueio],
+  );
 }
