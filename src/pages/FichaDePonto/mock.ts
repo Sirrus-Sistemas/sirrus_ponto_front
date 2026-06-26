@@ -36,7 +36,7 @@ const MOCK_MONTH = 10;
 const MOCK_YEAR = 2025;
 const d = (day: number, dow: number, status: DayRow['status'], punches: DayRow['punches'], extra?: Partial<DayRow>): DayRow => {
   const { modifiers, horariosPrevistos, ...rest } = extra ?? {};
-  return { day, month: MOCK_MONTH, year: MOCK_YEAR, dow, status, punches, punchIds: [], punchMotivos: [], horariosPrevistos: horariosPrevistos ?? [], modifiers: modifiers ?? [], ...rest };
+  return { day, month: MOCK_MONTH, year: MOCK_YEAR, dow, status, punches, punchIds: [], punchMotivos: [], horariosPrevistos: horariosPrevistos ?? [], modifiers: modifiers ?? [], bloqueado: false, ...rest };
 };
 
 const DAYS: DayRow[] = [
