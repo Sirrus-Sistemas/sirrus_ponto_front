@@ -219,7 +219,7 @@ export function useFichaDePonto(params: Params): UseFichaDePontoResult {
 
   const makeBloqueadoMap = (dias: { data: string; bloqueado?: boolean }[]): Record<string, boolean> => {
     const map: Record<string, boolean> = {};
-    dias.forEach(d => { map[d.data] = d.bloqueado ?? false; });
+    dias.forEach(d => { if (d.bloqueado !== undefined) map[d.data] = d.bloqueado; });
     return map;
   };
 
