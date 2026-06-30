@@ -1,0 +1,161 @@
+/* ── Card container ───────────────────────────────────────────────────────── */
+.card {
+  background: var(--sp-bg-card);
+  border-radius: var(--sp-radius-card);
+  border: 1px solid var(--sp-border);
+  box-shadow: var(--sp-shadow-card);
+  padding: 1.35rem 1.4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  overflow: visible; /* deixa o combobox escapar */
+}
+
+/* ── Cabeçalho do card ───────────────────────────────────────────────────── */
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1.4rem;
+}
+
+.iconBox {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--sp-primary-soft);
+  color: var(--sp-primary-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cardTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--sp-text);
+  line-height: 1.2;
+}
+
+.cardDesc {
+  font-size: 0.78rem;
+  color: var(--sp-text-3);
+  margin-top: 0.1rem;
+}
+
+/* ── Formulário ──────────────────────────────────────────────────────────── */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  overflow: visible;
+}
+
+/* ── Campo genérico ──────────────────────────────────────────────────────── */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.38rem;
+}
+
+.label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sp-text-3);
+}
+
+.opcional {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ── Inputs / selects / textarea ─────────────────────────────────────────── */
+.input,
+.select,
+.textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--sp-border-strong);
+  border-radius: var(--sp-radius-md);
+  padding: 0 0.85rem;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--sp-text);
+  background: var(--sp-bg-card);
+  min-height: 44px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--sp-text-3);
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--sp-primary);
+  box-shadow: 0 0 0 3px var(--sp-primary-soft);
+}
+
+.textarea {
+  min-height: unset;
+  padding: 0.6rem 0.85rem;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* ── Sub-grid UF + Município ─────────────────────────────────────────────── */
+.ufMunRow {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 0.65rem;
+}
+
+.ufMunRow .field {
+  overflow: visible;
+}
+
+/* ── Data (selects dia / mês / ano) ─────────────────────────────────────── */
+.dateRow {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.selectDia  { width: 84px;  flex-shrink: 0; }
+.selectMes  { flex: 1; }
+.selectAno  { width: 96px;  flex-shrink: 0; }
+
+/* ── Botão primário ──────────────────────────────────────────────────────── */
+.btnPrimary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+  border: none;
+  border-radius: 11px;
+  padding: 0.78rem 1.4rem;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--sp-primary);
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(20, 145, 139, 0.28);
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: var(--sp-primary-dark);
+}
+
+.btnPrimary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}

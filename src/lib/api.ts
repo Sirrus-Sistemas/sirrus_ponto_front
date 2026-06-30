@@ -44,6 +44,62 @@ export function clearStoredToken() {
   sessionStorage.removeItem(REFRESH_KEY)
 }
 
+// ─── Callback injetado por session.ts para reagendar o próximo refresh ────────
+let onTokenRefreshedCallback: (() => void) | null = null
+
+export function setOnTokenRefreshed(cb: () => void) {
+  onTokenRefreshedCallback = cb
+}
+
+// ─── Fila de refresh: garante que múltiplas requisições 401 simultâneas
+//     disparem apenas um único refresh, não vários em paralelo ─────────────────
+let refreshPromise: Promise<boolean> | null = null
+
+/**
+ * Renova o access token usando o refresh token armazenado.
+ * Usa fetch direto (não apiRequest) para evitar loop infinito de retry.
+ * Retorna true se o refresh foi bem-sucedido.
+ */
+export async function refreshAccessToken(): Promise<boolean> {
+  if (refreshPromise) return refreshPromise
+
+  refreshPromise = (async () => {
+    const refreshToken = getStoredRefreshToken()
+    const base = getApiBaseUrl()
+    if (!refreshToken || !base) return false
+
+    try {
+      const res = await fetch(`${base}/api/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      })
+      if (!res.ok) return false
+
+      const data = (await res.json()) as {
+        data?: { access_token?: string; refresh_token?: string }
+      }
+      const newAccess = data?.data?.access_token
+      const newRefresh = data?.data?.refresh_token
+      if (!newAccess) return false
+
+      setStoredToken(newAccess)
+      if (newRefresh) setStoredRefreshToken(newRefresh)
+
+      onTokenRefreshedCallback?.()
+      return true
+    } catch {
+      return false
+    }
+  })()
+
+  const result = await refreshPromise
+  refreshPromise = null
+  return result
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 function parseJsonSafe(text: string): unknown {
   if (!text) return null
   try {
@@ -66,7 +122,7 @@ function messageFromBody(data: unknown, fallback: string): string {
   return fallback
 }
 
-export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+export async function apiRequest<T>(path: string, options: RequestInit = {}, _retry = false): Promise<T> {
   const base = getApiBaseUrl()
   if (!base) {
     throw new ApiError('Defina VITE_API_URL no arquivo .env na raiz do projeto.', 0)
@@ -89,10 +145,15 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
   const data = parseJsonSafe(text)
 
   if (!res.ok) {
-    // Sessão inválida: evita ficar no app com token expirado (não aplica a login, que não envia Bearer)
-    if (res.status === 401 && token) {
+    // Primeira tentativa de 401: tenta renovar o token antes de deslogar
+    if (res.status === 401 && token && !_retry) {
+      const refreshed = await refreshAccessToken()
+      if (refreshed) {
+        return apiRequest<T>(path, options, true) // retry com novo token
+      }
       clearStoredToken()
       window.location.assign('/')
+      throw new ApiError('Sessão expirada. Redirecionando…', 401)
     }
     const msg = messageFromBody(data, res.statusText || 'Erro na requisição')
     throw new ApiError(msg, res.status, data)

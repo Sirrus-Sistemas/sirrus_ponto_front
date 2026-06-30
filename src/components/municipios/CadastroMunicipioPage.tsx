@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import { ApiError } from '../../lib/api'
 import type { AppShellOutletContext } from '../layout/appShellContext'
@@ -10,36 +10,39 @@ import {
 } from '../../services/municipiosApi'
 import styles from './CadastroMunicipioPage.module.css'
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 10
 
-const FUSOS = [
-  'UTC-02:00', 'UTC-03:00', 'UTC-04:00', 'UTC-05:00',
+const UFS = [
+  'AC','AL','AM','AP','BA','CE','DF','ES','GO','MA',
+  'MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN',
+  'RO','RR','RS','SC','SE','SP','TO',
 ]
+
+const FUSOS = ['UTC-02:00', 'UTC-03:00', 'UTC-04:00', 'UTC-05:00']
 
 const emptyForm = () => ({
   CODMUNICIPIO: '',
   NOMEMUNICIPIO: '',
-  ESTADO: '',
+  ESTADO: 'AC',
   fuso_horario: 'UTC-03:00',
 })
 
 export function CadastroMunicipioPage() {
   const { me, meReady } = useOutletContext<AppShellOutletContext>()
 
-  const [lista, setLista] = useState<Municipio[]>([])
-  const [total, setTotal] = useState(0)
-  const [page, setPage] = useState(1)
+  const [lista, setLista]             = useState<Municipio[]>([])
+  const [total, setTotal]             = useState(0)
+  const [page, setPage]               = useState(1)
   const [loadingLista, setLoadingLista] = useState(true)
-
-  const [search, setSearch] = useState('')
+  const [search, setSearch]           = useState('')
   const [estadoFiltro, setEstadoFiltro] = useState('')
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const [form, setForm] = useState(emptyForm)
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [form, setForm]             = useState(emptyForm)
+  const [editingId, setEditingId]   = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+  const [error, setError]           = useState<string | null>(null)
+  const [success, setSuccess]       = useState<string | null>(null)
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
@@ -47,28 +50,21 @@ export function CadastroMunicipioPage() {
     (p: number, s: string, estado: string, silent = false) => {
       if (!silent) setLoadingLista(true)
       return fetchMunicipios({ search: s, estado, page: p, limit: PAGE_SIZE })
-        .then((res) => {
-          setLista(res.rows)
-          setTotal(res.total)
-        })
+        .then((res) => { setLista(res.rows); setTotal(res.total) })
         .catch(() => { setLista([]); setTotal(0) })
         .finally(() => { if (!silent) setLoadingLista(false) })
     },
     []
   )
 
-  useEffect(() => {
-    void loadLista(page, search, estadoFiltro)
-  }, [loadLista, page])
+  useEffect(() => { void loadLista(page, search, estadoFiltro) }, [loadLista, page])
 
   function handleSearchChange(e: ChangeEvent<HTMLInputElement>) {
     const val = e.target.value
     setSearch(val)
     setPage(1)
     if (searchTimer.current) clearTimeout(searchTimer.current)
-    searchTimer.current = setTimeout(() => {
-      void loadLista(1, val, estadoFiltro)
-    }, 400)
+    searchTimer.current = setTimeout(() => void loadLista(1, val, estadoFiltro), 400)
   }
 
   function handleEstadoChange(e: ChangeEvent<HTMLSelectElement>) {
@@ -80,9 +76,8 @@ export function CadastroMunicipioPage() {
 
   const update =
     (field: keyof ReturnType<typeof emptyForm>) =>
-    (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm((f) => ({ ...f, [field]: e.target.value }))
-    }
 
   function cancelarEdicao() {
     setEditingId(null)
@@ -103,25 +98,21 @@ export function CadastroMunicipioPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  async function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: { preventDefault(): void }) {
     e.preventDefault()
     setError(null)
     setSuccess(null)
 
-    const nome = form.NOMEMUNICIPIO.trim().toUpperCase()
+    const nome   = form.NOMEMUNICIPIO.trim().toUpperCase()
     const estado = form.ESTADO.trim().toUpperCase()
 
-    if (nome.length < 2) { setError('Informe o nome do município (mín. 2 caracteres).'); return }
+    if (nome.length < 2)    { setError('Informe o nome do município (mín. 2 caracteres).'); return }
     if (estado.length !== 2) { setError('Informe a UF com 2 letras (ex: SP, RJ).'); return }
 
     setSubmitting(true)
     try {
       if (editingId != null) {
-        await updateMunicipio(editingId, {
-          NOMEMUNICIPIO: nome,
-          ESTADO: estado,
-          fuso_horario: form.fuso_horario,
-        })
+        await updateMunicipio(editingId, { NOMEMUNICIPIO: nome, ESTADO: estado, fuso_horario: form.fuso_horario })
         setSuccess('Município atualizado com sucesso.')
         cancelarEdicao()
       } else {
@@ -163,147 +154,191 @@ export function CadastroMunicipioPage() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>Municípios</h1>
-      <p className={styles.subtitle}>
-        Gerencie a tabela de municípios usada no cadastro de filiais e empresa.
-      </p>
+      {/* Breadcrumb */}
+      <nav className={styles.breadcrumb} aria-label="Localização">
+        <span className={styles.breadcrumbItem}>Cadastro</span>
+        <span className={styles.breadcrumbSep} aria-hidden>/</span>
+        <span className={styles.breadcrumbCurrent}>Municípios</span>
+      </nav>
 
-      <div className={styles.card}>
-        <h2 className={styles.sectionTitle}>{editingId != null ? 'Editar município' : 'Novo município'}</h2>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.title}>Municípios</h1>
+        <p className={styles.subtitle}>
+          Gerencie a tabela de municípios usada no cadastro de filiais e empresa.
+        </p>
+      </div>
 
-        {editingId != null && (
-          <p className={styles.hint} style={{ marginTop: '-0.5rem', marginBottom: '1rem' }}>
-            Editando código IBGE {editingId}.{' '}
-            <button type="button" className={styles.btnLink} onClick={cancelarEdicao}>Cancelar edição</button>
-          </p>
-        )}
+      <div className={styles.grid}>
+        {/* ── Formulário ── */}
+        <div className={styles.formCard}>
+          <div className={styles.cardHeader}>
+            <div className={styles.iconBox}><PinIcon /></div>
+            <div>
+              <div className={styles.cardTitle}>
+                {editingId != null ? 'Editar município' : 'Novo município'}
+              </div>
+              <div className={styles.cardDesc}>
+                {editingId != null
+                  ? <>Editando IBGE {editingId}. <button type="button" className={styles.btnCancel} onClick={cancelarEdicao}>Cancelar</button></>
+                  : 'Disponível imediatamente nos cadastros.'}
+              </div>
+            </div>
+          </div>
 
-        {error   && <p className={`${styles.feedback} ${styles.feedbackError}`} role="alert">{error}</p>}
-        {success && <p className={`${styles.feedback} ${styles.feedbackOk}`} role="status">{success}</p>}
+          <form onSubmit={handleSubmit} className={styles.form}>
+            {error   && <p className={styles.feedbackError} role="alert">{error}</p>}
+            {success && <p className={styles.feedbackOk}   role="status">{success}</p>}
 
-        <form onSubmit={handleSubmit}>
-          <div className={styles.grid}>
             {editingId == null && (
               <div className={styles.field}>
-                <label htmlFor="mu-cod">Código IBGE</label>
+                <label htmlFor="mu-cod" className={styles.label}>Código IBGE</label>
                 <input
                   id="mu-cod"
+                  className={styles.input}
                   type="number"
                   value={form.CODMUNICIPIO}
                   onChange={update('CODMUNICIPIO')}
                   placeholder="ex: 3550308"
+                  autoComplete="off"
                   required
                 />
               </div>
             )}
-            <div className={`${styles.field} ${editingId == null ? '' : styles.gridFull}`}>
-              <label htmlFor="mu-nome">Nome do município</label>
+
+            <div className={styles.field}>
+              <label htmlFor="mu-nome" className={styles.label}>Nome do município</label>
               <input
                 id="mu-nome"
+                className={styles.input}
                 value={form.NOMEMUNICIPIO}
                 onChange={update('NOMEMUNICIPIO')}
+                placeholder="ex: São Paulo"
                 autoComplete="off"
                 required
               />
             </div>
+
             <div className={styles.field}>
-              <label htmlFor="mu-uf">UF</label>
-              <input
-                id="mu-uf"
-                value={form.ESTADO}
-                onChange={update('ESTADO')}
-                maxLength={2}
-                placeholder="SP"
-                style={{ textTransform: 'uppercase' }}
-                required
-              />
+              <label htmlFor="mu-uf" className={styles.label}>UF</label>
+              <select id="mu-uf" className={styles.select} value={form.ESTADO} onChange={update('ESTADO')}>
+                {UFS.map((uf) => <option key={uf} value={uf}>{uf}</option>)}
+              </select>
             </div>
+
             <div className={styles.field}>
-              <label htmlFor="mu-fuso">Fuso horário</label>
-              <select id="mu-fuso" value={form.fuso_horario} onChange={update('fuso_horario')}>
+              <label htmlFor="mu-fuso" className={styles.label}>Fuso horário</label>
+              <select id="mu-fuso" className={styles.select} value={form.fuso_horario} onChange={update('fuso_horario')}>
                 {FUSOS.map((f) => <option key={f} value={f}>{f}</option>)}
+              </select>
+            </div>
+
+            <button type="submit" className={styles.btnPrimary} disabled={submitting}>
+              {editingId == null && <PlusIcon />}
+              {submitting ? 'Salvando…' : editingId != null ? 'Salvar alterações' : 'Cadastrar'}
+            </button>
+          </form>
+        </div>
+
+        {/* ── Tabela ── */}
+        <div className={styles.tableCard}>
+          <div className={styles.tableHeader}>
+            <div className={styles.tableHeaderLeft}>
+              <span className={styles.tableTitle}>Municípios cadastrados</span>
+              <span className={styles.tableCount}>
+                {loadingLista ? 'Carregando…' : `${lista.length} resultados nesta página`}
+              </span>
+            </div>
+            <div className={styles.filters}>
+              <div className={styles.searchWrap}>
+                <SearchIcon />
+                <input
+                  type="search"
+                  className={styles.searchInput}
+                  placeholder="Buscar por nome ou código…"
+                  value={search}
+                  onChange={handleSearchChange}
+                />
+              </div>
+              <select className={styles.filterSelect} value={estadoFiltro} onChange={handleEstadoChange}>
+                <option value="">Todos os estados</option>
+                {UFS.map((uf) => <option key={uf} value={uf}>{uf}</option>)}
               </select>
             </div>
           </div>
 
-          <div className={styles.actions}>
-            <button type="submit" className={styles.btnPrimary} disabled={submitting}>
-              {submitting ? 'Salvando…' : editingId != null ? 'Salvar alterações' : 'Cadastrar'}
-            </button>
-            {editingId != null && (
-              <button type="button" className={styles.btnGhost} onClick={cancelarEdicao} disabled={submitting}>
-                Cancelar
-              </button>
-            )}
-          </div>
-        </form>
-      </div>
-
-      <div className={styles.card}>
-        <h2 className={styles.sectionTitle}>Municípios cadastrados</h2>
-
-        <div className={styles.filters}>
-          <input
-            type="search"
-            placeholder="Buscar por nome…"
-            value={search}
-            onChange={handleSearchChange}
-          />
-          <select value={estadoFiltro} onChange={handleEstadoChange}>
-            <option value="">Todos os estados</option>
-            {['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO'].map(
-              (uf) => <option key={uf} value={uf}>{uf}</option>
-            )}
-          </select>
-        </div>
-
-        {loadingLista ? (
-          <p className={styles.loading}>Carregando lista…</p>
-        ) : (
-          <>
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>Código IBGE</th>
-                    <th>Nome</th>
-                    <th>UF</th>
-                    <th>Fuso</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {lista.length === 0 ? (
-                    <tr className={styles.emptyRow}>
-                      <td colSpan={5}>Nenhum município encontrado.</td>
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Código IBGE</th>
+                  <th>Nome</th>
+                  <th>UF</th>
+                  <th>Fuso</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {loadingLista ? (
+                  <tr><td colSpan={5} className={styles.emptyCell}>Carregando…</td></tr>
+                ) : lista.length === 0 ? (
+                  <tr><td colSpan={5} className={styles.emptyCell}>Nenhum município encontrado.</td></tr>
+                ) : (
+                  lista.map((m) => (
+                    <tr key={m.CODMUNICIPIO} className={styles.row}>
+                      <td className={styles.tdCod}>{m.CODMUNICIPIO}</td>
+                      <td className={styles.tdNome}>{m.NOMEMUNICIPIO}</td>
+                      <td><span className={styles.ufChip}>{m.ESTADO}</span></td>
+                      <td className={styles.tdFuso}>{m.fuso_horario}</td>
+                      <td>
+                        <button type="button" className={styles.btnEditar} onClick={() => iniciarEdicao(m)}>
+                          Editar
+                        </button>
+                      </td>
                     </tr>
-                  ) : (
-                    lista.map((m) => (
-                      <tr key={m.CODMUNICIPIO}>
-                        <td>{m.CODMUNICIPIO}</td>
-                        <td>{m.NOMEMUNICIPIO}</td>
-                        <td>{m.ESTADO}</td>
-                        <td>{m.fuso_horario}</td>
-                        <td>
-                          <button type="button" className={styles.btnLink} onClick={() => iniciarEdicao(m)}>
-                            Editar
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
-            <div className={styles.pagination}>
-              <button onClick={() => setPage((p) => p - 1)} disabled={page <= 1}>← Anterior</button>
-              <span>Página {page} de {totalPages} · {total} registros</span>
-              <button onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages}>Próxima →</button>
-            </div>
-          </>
-        )}
+          <div className={styles.pagination}>
+            <button className={styles.pgBtn} onClick={() => setPage((p) => p - 1)} disabled={page <= 1}>
+              ← Anterior
+            </button>
+            <span className={styles.pgInfo}>Página {page} de {totalPages} · {total} registros</span>
+            <span className={styles.pgCount}>{lista.length} nesta página</span>
+            <button className={styles.pgBtn} onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages}>
+              Próxima →
+            </button>
+          </div>
+        </div>
       </div>
     </div>
+  )
+}
+
+function PinIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  )
+}
+
+function PlusIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  )
+}
+
+function SearchIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8" />
+      <path d="M21 21l-4.35-4.35" />
+    </svg>
   )
 }

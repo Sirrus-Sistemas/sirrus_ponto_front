@@ -19,8 +19,8 @@ function formatDataPrint(iso: string): string {
   return `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(2, 4)}`
 }
 
-function horaMin(iso: string): string {
-  // returns "HH:MM" in local time
+function horaMin(m: MarcacaoEspelho): string {
+  const iso = m.data_hora_local ?? m.data_hora
   return formatHoraLocalPtBr(iso)
 }
 
@@ -33,32 +33,54 @@ function fmtCpf(cpf: string | null): string {
 
 // ─── Per-day row logic ────────────────────────────────────────────────────────
 
-const NUM_SLOTS = 4 // Ent1 Sai1 Ent2 Sai2
+const NUM_SLOTS = 8 // Ent1 Sai1 Ent2 Sai2 Ent3 Sai3 Ent4 Sai4
+
+/** Aplica slot_override: posiciona batidas fixas e preenche lacunas em ordem cronológica. */
+function applySlotOverride(sorted: MarcacaoEspelho[]): (MarcacaoEspelho | null)[] {
+  const slots: (MarcacaoEspelho | null)[] = new Array(NUM_SLOTS).fill(null)
+  const hasOverride = sorted.some(m => m.slot_override !== null && m.slot_override !== undefined)
+
+  if (!hasOverride) {
+    // Sem override: preenche sequencialmente
+    sorted.forEach((m, i) => { if (i < NUM_SLOTS) slots[i] = m })
+    return slots
+  }
+
+  const overridden = sorted
+    .filter(m => m.slot_override !== null && m.slot_override !== undefined)
+    .sort((a, b) => (a.slot_override ?? 0) - (b.slot_override ?? 0))
+  const normal = sorted.filter(m => m.slot_override === null || m.slot_override === undefined)
+
+  for (const m of overridden) {
+    const pos = m.slot_override!
+    if (pos < NUM_SLOTS && slots[pos] === null) slots[pos] = m
+  }
+  let ni = 0
+  for (let i = 0; i < NUM_SLOTS && ni < normal.length; i++) {
+    if (slots[i] === null) slots[i] = normal[ni++]
+  }
+  return slots
+}
 
 function buildSlots(marcacoes: MarcacaoEspelho[]) {
-  // REP-only punches in time order
+  // REP-only punches — coluna "Marcações REP" sempre em ordem cronológica (batidas originais)
   const repPunches = marcacoes
     .filter((m) => m.tipo === 'rep')
     .sort((a, b) => new Date(a.data_hora).getTime() - new Date(b.data_hora).getTime())
 
-  // All treated punches in time order
-  const allPunches = [...marcacoes].sort(
+  // All treated punches — coluna "Tratamento Efetuado" respeita slot_override
+  const allSorted = [...marcacoes].sort(
     (a, b) => new Date(a.data_hora).getTime() - new Date(b.data_hora).getTime(),
   )
 
   const repSlots: (MarcacaoEspelho | null)[] = Array.from({ length: NUM_SLOTS }, (_, i) => repPunches[i] ?? null)
-  const allSlots: (MarcacaoEspelho | null)[] = Array.from({ length: NUM_SLOTS }, (_, i) => allPunches[i] ?? null)
+  const allSlots = applySlotOverride(allSorted)
 
-  // Motivo: only for slots that have a non-REP punch
-  const motivoParts: string[] = Array.from({ length: NUM_SLOTS }, (_, i) => {
-    const rep = repSlots[i]
-    const all = allSlots[i]
-    if (!all) return ''            // empty slot → no motivo
-    if (rep) return ''             // REP punch → no motivo needed
-    return all.motivo_edicao || 'ESQUECIMENTO'
-  })
+  const motivoParts: string[] = allSorted
+    .filter((all) => all.tipo !== 'rep')
+    .map((all) => (all.tipo === 'manual' && all.motivo_edicao) ? all.motivo_edicao : all.tipo_label)
 
-  const motivoStr = motivoParts.filter(Boolean).join(' – ')
+  const motivoStr = motivoParts.join(' / ')
 
   return { repSlots, allSlots, motivoStr }
 }
@@ -80,26 +102,19 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
   const periodoInicio = dias[0]?.data ? formatDataPrint(dias[0].data) : ''
   const periodoFim = dias[dias.length - 1]?.data ? formatDataPrint(dias[dias.length - 1].data) : ''
 
-  // Footer calculations
+  // Footer — usa exclusivamente os valores calculados pelo backend (resumo)
   const totalCargaMin = dias
     .filter((d) => d.minutos_previstos != null)
     .reduce((s, d) => s + d.minutos_previstos!, 0)
 
-  const totalExtrasMin = dias
-    .filter((d) => d.saldo_minutos != null && d.saldo_minutos > 0)
-    .reduce((s, d) => s + d.saldo_minutos!, 0)
-
-  const totalDebitoMin = dias
-    .filter((d) => d.saldo_minutos != null && d.saldo_minutos < 0)
-    .reduce((s, d) => s + Math.abs(d.saldo_minutos!), 0)
-
-  const saldoMin = totalExtrasMin - totalDebitoMin
+  const saldoMin       = resumo.saldo_mes_minutos ?? 0
+  const totalDebitoMin = saldoMin < 0 ? Math.abs(saldoMin) : 0
 
   const totalExtras100pctMin = resumo.total_extras_100pct_minutos ?? 0
-  const totalExtras50pctMin = resumo.total_extras_50pct_minutos ?? 0
-  const totalNoturnoMin = resumo.total_minutos_noturno ?? 0
+  const totalExtras50pctMin  = resumo.total_extras_50pct_minutos ?? 0
+  const totalNoturnoMin      = resumo.total_minutos_noturno ?? 0
   // CLT art. 73 §1: 52min30s = 1h noturna → acréscimo = round(noturno / 7)
-  const totalAcrescimoMin = Math.round(totalNoturnoMin / 7)
+  const totalAcrescimoMin       = Math.round(totalNoturnoMin / 7)
   const totalHorasEmAdicionalMin = totalNoturnoMin + totalAcrescimoMin
 
   const empresaEndereco = [meta.empresa_endereco, meta.empresa_cidade, meta.empresa_uf]
@@ -156,10 +171,14 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
         <colgroup>
           <col className={styles.cData} />
           <col className={styles.cDia} />
-          {/* REP × 4 */}
+          {/* REP × 8 */}
           <col className={styles.cTime} /><col className={styles.cTime} />
           <col className={styles.cTime} /><col className={styles.cTime} />
-          {/* Jornada × 4 */}
+          <col className={styles.cTime} /><col className={styles.cTime} />
+          <col className={styles.cTime} /><col className={styles.cTime} />
+          {/* Jornada × 8 */}
+          <col className={styles.cTime} /><col className={styles.cTime} />
+          <col className={styles.cTime} /><col className={styles.cTime} />
           <col className={styles.cTime} /><col className={styles.cTime} />
           <col className={styles.cTime} /><col className={styles.cTime} />
           {/* CH / Horário / Ocor */}
@@ -175,53 +194,39 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
           <col className={styles.cTotal} />
           <col className={styles.cAdn} />
           <col className={styles.cNoc} />
-          <col className={styles.cRef} />
-          <col className={styles.cTotal} />
           <col className={styles.cTotal} />
         </colgroup>
         <thead>
           <tr className={styles.thSection}>
             <th colSpan={2}></th>
-            <th colSpan={4} className={styles.thSectionLabel}>MARCAÇÕES REP</th>
-            <th colSpan={7} className={styles.thSectionLabel}>Jornada Realizada</th>
+            <th colSpan={8} className={styles.thSectionLabel}>MARCAÇÕES REP</th>
+            <th colSpan={11} className={styles.thSectionLabel}>Jornada Realizada</th>
             <th colSpan={1} className={styles.thSectionLabel}>Tratamento Efetuado Sobre os Dados Originais</th>
-            <th colSpan={9}></th>
+            <th colSpan={7}></th>
           </tr>
           <tr className={styles.thCols}>
             <th>Data</th>
             <th>Dia</th>
-            <th>Ent 1</th><th>Sai 1</th><th>Ent 2</th><th>Sai 2</th>
-            <th>Ent. 1</th><th>Sai. 1</th><th>Ent. 2</th><th>Sai. 2</th>
+            <th>Ent 1</th><th>Sai 1</th><th>Ent 2</th><th>Sai 2</th><th>Ent 3</th><th>Sai 3</th><th>Ent 4</th><th>Sai 4</th>
+            <th>Ent. 1</th><th>Sai. 1</th><th>Ent. 2</th><th>Sai. 2</th><th>Ent. 3</th><th>Sai. 3</th><th>Ent. 4</th><th>Sai. 4</th>
             <th>CH</th><th>Horário</th><th>Ocor.</th>
             <th>Motivo</th>
             <th>Total</th><th>Extras</th><th>100%</th><th>Débito</th>
-            <th>ADN</th><th>N.OC.</th><th>Ref.</th><th>Horas</th><th>Total</th>
+            <th>ADN</th><th>N.OC.</th><th>Total</th>
           </tr>
         </thead>
         <tbody>
           {dias.map((dia) => {
-            const isOcorrencia =
-              dia.status === 'ocorrencia' ||
-              dia.status === 'atestado' ||
-              dia.status === 'abono' ||
-              dia.status === 'falta_justificada' ||
-              dia.status === 'licenca' ||
-              dia.status === 'outros'
-
-            const ocorrenciaLabel =
-              dia.ocorrencia?.tipo_ocorrencia_descricao ||
-              dia.ocorrencia?.descricao ||
-              'OCORRÊNCIA'
+            const isOcorrencia = dia.status === 'ocorrencia'
+            const isFeriado = dia.modifiers?.includes('feriado') ?? false
 
             const diaLabel =
-              dia.status === 'folga'
-                ? `${dia.dia_semana_label.toUpperCase()} FOLGA`
-                : dia.status === 'feriado'
+              isFeriado
                 ? 'FERIADO'
+                : dia.status === 'folga'
+                ? `${dia.dia_semana_label.toUpperCase()} FOLGA`
                 : dia.status === 'falta'
                 ? `${dia.dia_semana_label.toUpperCase()} FALTA`
-                : isOcorrencia
-                ? `${dia.dia_semana_label.toUpperCase()} — ${ocorrenciaLabel.toUpperCase()}`
                 : dia.dia_semana_label.toUpperCase()
 
             const extras50dia = dia.extras_50pct_minutos ?? 0
@@ -234,7 +239,7 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
 
             const trClass = [
               styles.trData,
-              dia.status === 'feriado' ? styles.trFeriado : '',
+              isFeriado ? styles.trFeriado : '',
               dia.status === 'falta' ? styles.trFalta : '',
               dia.status === 'folga' ? styles.trFolga : '',
               isOcorrencia ? styles.trOcorrencia : '',
@@ -248,7 +253,7 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
               return (
                 <tr key={dia.data} className={trClass}>
                   <td>{formatDataPrint(dia.data)}</td>
-                  <td colSpan={22}>{diaLabel}</td>
+                  <td colSpan={28} className={styles.tdDiaLabel}>{diaLabel}</td>
                 </tr>
               )
             }
@@ -261,22 +266,29 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
                   ? dia.minutos_previstos
                   : null
 
-            const { repSlots, allSlots, motivoStr } = buildSlots(dia.marcacoes)
+            const ocorrenciaLabel =
+              dia.ocorrencia?.tipo_ocorrencia_descricao ||
+              dia.ocorrencia?.descricao ||
+              'OCORRÊNCIA'
+            const { repSlots, allSlots, motivoStr: motivoMarcacao } = buildSlots(dia.marcacoes)
+            const motivoStr = isOcorrencia
+              ? [ocorrenciaLabel, motivoMarcacao].filter(Boolean).join(' — ')
+              : motivoMarcacao
 
             return (
               <tr key={dia.data} className={trClass}>
                 <td>{formatDataPrint(dia.data)}</td>
-                <td>{diaLabel}</td>
+                <td className={styles.tdDiaLabel}>{diaLabel}</td>
                 {/* REP */}
                 {repSlots.map((p, i) => (
                   <td key={`rep${i}`} className={styles.tdTime}>
-                    {p ? horaMin(p.data_hora) : '-'}
+                    {p ? horaMin(p) : '-'}
                   </td>
                 ))}
                 {/* Jornada */}
                 {allSlots.map((p, i) => (
                   <td key={`jrn${i}`} className={styles.tdTime}>
-                    {p ? horaMin(p.data_hora) : '-'}
+                    {p ? horaMin(p) : '-'}
                   </td>
                 ))}
                 <td className={styles.tdCh}>{meta.turno_id ?? '-'}</td>
@@ -294,10 +306,6 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
                 <td className={styles.tdTime}>{debito ? minToHHMM(debito) : '00:00'}</td>
                 <td className={styles.tdTime}>{noturno ? minToHHMM(noturno) : '00:00'}</td>
                 <td>0</td>
-                <td>000000</td>
-                <td className={styles.tdTime}>
-                  {totalExibicao != null ? minToHHMM(totalExibicao) : '00:00'}
-                </td>
                 <td className={styles.tdTime}>
                   {totalExibicao != null ? minToHHMM(totalExibicao) : '00:00'}
                 </td>
@@ -328,7 +336,7 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
           </tr>
           <tr>
             <td>Total 1/2 Faltas:&nbsp;0</td>
-            <td>Total Extras:&nbsp;50%:&nbsp;<strong>{minToHHMM(totalExtras50pctMin > 0 ? totalExtras50pctMin : totalExtrasMin)}</strong></td>
+            <td>Total Extras:&nbsp;50%:&nbsp;<strong>{minToHHMM(totalExtras50pctMin)}</strong></td>
             <td className={styles.footerOcor}>CRÉDITOS (+)</td>
             <td>Acréscimo:&nbsp;{totalAcrescimoMin ? minToHHMM(totalAcrescimoMin) : '00:00'}</td>
             <td>Horas 50%:&nbsp;{saldoMin >= 0 ? `(+) ${minToHHMM(saldoMin)}` : `(-) ${minToHHMM(Math.abs(saldoMin))}`}</td>

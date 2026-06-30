@@ -82,8 +82,71 @@
 .formActions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.65rem;
   margin-top: 0.85rem;
+}
+
+/* ── Zoom controls ────────────────────────────────────────────────── */
+.zoomControls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: var(--sp-bg-canvas);
+  border: 1px solid var(--sp-border);
+  border-radius: 8px;
+  padding: 0.2rem 0.5rem;
+}
+
+.btnZoom {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--sp-border);
+  background: var(--sp-bg-card);
+  color: var(--sp-text-2);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.btnZoom:hover:not(:disabled) {
+  background: var(--sp-bg-canvas);
+  color: var(--sp-accent);
+}
+
+.btnZoom:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.zoomLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--sp-text-2);
+  min-width: 38px;
+  text-align: center;
+  user-select: none;
+}
+
+.btnZoomReset {
+  font-size: 0.72rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 5px;
+  border: 1px solid var(--sp-border);
+  background: transparent;
+  color: var(--sp-text-3);
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.btnZoomReset:hover {
+  background: var(--sp-bg-canvas);
+  color: var(--sp-accent);
 }
 
 .btnGerar {
@@ -147,213 +210,31 @@
   font-size: 0.88rem;
 }
 
-/* ── Bloco de um funcionário ──────────────────────────────────────── */
-.report {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
 
-.block {
-  border: 1px solid var(--sp-border);
-  border-radius: var(--sp-radius-lg);
+/* ── Área de pré-visualização ─────────────────────────────────────── */
+.previewArea {
+  /* sangra para fora do padding do .wrap */
+  margin: 1.5rem -1.35rem -2rem;
+  padding: 2rem 1.5rem 3rem;
+  background: #d0d4d8;
+  border-radius: 0 0 18px 18px;
   overflow: hidden;
 }
 
-.blockHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding: 0.85rem 1rem 0.75rem;
-  background: var(--sp-bg-card-soft);
-  border-bottom: 1px solid var(--sp-border);
+/* Cada folha aparece como papel A4 */
+.previewArea > div > :global(*) {
+  background: #fff;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22);
+  border-radius: 2px;
+  padding: 7mm 6mm;
+  width: 297mm;
+  max-width: 100%;
+  box-sizing: border-box;
 }
-
-.blockEmployee {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.blockNome {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--sp-text);
-}
-
-.blockSub {
-  font-size: 0.8rem;
-  color: var(--sp-text-3);
-}
-
-.blockPeriodo {
-  text-align: right;
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-}
-
-.blockPeriodoLabel {
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--sp-text-3);
-}
-
-.blockPeriodoVal {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--sp-text-2);
-  text-transform: capitalize;
-}
-
-/* ── Summary cards por bloco ─────────────────────────────────────── */
-.blockSummary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
-  border-bottom: 1px solid var(--sp-border);
-}
-
-.sc {
-  padding: 0.55rem 0.9rem;
-  border-right: 1px solid var(--sp-border);
-}
-
-.sc:last-child {
-  border-right: none;
-}
-
-.scLabel {
-  margin: 0 0 0.1rem;
-  font-size: 0.68rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--sp-text-3);
-}
-
-.scVal {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--sp-text);
-}
-
-.scMono {
-  font-variant-numeric: tabular-nums;
-}
-
-.scPresente { color: var(--sp-status-presente-text); }
-.scFalta { color: var(--sp-status-falta-text); }
-.scOcorrencia { color: var(--sp-status-ocorrencia-text); }
-.scWarn { color: #b45309; }
-
-/* ── Tabela ───────────────────────────────────────────────────────── */
-.tableWrap {
-  overflow-x: auto;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.83rem;
-}
-
-.table th,
-.table td {
-  padding: 0.5rem 0.75rem;
-  text-align: left;
-  border-bottom: 1px solid #f0f2f1;
-  vertical-align: top;
-}
-
-.table th {
-  background: var(--sp-bg-card-soft);
-  font-weight: 600;
-  color: var(--sp-text-2);
-  white-space: nowrap;
-}
-
-.table tr:last-child td {
-  border-bottom: none;
-}
-
-.colDia {
-  white-space: nowrap;
-  font-weight: 600;
-  color: var(--sp-text);
-}
-
-.colBatidas {
-  color: var(--sp-text-2);
-  line-height: 1.5;
-}
-
-.colNum {
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
-.colObs {
-  font-size: 0.78rem;
-  color: var(--sp-text-3);
-}
-
-/* ── Status badge ─────────────────────────────────────────────────── */
-.sBadge {
-  display: inline-block;
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 0.12rem 0.4rem;
-  border-radius: 4px;
-  letter-spacing: 0.02em;
-  background: var(--sp-bg-canvas);
-  color: var(--sp-text-3);
-}
-
-.sBadgePresente { background: var(--sp-status-presente-bg); color: var(--sp-status-presente-text); }
-.sBadgeFalta    { background: var(--sp-status-falta-bg);    color: var(--sp-status-falta-text); }
-.sBadgeFolga    { background: var(--sp-status-folga-bg);    color: var(--sp-status-folga-text); }
-.sBadgeFeriado  { background: var(--sp-status-feriado-bg);  color: var(--sp-status-feriado-text); }
-.sBadgeOcorrencia { background: var(--sp-status-ocorrencia-bg); color: var(--sp-status-ocorrencia-text); }
-.sBadgeSemEscala  { background: #ffedd5; color: #9a3412; }
-
-/* ── Tipo badge (WEB / GEO / etc.) ────────────────────────────────── */
-.tipoBadge {
-  display: inline-block;
-  font-size: 0.6rem;
-  font-weight: 700;
-  padding: 0.1rem 0.3rem;
-  border-radius: 3px;
-  margin-right: 0.25rem;
-  vertical-align: middle;
-  background: #d8f3f1;
-  color: var(--sp-status-presente-text);
-}
-
-/* ── Linhas coloridas por status ──────────────────────────────────── */
-.rowWarn { background: #fffbeb; }
-.rowFeriado { background: #eff6ff; }
-.rowFalta { background: #fff1f2; }
-.rowFolga { background: #f9fafb; }
-.rowOcorrencia { background: #fffbeb; }
 
 /* ── Print ────────────────────────────────────────────────────────── */
-.printOnly {
-  display: none;
-}
-
 @media print {
-  .report { display: none !important; }
-  .printOnly { display: block; }
-
-  .form {
-    display: none !important;
-  }
+  .form { display: none !important; }
 
   .wrap {
     box-shadow: none;
@@ -361,47 +242,24 @@
     padding: 0;
   }
 
-  .report {
-    gap: 0;
-  }
+  .zoomControls { display: none !important; }
 
-  .block {
-    border: none;
+  .previewArea {
+    margin: 0;
+    padding: 0;
+    background: none;
     border-radius: 0;
-    page-break-after: always;
-    break-after: page;
   }
 
-  .block:last-child {
-    page-break-after: avoid;
-    break-after: avoid;
+  .previewArea > div {
+    zoom: 100% !important;
   }
 
-  .blockHeader {
-    background: transparent;
-    border-bottom: 1px solid #ccc;
-    padding: 0.5rem 0 0.5rem;
-  }
-
-  .blockSummary {
-    border-bottom: 1px solid #ccc;
-  }
-
-  .sc {
-    border-right: 1px solid #ccc;
-  }
-
-  .table {
-    font-size: 0.75rem;
-  }
-
-  .table th,
-  .table td {
-    padding: 0.35rem 0.5rem;
-  }
-
-  .table tr {
-    page-break-inside: avoid;
+  .previewArea > div > :global(*) {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
   }
 }
 

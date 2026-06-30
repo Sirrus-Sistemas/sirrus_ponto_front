@@ -3,6 +3,7 @@ import { ApiError } from '../../lib/api'
 import { formatHoraLocalPtBr } from '../../lib/parseDataHora'
 import { fetchFuncionarios, type FuncionarioListItem } from '../../services/funcionariosApi'
 import { fetchMe, type FuncionarioMe } from '../../services/userApi'
+import { fetchLotacoes, type Lotacao } from '../../services/lotacoesApi'
 import {
   fetchFicha,
   lancarBatida,
@@ -86,6 +87,8 @@ export function FichaPontoPage() {
   const [me, setMe] = useState<FuncionarioMe | null>(null)
   const [funcionarios, setFuncionarios] = useState<FuncionarioListItem[]>([])
   const [selectedFuncId, setSelectedFuncId] = useState<number | null>(null)
+  const [lotacoes, setLotacoes] = useState<Lotacao[]>([])
+  const [selectedLotacaoId, setSelectedLotacaoId] = useState<number | null>(null)
 
   const [modal, setModal] = useState<ModalState>({ mode: 'closed' })
   const [modalDatetime, setModalDatetime] = useState('')
@@ -112,16 +115,27 @@ export function FichaPontoPage() {
     [],
   )
 
+  const funcionariosFiltrados = useMemo(() => {
+    if (!selectedLotacaoId) return funcionarios
+    return funcionarios.filter((f) => f.lotacao_id === selectedLotacaoId)
+  }, [funcionarios, selectedLotacaoId])
+
   useEffect(() => {
     fetchMe()
       .then((m) => {
         setMe(m)
         if (m.role === 'admin' || m.role === 'gestor') {
-          return fetchFuncionarios({ limit: 500, ativo: 1 })
+          return Promise.all([
+            fetchFuncionarios({ limit: 500, ativo: 1 }),
+            fetchLotacoes(),
+          ])
         }
       })
       .then((res) => {
-        if (res) setFuncionarios(res.data)
+        if (res) {
+          setFuncionarios(res[0].data)
+          setLotacoes(res[1])
+        }
       })
       .catch(() => {})
   }, [])
@@ -244,23 +258,45 @@ export function FichaPontoPage() {
         </div>
         <div className={styles.controls}>
           {podeEditar && funcionarios.length > 0 && (
-            <div className={styles.field}>
-              <label htmlFor="ficha-func">Funcionário</label>
-              <select
-                id="ficha-func"
-                value={selectedFuncId ?? ''}
-                onChange={(e) =>
-                  setSelectedFuncId(e.target.value === '' ? null : Number(e.target.value))
-                }
-              >
-                <option value="">Meu ponto</option>
-                {funcionarios.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    {f.nome}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <>
+              {lotacoes.length > 0 && (
+                <div className={styles.field}>
+                  <label htmlFor="ficha-lotacao">Lotação</label>
+                  <select
+                    id="ficha-lotacao"
+                    value={selectedLotacaoId ?? ''}
+                    onChange={(e) => {
+                      setSelectedLotacaoId(e.target.value === '' ? null : Number(e.target.value))
+                      setSelectedFuncId(null)
+                    }}
+                  >
+                    <option value="">Todas</option>
+                    {lotacoes.map((l) => (
+                      <option key={l.id} value={l.id}>
+                        {l.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <div className={styles.field}>
+                <label htmlFor="ficha-func">Funcionário</label>
+                <select
+                  id="ficha-func"
+                  value={selectedFuncId ?? ''}
+                  onChange={(e) =>
+                    setSelectedFuncId(e.target.value === '' ? null : Number(e.target.value))
+                  }
+                >
+                  <option value="">Meu ponto</option>
+                  {funcionariosFiltrados.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </>
           )}
           <div className={styles.field}>
             <label htmlFor="ficha-mes">Mês</label>

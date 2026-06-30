@@ -76,6 +76,30 @@
   color: var(--sp-text-3);
 }
 
+.presencaHeadAcoes {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.filtroLotacao {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--sp-text-2);
+  background: var(--sp-bg-card);
+  border: 1px solid var(--sp-border, #e5e7eb);
+  border-radius: 8px;
+  padding: 0.28rem 0.65rem;
+  cursor: pointer;
+  outline: none;
+  max-width: 180px;
+}
+
+.filtroLotacao:focus {
+  border-color: #14918b;
+}
+
 .exportarBtn {
   font-size: 0.82rem;
   font-weight: 500;
@@ -583,6 +607,51 @@
 
 .filaAcaoCancel:hover {
   background: #fecaca;
+}
+
+/* ── Pagination ───────────────────────────────────────────────────────────── */
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--sp-border, #f3f4f6);
+  margin-top: 0.25rem;
+}
+
+.pageBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--sp-border, #e5e7eb);
+  background: var(--sp-bg-card);
+  color: var(--sp-text-2);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background: var(--sp-bg-canvas);
+  border-color: var(--sp-text-3);
+}
+
+.pageBtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.pageInfo {
+  font-size: 0.82rem;
+  color: var(--sp-text-3);
+  min-width: 48px;
+  text-align: center;
 }
 
 /* ── States ───────────────────────────────────────────────────────────────── */

@@ -10,6 +10,7 @@ export type MarcacaoFicha = {
 
 export type DiaFicha = {
   data: string
+  bloqueado?: boolean
   marcacoes: MarcacaoFicha[]
 }
 
@@ -45,6 +46,8 @@ export async function lancarBatida(payload: {
   funcionario_id: number
   data_hora: string
   motivo?: string
+  justificativa?: string
+  slot_override?: number | null
 }): Promise<{ id: number; data_hora: string; tipo: string; motivo_edicao: string | null }> {
   const res = await apiRequest<MarcacaoResponse>('/api/marcacoes/lancar', {
     method: 'POST',
@@ -55,7 +58,13 @@ export async function lancarBatida(payload: {
 
 export async function editarBatida(
   id: number,
-  payload: { data_hora: string; motivo?: string },
+  payload: {
+    data_hora?: string
+    motivo?: string
+    justificativa?: string
+    slot_override?: number | null
+    dia_referencia?: string | null
+  },
 ): Promise<void> {
   await apiRequest<SimpleResponse>(`/api/marcacoes/${id}`, {
     method: 'PUT',
@@ -65,4 +74,17 @@ export async function editarBatida(
 
 export async function excluirBatida(id: number): Promise<void> {
   await apiRequest<SimpleResponse>(`/api/marcacoes/${id}`, { method: 'DELETE' })
+}
+
+export async function bloquearDia(payload: { funcionario_id: number; data: string }): Promise<void> {
+  await apiRequest<{ success?: boolean }>('/api/marcacoes/bloquear-dia', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function desbloquearDia(funcionarioId: number, data: string): Promise<void> {
+  await apiRequest<{ success?: boolean }>(`/api/marcacoes/bloquear-dia/${funcionarioId}/${data}`, {
+    method: 'DELETE',
+  })
 }

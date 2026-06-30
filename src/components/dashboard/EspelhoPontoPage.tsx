@@ -9,6 +9,7 @@ import {
   type EspelhoPayload,
   type StatusDia,
 } from '../../services/espelhoApi'
+import { fetchLotacoes, type Lotacao } from '../../services/lotacoesApi'
 import { normalizarBatidasEsperadas } from './dashboardDiaUtils'
 import { EspelhoImpressao } from '../relatorios/EspelhoImpressao'
 import styles from './EspelhoPontoPage.module.css'
@@ -51,36 +52,24 @@ const STATUS_LABEL: Record<StatusDia, string> = {
   presente: 'Presente',
   falta: 'Falta',
   folga: 'Folga',
-  feriado: 'Feriado',
   futuro: '—',
   sem_escala: 'S/ escala',
   ocorrencia: 'Ocorrência',
-  atestado: 'Atestado',
-  abono: 'Abono',
-  falta_justificada: 'F. Justif.',
-  licenca: 'Licença',
-  outros: 'Ocorrência',
 }
 
 const STATUS_CLASS: Partial<Record<StatusDia, string>> = {
   presente: styles.statusPresente,
   falta: styles.statusFalta,
   folga: styles.statusFolga,
-  feriado: styles.statusFeriado,
   sem_escala: styles.statusSemEscala,
   ocorrencia: styles.statusOcorrencia,
-  atestado: styles.statusOcorrencia,
-  abono: styles.statusOcorrencia,
-  falta_justificada: styles.statusOcorrencia,
-  licenca: styles.statusOcorrencia,
-  outros: styles.statusOcorrencia,
 }
 
 function obsForRow(dia: DiaEspelho, batidasTurno: number | null | undefined): string {
   if (dia.ocorrencia?.tipo_ocorrencia_descricao) return dia.ocorrencia.tipo_ocorrencia_descricao
   if (dia.ocorrencia?.descricao) return dia.ocorrencia.descricao
   if (dia.feriado) return dia.feriado.descricao
-  if (dia.incompleto && dia.marcacoes.length) {
+  if (dia.modifiers?.includes('incompleto') && dia.marcacoes.length) {
     const n = dia.marcacoes.length
     if (n % 2 === 1) return 'Batidas ímpares (intervalo aberto)'
     if (dia.minutos_previstos != null && batidasTurno != null) {
@@ -93,7 +82,7 @@ function obsForRow(dia: DiaEspelho, batidasTurno: number | null | undefined): st
 }
 
 function previstoCell(dia: DiaEspelho): string {
-  if (dia.feriado) return 'Feriado'
+  if (dia.modifiers?.includes('feriado')) return 'Feriado'
   if (dia.minutos_previstos != null) return formatMinutos(dia.minutos_previstos)
   return '—'
 }
@@ -109,8 +98,15 @@ export function EspelhoPontoPage() {
   const [me, setMe] = useState<FuncionarioMe | null>(null)
   const [funcionarios, setFuncionarios] = useState<FuncionarioListItem[]>([])
   const [selectedFuncId, setSelectedFuncId] = useState<number | null>(null)
+  const [lotacoes, setLotacoes] = useState<Lotacao[]>([])
+  const [selectedLotacaoId, setSelectedLotacaoId] = useState<number | null>(null)
 
   const podeVerOutros = me?.role === 'admin' || me?.role === 'gestor'
+
+  const funcionariosFiltrados = useMemo(() => {
+    if (!selectedLotacaoId) return funcionarios
+    return funcionarios.filter((f) => f.lotacao_id === selectedLotacaoId)
+  }, [funcionarios, selectedLotacaoId])
 
   const anos = useMemo(() => {
     const y = new Date().getFullYear()
@@ -126,17 +122,23 @@ export function EspelhoPontoPage() {
     [],
   )
 
-  // Load current user and, if admin/gestor, the employee list
+  // Load current user and, if admin/gestor, the employee list and lotações
   useEffect(() => {
     fetchMe()
       .then((m) => {
         setMe(m)
         if (m.role === 'admin' || m.role === 'gestor') {
-          return fetchFuncionarios({ limit: 500, ativo: 1 })
+          return Promise.all([
+            fetchFuncionarios({ limit: 500, ativo: 1 }),
+            fetchLotacoes(),
+          ])
         }
       })
       .then((res) => {
-        if (res) setFuncionarios(res.data)
+        if (res) {
+          setFuncionarios(res[0].data)
+          setLotacoes(res[1])
+        }
       })
       .catch(() => {})
   }, [])
@@ -166,12 +168,10 @@ export function EspelhoPontoPage() {
 
   const rowClass = (dia: DiaEspelho) => {
     if (dia.status === 'falta') return styles.rowFalta
-    if (dia.status === 'feriado') return styles.rowFeriado
+    if (dia.modifiers?.includes('feriado')) return styles.rowFeriado
     if (dia.status === 'folga') return styles.rowFolga
-    if (['atestado', 'abono', 'falta_justificada', 'licenca', 'outros'].includes(dia.status)) {
-      return styles.rowOcorrencia
-    }
-    if (dia.incompleto && dia.marcacoes.length) return styles.rowWarn
+    if (dia.status === 'ocorrencia') return styles.rowOcorrencia
+    if (dia.modifiers?.includes('incompleto') && dia.marcacoes.length) return styles.rowWarn
     return undefined
   }
 
@@ -189,23 +189,45 @@ export function EspelhoPontoPage() {
         </div>
         <div className={styles.controls}>
           {podeVerOutros && funcionarios.length > 0 && (
-            <div className={styles.field}>
-              <label htmlFor="espelho-func">Funcionário</label>
-              <select
-                id="espelho-func"
-                value={selectedFuncId ?? ''}
-                onChange={(e) =>
-                  setSelectedFuncId(e.target.value === '' ? null : Number(e.target.value))
-                }
-              >
-                <option value="">Meu espelho</option>
-                {funcionarios.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    {f.nome}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <>
+              {lotacoes.length > 0 && (
+                <div className={styles.field}>
+                  <label htmlFor="espelho-lotacao">Lotação</label>
+                  <select
+                    id="espelho-lotacao"
+                    value={selectedLotacaoId ?? ''}
+                    onChange={(e) => {
+                      setSelectedLotacaoId(e.target.value === '' ? null : Number(e.target.value))
+                      setSelectedFuncId(null)
+                    }}
+                  >
+                    <option value="">Todas</option>
+                    {lotacoes.map((l) => (
+                      <option key={l.id} value={l.id}>
+                        {l.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <div className={styles.field}>
+                <label htmlFor="espelho-func">Funcionário</label>
+                <select
+                  id="espelho-func"
+                  value={selectedFuncId ?? ''}
+                  onChange={(e) =>
+                    setSelectedFuncId(e.target.value === '' ? null : Number(e.target.value))
+                  }
+                >
+                  <option value="">Meu espelho</option>
+                  {funcionariosFiltrados.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </>
           )}
           <div className={styles.field}>
             <label htmlFor="espelho-mes">Mês</label>
@@ -328,7 +350,7 @@ export function EspelhoPontoPage() {
                           STATUS_CLASS[dia.status] ?? '',
                         ].join(' ')}
                       >
-                        {STATUS_LABEL[dia.status] ?? dia.status}
+                        {dia.modifiers?.includes('feriado') ? 'Feriado' : (STATUS_LABEL[dia.status] ?? dia.status)}
                       </span>
                     </td>
                     <td className={styles.colBatidas}>
@@ -380,7 +402,7 @@ export function EspelhoPontoPage() {
                         STATUS_CLASS[dia.status] ?? '',
                       ].join(' ')}
                     >
-                      {STATUS_LABEL[dia.status] ?? dia.status}
+                      {dia.modifiers?.includes('feriado') ? 'Feriado' : (STATUS_LABEL[dia.status] ?? dia.status)}
                     </span>
                   </span>
                   <span className={styles.cardDaySub}>

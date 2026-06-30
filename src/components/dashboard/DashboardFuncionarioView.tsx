@@ -249,13 +249,10 @@ function Timeline({
 type Props = {
   me: FuncionarioMe
   espelho: EspelhoPayload
-  onRegistrar: () => void
-  registering: boolean
-  registerError: string | null
   switcherNode?: React.ReactNode
 }
 
-export function DashboardFuncionarioView({ me, espelho, onRegistrar, registering, registerError, switcherNode }: Props) {
+export function DashboardFuncionarioView({ me, espelho, switcherNode }: Props) {
   const [tick, setTick] = useState(0)
 
   useEffect(() => {
@@ -270,6 +267,7 @@ export function DashboardFuncionarioView({ me, espelho, onRegistrar, registering
   const nBatidas = dia?.marcacoes.length ?? 0
   const proximaAcao = proximaAcaoLabel(nBatidas, batidasTurno)
     .replace('Bater ', '')
+
   const previstaHHmm = nextExpectedTime(me, nBatidas, batidasTurno ?? 4)
 
   const ultimaBatida = ultimaMarcacaoDoDia(dia)
@@ -336,24 +334,7 @@ export function DashboardFuncionarioView({ me, espelho, onRegistrar, registering
 
           <Timeline me={me} dia={dia} batidasTurno={batidasTurno} tick={tick} />
 
-          <div className={styles.heroBtns}>
-            <button
-              type="button"
-              className={styles.btnBater}
-              onClick={onRegistrar}
-              disabled={registering}
-            >
-              <ClockIcon />
-              {registering ? 'Registrando…' : 'Bater ponto agora'}
-            </button>
-            <Link to="/ficha-ponto" className={styles.btnSecundario}>
-              Esqueci uma batida
-            </Link>
-          </div>
 
-          {registerError && (
-            <p className={styles.registerError} role="alert">{registerError}</p>
-          )}
         </div>
 
         <div className={styles.heroRight}>
@@ -534,11 +515,3 @@ function DonutHero({ trabalhados, previstos }: { trabalhados: number; previstos:
   )
 }
 
-function ClockIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 2" />
-    </svg>
-  )
-}

@@ -4,6 +4,7 @@ import { ApiError } from '../../lib/api'
 import { parseDataHoraUtc } from '../../lib/parseDataHora'
 import { fetchEspelho, type EspelhoPayload, type DiaEspelho } from '../../services/espelhoApi'
 import { fetchFuncionarios, type FuncionarioListItem } from '../../services/funcionariosApi'
+import { fetchLotacoes, type Lotacao } from '../../services/lotacoesApi'
 import { fetchOcorrencias, type Ocorrencia } from '../../services/ocorrenciasApi'
 import type { FuncionarioMe } from '../../services/userApi'
 import { hojeIsoPtBr, anoMesEspelhoPtBr, formatSaldoMesPt } from './dashboardDiaUtils'
@@ -51,16 +52,17 @@ type StatusPresenca = {
 }
 
 function statusPresenca(dia: DiaEspelho | undefined, hojeStr: string): StatusPresenca {
-  if (!dia || dia.data !== hojeStr) return { label: 'Aguardando', variant: 'aguardando' }
+  if (!dia || dia.data !== hojeStr) return { label: 'Sem batida', variant: 'aguardando' }
   if (dia.status === 'falta') return { label: 'Falta', variant: 'falta' }
   if (dia.status === 'folga') return { label: 'Folga', variant: 'folga' }
-  if (dia.status === 'feriado') return { label: 'Feriado', variant: 'folga' }
+  if (dia.modifiers?.includes('feriado')) return { label: 'Feriado', variant: 'folga' }
   const n = dia.marcacoes.length
-  if (n === 0) return { label: 'Aguardando', variant: 'aguardando' }
-  if (dia.incompleto && n % 2 === 1) return { label: 'Trabalhando', variant: 'trabalhando' }
-  if (dia.incompleto && n % 2 === 0) return { label: 'Intervalo', variant: 'intervalo' }
-  if (!dia.incompleto) return { label: 'Encerrado', variant: 'encerrado' }
-  return { label: 'Aguardando', variant: 'aguardando' }
+  if (n === 0) return { label: 'Sem batida', variant: 'aguardando' }
+  const incompleto = dia.modifiers?.includes('incompleto') ?? false
+  if (incompleto && n % 2 === 1) return { label: 'Trabalhando', variant: 'trabalhando' }
+  if (incompleto && n % 2 === 0) return { label: 'Intervalo', variant: 'intervalo' }
+  if (!incompleto) return { label: 'Encerrado', variant: 'encerrado' }
+  return { label: 'Sem batida', variant: 'aguardando' }
 }
 
 function ultimaBatidaHora(dia: DiaEspelho | undefined): string {
@@ -92,29 +94,37 @@ type TeamMember = {
   loading: boolean
 }
 
+const PAGE_SIZE = 10
+
 export function DashboardGestorView({ me, switcherNode }: { me: FuncionarioMe; switcherNode?: ReactNode }) {
   const [team, setTeam] = useState<TeamMember[]>([])
   const [loadingTeam, setLoadingTeam] = useState(true)
   const [teamError, setTeamError] = useState<string | null>(null)
   const [ocorrencias, setOcorrencias] = useState<Ocorrencia[]>([])
   const [myEspelho, setMyEspelho] = useState<EspelhoPayload | null>(null)
+  const [teamPage, setTeamPage] = useState(0)
+  const [lotacoes, setLotacoes] = useState<Lotacao[]>([])
+  const [lotacaoFiltro, setLotacaoFiltro] = useState<number | null>(null)
 
   const hojeStr = hojeIsoPtBr()
   const { ano, mes } = anoMesEspelhoPtBr()
 
   useEffect(() => {
-    let cancelled = false
+    const controller = new AbortController()
+    const { signal } = controller
 
     async function load() {
       setLoadingTeam(true)
       setTeamError(null)
       try {
-        const [{ data: funcionarios }, esp, ocorrs] = await Promise.all([
-          fetchFuncionarios({ ativo: 1, limit: 50 }),
-          fetchEspelho(ano, mes),
-          fetchOcorrencias({ ano, mes }),
+        const [{ data: funcionarios }, esp, ocorrs, lots] = await Promise.all([
+          fetchFuncionarios({ ativo: 1, limit: 1000 }, signal),
+          fetchEspelho(ano, mes, undefined, signal),
+          fetchOcorrencias({ ano, mes }, signal),
+          fetchLotacoes(signal),
         ])
-        if (cancelled) return
+        if (signal.aborted) return
+        setLotacoes(lots)
         setMyEspelho(esp)
         setOcorrencias(ocorrs)
 
@@ -129,13 +139,14 @@ export function DashboardGestorView({ me, switcherNode }: { me: FuncionarioMe; s
         // carrega espelhos dos funcionários em série (lotes de 5, 300ms entre lotes)
         const BATCH = 5
         for (let i = 0; i < funcionarios.length; i += BATCH) {
-          if (cancelled) return
+          if (signal.aborted) return
           if (i > 0) await new Promise((r) => setTimeout(r, 300))
+          if (signal.aborted) return
           const batch = funcionarios.slice(i, i + BATCH)
           const results = await Promise.allSettled(
-            batch.map((f) => fetchEspelho(ano, mes, f.id))
+            batch.map((f) => fetchEspelho(ano, mes, f.id, signal))
           )
-          if (cancelled) return
+          if (signal.aborted) return
           setTeam((prev) => {
             const next = [...prev]
             batch.forEach((f, j) => {
@@ -152,21 +163,27 @@ export function DashboardGestorView({ me, switcherNode }: { me: FuncionarioMe; s
           })
         }
       } catch (e) {
-        if (!cancelled)
-          setTeamError(e instanceof ApiError ? e.message : 'Não foi possível carregar a equipe.')
+        if (signal.aborted) return
+        setTeamError(e instanceof ApiError ? e.message : 'Não foi possível carregar a equipe.')
         setLoadingTeam(false)
       }
     }
 
     void load()
-    return () => { cancelled = true }
+    return () => { controller.abort() }
   }, [ano, mes])
+
+  // ── Filtro por lotação ──────────────────────────────────────────────────────
+  const teamFiltered = useMemo(() => {
+    if (lotacaoFiltro === null) return team
+    return team.filter((m) => m.funcionario.lotacao_id === lotacaoFiltro)
+  }, [team, lotacaoFiltro])
 
   // ── Contadores de presença ──────────────────────────────────────────────────
   const contadores = useMemo(() => {
-    const total = team.length
+    const total = teamFiltered.length
     let trabalhando = 0, intervalo = 0, folga = 0, falta = 0
-    for (const m of team) {
+    for (const m of teamFiltered) {
       const dia = m.espelho?.dias.find((d) => d.data === hojeStr)
       const s = statusPresenca(dia, hojeStr)
       if (s.variant === 'trabalhando') trabalhando++
@@ -183,20 +200,20 @@ export function DashboardGestorView({ me, switcherNode }: { me: FuncionarioMe; s
     const diasRestantes = diasAteFinsMes(myEspelho)
     const mesNome = new Date(myEspelho.ano, myEspelho.mes - 1, 1)
       .toLocaleDateString('pt-BR', { month: 'long' })
-    const completos = team.filter((m) => {
+    const completos = teamFiltered.filter((m) => {
       if (!m.espelho) return false
       return m.espelho.resumo.dias_incompletos === 0 && m.espelho.resumo.dias_presentes > 0
     }).length
-    const pendencias = team.filter((m) => {
+    const pendencias = teamFiltered.filter((m) => {
       if (!m.espelho) return false
       return m.espelho.resumo.dias_incompletos > 0 || m.espelho.resumo.dias_falta > 0
     }).length
-    return { diasRestantes, mesNome, completos, pendencias, total: team.length }
+    return { diasRestantes, mesNome, completos, pendencias, total: teamFiltered.length }
   }, [myEspelho, team])
 
   // ── Heatmap (dias do mês atual) ─────────────────────────────────────────────
   const heatmap = useMemo(() => {
-    if (!myEspelho || team.length === 0) return []
+    if (!myEspelho || teamFiltered.length === 0) return []
     const dias: { dia: number; pct: number; futuro: boolean }[] = []
     const totalDias = new Date(myEspelho.ano, myEspelho.mes, 0).getDate()
     const hojeDate = hojeStr
@@ -210,7 +227,7 @@ export function DashboardGestorView({ me, switcherNode }: { me: FuncionarioMe; s
       }
       let presentes = 0
       let total = 0
-      for (const m of team) {
+      for (const m of teamFiltered) {
         const dia = m.espelho?.dias.find((dd) => dd.data === iso)
         if (!dia) continue
         total++
@@ -225,10 +242,14 @@ export function DashboardGestorView({ me, switcherNode }: { me: FuncionarioMe; s
 
   // ── Ocorrências recentes (fila de aprovação) ────────────────────────────────
   const filaAprovacao = useMemo(() => {
+    const idsLotacao = lotacaoFiltro !== null
+      ? new Set(teamFiltered.map((m) => m.funcionario.id))
+      : null
     return [...ocorrencias]
+      .filter((o) => idsLotacao === null || idsLotacao.has(o.funcionario_id))
       .sort((a, b) => b.data_inicio.localeCompare(a.data_inicio))
       .slice(0, 6)
-  }, [ocorrencias])
+  }, [ocorrencias, lotacaoFiltro, teamFiltered])
 
   const primeiroPrimeiroNome = me.nome.split(' ')[0]
 
@@ -260,7 +281,24 @@ export function DashboardGestorView({ me, switcherNode }: { me: FuncionarioMe; s
                 {loadingTeam ? ' · carregando…' : ' · atualizado há instantes'}
               </p>
             </div>
-            <Link to="/relatorios" className={styles.exportarBtn}>Exportar</Link>
+            <div className={styles.presencaHeadAcoes}>
+              {lotacoes.length > 0 && (
+                <select
+                  className={styles.filtroLotacao}
+                  value={lotacaoFiltro ?? ''}
+                  onChange={(e) => {
+                    setLotacaoFiltro(e.target.value === '' ? null : Number(e.target.value))
+                    setTeamPage(0)
+                  }}
+                >
+                  <option value="">Todas as lotações</option>
+                  {lotacoes.map((l) => (
+                    <option key={l.id} value={l.id}>{l.nome}</option>
+                  ))}
+                </select>
+              )}
+              <Link to="/relatorios" className={styles.exportarBtn}>Exportar</Link>
+            </div>
           </div>
 
           {/* Contadores */}
@@ -302,62 +340,81 @@ export function DashboardGestorView({ me, switcherNode }: { me: FuncionarioMe; s
           ) : loadingTeam ? (
             <p className={styles.loadingMsg}>Carregando equipe…</p>
           ) : (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>Pessoa</th>
-                    <th>Status</th>
-                    <th>Última batida</th>
-                    <th>Saldo mês</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {team.map(({ funcionario: f, espelho: esp, loading: ld }) => {
-                    const dia = esp?.dias.find((d) => d.data === hojeStr)
-                    const status = statusPresenca(dia, hojeStr)
-                    const ultima = ultimaBatidaHora(dia)
-                    const saldo = esp ? formatSaldoMesPt(esp.resumo.saldo_mes_minutos) : '…'
-                    const saldoNeg = esp && (esp.resumo.saldo_mes_minutos ?? 0) < 0
+            <>
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Pessoa</th>
+                      <th>Status</th>
+                      <th>Última batida</th>
+                      <th>Saldo mês</th>
+                      <th />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {teamFiltered.slice(teamPage * PAGE_SIZE, (teamPage + 1) * PAGE_SIZE).map(({ funcionario: f, espelho: esp, loading: ld }) => {
+                      const dia = esp?.dias.find((d) => d.data === hojeStr)
+                      const status = statusPresenca(dia, hojeStr)
+                      const ultima = ultimaBatidaHora(dia)
+                      const saldo = esp ? formatSaldoMesPt(esp.resumo.saldo_mes_minutos) : '…'
+                      const saldoNeg = esp && (esp.resumo.saldo_mes_minutos ?? 0) < 0
 
-                    return (
-                      <tr key={f.id}>
-                        <td>
-                          <div className={styles.pessoa}>
-                            <span className={styles.avatar}>{initials(f.nome)}</span>
-                            <div>
-                              <p className={styles.pessoaNome}>{f.nome}</p>
-                              <p className={styles.pessoaSub}>
-                                {[f.departamento_nome, f.cargo].filter(Boolean).join(' · ') || '—'}
-                              </p>
+                      return (
+                        <tr key={f.id}>
+                          <td>
+                            <div className={styles.pessoa}>
+                              <span className={styles.avatar}>{initials(f.nome)}</span>
+                              <div>
+                                <p className={styles.pessoaNome}>{f.nome}</p>
+                                <p className={styles.pessoaSub}>
+                                  {[f.departamento_nome, f.cargo].filter(Boolean).join(' · ') || '—'}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td>
-                          {ld ? (
-                            <span className={`${styles.statusBadge} ${styles.statusAguardando}`}>…</span>
-                          ) : (
-                            <span className={`${styles.statusBadge} ${styles['status' + status.variant.charAt(0).toUpperCase() + status.variant.slice(1)]}`}>
-                              {status.label}
-                            </span>
-                          )}
-                        </td>
-                        <td className={styles.tdMuted}>{ld ? '…' : ultima}</td>
-                        <td className={saldoNeg ? styles.tdNeg : styles.tdPos}>{saldo}</td>
-                        <td>
-                          <Link
-                            to={`/espelho?funcionario_id=${f.id}`}
-                            className={styles.rowChev}
-                            aria-label={`Ver espelho de ${f.nome}`}
-                          >›</Link>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
+                          </td>
+                          <td>
+                            {ld ? (
+                              <span className={`${styles.statusBadge} ${styles.statusAguardando}`}>…</span>
+                            ) : (
+                              <span className={`${styles.statusBadge} ${styles['status' + status.variant.charAt(0).toUpperCase() + status.variant.slice(1)]}`}>
+                                {status.label}
+                              </span>
+                            )}
+                          </td>
+                          <td className={styles.tdMuted}>{ld ? '…' : ultima}</td>
+                          <td className={saldoNeg ? styles.tdNeg : styles.tdPos}>{saldo}</td>
+                          <td>
+                            <Link
+                              to={`/espelho?funcionario_id=${f.id}`}
+                              className={styles.rowChev}
+                              aria-label={`Ver espelho de ${f.nome}`}
+                            >›</Link>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              {teamFiltered.length > PAGE_SIZE && (
+                <div className={styles.pagination}>
+                  <button
+                    className={styles.pageBtn}
+                    onClick={() => setTeamPage((p) => p - 1)}
+                    disabled={teamPage === 0}
+                  >‹</button>
+                  <span className={styles.pageInfo}>
+                    {teamPage + 1} / {Math.ceil(teamFiltered.length / PAGE_SIZE)}
+                  </span>
+                  <button
+                    className={styles.pageBtn}
+                    onClick={() => setTeamPage((p) => p + 1)}
+                    disabled={(teamPage + 1) * PAGE_SIZE >= teamFiltered.length}
+                  >›</button>
+                </div>
+              )}
+            </>
           )}
         </div>
 

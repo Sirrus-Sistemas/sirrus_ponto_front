@@ -17,6 +17,8 @@ export type Turno = {
   tipo?: TurnoTipo
   /** Par 2–24; ciclo diário esperado no espelho. */
   batidas_esperadas_dia?: number
+  /** Array JSON com todos os horários de batidas. Suporta > 4 batidas/dia. */
+  batida_times_json?: string | null
   ativo?: number
   total_funcionarios?: number
 }
@@ -54,6 +56,7 @@ export type CreateTurnoPayload = {
   intervalo_minimo_min?: number
   tipo?: TurnoTipo
   batidas_esperadas_dia?: number
+  batida_times_json?: string | null
 }
 
 type CreateTurnoResponse = {
@@ -73,6 +76,7 @@ export async function createTurno(payload: CreateTurnoPayload): Promise<Record<s
     intervalo_minimo_min: payload.intervalo_minimo_min ?? 60,
     tipo: payload.tipo ?? 'fixo',
     batidas_esperadas_dia: payload.batidas_esperadas_dia ?? 8,
+    batida_times_json: payload.batida_times_json ?? null,
   }
   const res = await apiRequest<CreateTurnoResponse>('/api/turnos', {
     method: 'POST',
@@ -93,6 +97,7 @@ export type UpdateTurnoPayload = Partial<{
   tipo: TurnoTipo
   ativo: number
   batidas_esperadas_dia: number
+  batida_times_json: string | null
 }>
 
 export async function updateTurno(id: number, payload: UpdateTurnoPayload): Promise<void> {

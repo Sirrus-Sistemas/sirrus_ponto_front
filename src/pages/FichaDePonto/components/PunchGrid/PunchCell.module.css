@@ -18,6 +18,19 @@
   border: 1px solid #E2E8F0;
   color: #0F172A;
   font-weight: 500;
+  cursor: grab;
+}
+.filled:active { cursor: grabbing; }
+
+.dragging {
+  opacity: 0.3;
+  cursor: grabbing;
+}
+
+.dragOver {
+  border-color: #10B981 !important;
+  background: #ECFDF5 !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
 }
 
 .manual {

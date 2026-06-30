@@ -1,6 +1,6 @@
 .page {
   --primary: #14918b;
-  max-width: 1100px;
+  max-width: 1200px;
 }
 
 .title {
@@ -239,4 +239,78 @@
 .separator {
   color: var(--sp-border);
   font-weight: 400;
+}
+
+/* Paginação */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--sp-border);
+}
+
+.paginationInfo {
+  font-size: 0.82rem;
+  color: var(--sp-text-3);
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.pageBtn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 0.4rem;
+  border: 1px solid var(--sp-border);
+  border-radius: 8px;
+  background: var(--sp-bg-card);
+  color: var(--sp-text-2);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background: var(--sp-bg-card-soft);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.pageBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pageBtnActive {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.pageBtnActive:hover:not(:disabled) {
+  background: #11837e;
+  border-color: #11837e;
+  color: #fff;
+}
+
+.pageEllipsis {
+  min-width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: var(--sp-text-3);
 }

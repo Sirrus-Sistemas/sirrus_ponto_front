@@ -1,0 +1,299 @@
+/* ── Card container ───────────────────────────────────────────────────────── */
+.card {
+  background: var(--sp-bg-card);
+  border-radius: var(--sp-radius-card);
+  border: 1px solid var(--sp-border);
+  box-shadow: var(--sp-shadow-card);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Cabeçalho ───────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--sp-border);
+  flex-wrap: wrap;
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex-shrink: 0;
+}
+
+.cardTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--sp-text);
+}
+
+.count {
+  font-size: 0.78rem;
+  color: var(--sp-text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Filtros ─────────────────────────────────────────────────────────────── */
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.searchWrap {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+}
+
+.searchWrap svg {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--sp-text-3);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--sp-border-strong);
+  border-radius: var(--sp-radius-md);
+  padding: 0 0.85rem 0 2.25rem;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--sp-text);
+  background: var(--sp-bg-card);
+  min-height: 38px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.searchInput:focus {
+  border-color: var(--sp-primary);
+  box-shadow: 0 0 0 3px var(--sp-primary-soft);
+}
+
+.filterSelect {
+  border: 1px solid var(--sp-border-strong);
+  border-radius: var(--sp-radius-md);
+  padding: 0 0.75rem;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--sp-text);
+  background: var(--sp-bg-card);
+  min-height: 38px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.filterSelect:focus {
+  border-color: var(--sp-primary);
+  box-shadow: 0 0 0 3px var(--sp-primary-soft);
+}
+
+/* ── Tabela ──────────────────────────────────────────────────────────────── */
+.tableWrap {
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--sp-bg-card);
+  z-index: 1;
+  text-align: left;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sp-text-3);
+  border-bottom: 1px solid var(--sp-border);
+  white-space: nowrap;
+}
+
+.row {
+  transition: background 0.1s;
+}
+
+.row:hover {
+  background: var(--sp-bg-card-soft);
+}
+
+.table td {
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid var(--sp-border);
+  vertical-align: middle;
+  color: var(--sp-text);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Colunas específicas ─────────────────────────────────────────────────── */
+.tdNome {
+  font-weight: 600;
+  min-width: 140px;
+}
+
+.tdData {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--sp-text-2);
+}
+
+.tdLocal {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+  color: var(--sp-text-2);
+  white-space: nowrap;
+}
+
+.tdObs {
+  color: var(--sp-text-3);
+  font-size: 0.82rem;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Chip de tipo ─────────────────────────────────────────────────────────── */
+.chip {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chipNacional {
+  background: var(--sp-fer-nacional-bg);
+  color: var(--sp-fer-nacional-fg);
+}
+
+.chipEstadual {
+  background: var(--sp-fer-estadual-bg);
+  color: var(--sp-fer-estadual-fg);
+}
+
+.chipMunicipal {
+  background: var(--sp-fer-municipal-bg);
+  color: var(--sp-fer-municipal-fg);
+}
+
+.chipEmpresarial {
+  background: var(--sp-fer-empresarial-bg);
+  color: var(--sp-fer-empresarial-fg);
+}
+
+/* ── Tags recorrência ────────────────────────────────────────────────────── */
+.tagAnual {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--sp-ok-fg);
+  white-space: nowrap;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--sp-ok-fg);
+  flex-shrink: 0;
+}
+
+.tagUnico {
+  font-size: 0.8rem;
+  color: var(--sp-text-3);
+}
+
+/* ── Botão lixeira ───────────────────────────────────────────────────────── */
+.btnTrash {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  padding: 0.35rem;
+  border-radius: 7px;
+  color: var(--sp-text-3);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.btnTrash:hover {
+  background: #fde8e8;
+  color: var(--sp-sirrus, #dc2626);
+}
+
+/* ── Estado vazio ────────────────────────────────────────────────────────── */
+.emptyCell {
+  text-align: center;
+  color: var(--sp-text-3);
+  font-style: italic;
+  padding: 2rem 1rem !important;
+}
+
+/* ── Paginação ───────────────────────────────────────────────────────────── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid var(--sp-border);
+  flex-shrink: 0;
+}
+
+.pgBtn {
+  border: 1px solid var(--sp-border-strong);
+  border-radius: var(--sp-radius-md);
+  padding: 0.35rem 0.85rem;
+  font: inherit;
+  font-size: 0.82rem;
+  background: var(--sp-bg-card);
+  color: var(--sp-text-2);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.pgBtn:hover:not(:disabled) {
+  background: var(--sp-bg-canvas);
+}
+
+.pgBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pgInfo {
+  font-size: 0.82rem;
+  color: var(--sp-text-3);
+  font-variant-numeric: tabular-nums;
+}

@@ -93,6 +93,15 @@
   flex-shrink: 0;
 }
 
+.itemDanger {
+  color: #DC2626;
+}
+
+.itemDanger:hover {
+  background: #FEF2F2;
+  color: #B91C1C;
+}
+
 .divider {
   height: 1px;
   background: #F1F5F9;

@@ -1,8 +1,9 @@
-import { ChevronDown, RefreshCw } from 'lucide-react';
+import { Printer, RefreshCw } from 'lucide-react';
 import { Avatar } from '../ui/Avatar';
 import styles from './FilterBar.module.css';
 import type { Employee } from '../../types';
 import type { FuncionarioListItem } from '../../../../services/funcionariosApi';
+import type { Lotacao } from '../../../../services/lotacoesApi';
 
 const MONTHS = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -23,7 +24,11 @@ interface FilterBarProps {
   funcionarios: FuncionarioListItem[];
   selectedFuncId: number | undefined;
   onFuncChange: (id: number | undefined) => void;
+  lotacoes: Lotacao[];
+  selectedLotacaoId: number | undefined;
+  onLotacaoChange: (id: number | undefined) => void;
   onLoad: () => void;
+  onPrint?: () => void;
 }
 
 export function FilterBar({
@@ -32,15 +37,25 @@ export function FilterBar({
   endMonth, endYear,
   onStartMonthChange, onEndMonthChange,
   funcionarios, selectedFuncId, onFuncChange,
+  lotacoes, selectedLotacaoId, onLotacaoChange,
   onLoad,
+  onPrint,
 }: FilterBarProps) {
   return (
     <div className={styles.bar}>
       <div className={styles.left}>
-        <button type="button" className={styles.filterBtn}>
-          <ChevronDown size={14} />
-          Filtros
-        </button>
+        {lotacoes.length > 0 && (
+          <select
+            className={styles.select}
+            value={selectedLotacaoId ?? ''}
+            onChange={(e) => onLotacaoChange(e.target.value === '' ? undefined : Number(e.target.value))}
+          >
+            <option value="">Todas as lotações</option>
+            {lotacoes.map((l) => (
+              <option key={l.id} value={l.id}>{l.nome}</option>
+            ))}
+          </select>
+        )}
 
         {funcionarios.length > 0 ? (
           <select
@@ -109,20 +124,15 @@ export function FilterBar({
           <RefreshCw size={14} />
           Carregar
         </button>
+
+        {onPrint && (
+          <button type="button" className={styles.printBtn} onClick={onPrint}>
+            <Printer size={14} />
+            Imprimir
+          </button>
+        )}
       </div>
 
-      <div className={styles.shortcuts}>
-        <kbd className={styles.kbd}>←</kbd>
-        <kbd className={styles.kbd}>→</kbd>
-        <span className={styles.shortcutLabel}>dias</span>
-        <span className={styles.shortcutSep}>·</span>
-        <kbd className={styles.kbd}>Ctrl</kbd>
-        <kbd className={styles.kbd}>S</kbd>
-        <span className={styles.shortcutLabel}>salvar</span>
-        <span className={styles.shortcutSep}>·</span>
-        <kbd className={styles.kbd}>Esc</kbd>
-        <span className={styles.shortcutLabel}>fechar</span>
-      </div>
     </div>
   );
 }

@@ -2,12 +2,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 52px;
+  min-height: 52px;
+  height: auto;
   padding: 0 16px;
   background: #fff;
   border-bottom: 1px solid #E2E8F0;
   flex-shrink: 0;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .left {
@@ -112,4 +114,35 @@
 @keyframes pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
   50% { box-shadow: 0 0 0 5px rgba(245, 158, 11, 0); }
+}
+
+/* Tablet e telas menores: esconde texto dos botões, mantém ícones */
+@media (max-width: 768px) {
+  .topbar {
+    padding: 6px 12px;
+  }
+
+  .right {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 0 8px;
+    gap: 0;
+    font-size: 0;
+  }
+
+  .btn svg {
+    margin: 0;
+  }
+
+  .breadcrumb {
+    font-size: 12px;
+  }
+
+  .pendingChip {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
 }

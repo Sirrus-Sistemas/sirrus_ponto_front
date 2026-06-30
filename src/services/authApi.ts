@@ -5,6 +5,7 @@ import {
   setStoredRefreshToken,
   setStoredToken,
 } from '../lib/api'
+import { startSession, stopSession } from '../lib/session'
 
 /** Ajuste estes caminhos para os mesmos do seu backend. */
 const LOGIN_PATH = '/api/auth/login'
@@ -68,6 +69,7 @@ export async function loginRequest(cpfDigits: string, password: string): Promise
   if (refresh) {
     setStoredRefreshToken(refresh)
   }
+  startSession()
   return data
 }
 
@@ -80,5 +82,6 @@ export async function forgotPasswordRequest(cpfDigits: string): Promise<void> {
 
 /** Revoga refresh tokens no servidor (Bearer obrigatório). */
 export async function logoutRequest(): Promise<void> {
+  stopSession()
   await apiRequest(LOGOUT_PATH, { method: 'POST', body: '{}' })
 }

@@ -2,12 +2,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 50px;
-  padding: 0 16px;
+  min-height: 50px;
+  height: auto;
+  padding: 8px 16px;
   background: #fff;
   border-bottom: 1px solid #E2E8F0;
   flex-shrink: 0;
-  gap: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .left {
@@ -15,26 +17,23 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
-  overflow: hidden;
+  flex-wrap: wrap;
 }
 
-.filterBtn {
-  display: flex;
+.lotacaoBadge {
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  border: 1px solid #E2E8F0;
+  padding: 4px 10px;
+  border: 1px solid #D1FAE5;
   border-radius: 6px;
-  background: transparent;
-  color: #334155;
+  background: #F0FDF4;
+  color: #064E3B;
   font-family: var(--sp-font-ui);
   font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
+  font-weight: 600;
   white-space: nowrap;
   flex-shrink: 0;
 }
-.filterBtn:hover { background: #F8FAFC; }
 
 .employeeSelector {
   display: flex;
@@ -136,6 +135,25 @@
 }
 .loadBtn:hover { background: #047857; }
 
+.printBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 14px;
+  background: #fff;
+  color: #334155;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  font-family: var(--sp-font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+.printBtn:hover { background: #F8FAFC; border-color: #CBD5E1; }
+
 .shortcuts {
   display: flex;
   align-items: center;
@@ -166,4 +184,28 @@
   color: #CBD5E1;
   font-size: 11px;
   margin: 0 2px;
+}
+
+/* Tablet e telas menores */
+@media (max-width: 768px) {
+  .bar {
+    padding: 8px 12px;
+  }
+
+  .left {
+    width: 100%;
+    gap: 6px;
+  }
+
+  .select {
+    font-size: 12px;
+    height: 32px;
+  }
+
+  .loadBtn,
+  .printBtn {
+    height: 32px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
 }

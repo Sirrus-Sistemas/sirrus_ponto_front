@@ -6,23 +6,26 @@ export type StatusDia =
   | 'presente'
   | 'falta'
   | 'folga'
-  | 'feriado'
   | 'futuro'
   | 'sem_escala'
   | 'ocorrencia'
-  | 'atestado'
-  | 'abono'
-  | 'falta_justificada'
-  | 'licenca'
-  | 'outros'
+
+export type ModifierDia =
+  | 'feriado'
+  | 'incompleto'
+  | 'escala_ausente'
+  | 'sem_regime'
+  | 'trabalho_em_folga'
 
 export type MarcacaoEspelho = {
   id: number
   data_hora: string
+  data_hora_local: string | null
   tipo: string
   tipo_label: string
   motivo_edicao: string | null
   original: number
+  slot_override: number | null
 }
 
 export type FeriadoDia = {
@@ -45,6 +48,8 @@ export type DiaEspelho = {
   dia_semana: number
   dia_semana_label: string
   status: StatusDia
+  modifiers: ModifierDia[]
+  dia_trabalho: boolean
   feriado: FeriadoDia | null
   ocorrencia: OcorrenciaDia | null
   marcacoes: MarcacaoEspelho[]
@@ -62,6 +67,12 @@ export type DiaEspelho = {
   minutos_noturno: number
   /** Batida ímpar (intervalo aberto) ou ciclo incompleto. */
   incompleto: boolean
+  /** Dia protegido contra sobrescrita por pull do REP/mobile. */
+  bloqueado: boolean
+  /** Quantidade de batidas esperadas para o dia conforme turno do colaborador. */
+  batidas_esperadas?: number | null
+  /** Horários previstos do turno/escala para o dia (HH:MM), em hora local. */
+  horarios_previstos: string[]
 }
 
 export type ResumoEspelho = {
@@ -101,6 +112,8 @@ export type EspelhoMeta = {
   dias_feriado_calendario: number
   /** Par 2–24; vem do turno do funcionário. */
   batidas_esperadas_dia?: number | null
+  /** Offset de fuso horário do funcionário, ex: "-03:00". */
+  tz_offset: string | null
 }
 
 export type EspelhoPayload = {
@@ -120,9 +133,10 @@ export async function fetchEspelho(
   ano: number,
   mes: number,
   funcionarioId?: number,
+  signal?: AbortSignal,
 ): Promise<EspelhoPayload> {
   const qs = new URLSearchParams({ ano: String(ano), mes: String(mes) })
   if (funcionarioId != null) qs.set('funcionario_id', String(funcionarioId))
-  const res = await apiRequest<EspelhoResponse>(`/api/marcacoes/espelho?${qs.toString()}`)
+  const res = await apiRequest<EspelhoResponse>(`/api/marcacoes/espelho?${qs.toString()}`, { signal })
   return res.data
 }

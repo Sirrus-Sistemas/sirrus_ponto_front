@@ -12,12 +12,13 @@ import { AjustarEscalaPage } from './components/escalas/AjustarEscalaPage'
 import { RelatorioEspelhoPage } from './components/relatorios/RelatorioEspelhoPage'
 import { RelatoriosPage } from './components/relatorios/RelatoriosPage'
 import { CadastroTiposOcorrenciaPage } from './components/ocorrencias/CadastroTiposOcorrenciaPage'
-import { LancamentoOcorrenciaPage } from './components/ocorrencias/LancamentoOcorrenciaPage'
 import { EspelhoPrintPage } from './components/relatorios/EspelhoPrintPage'
 import { IntegracaoMobilePage } from './components/mobile/IntegracaoMobilePage'
 import { CadastroMunicipioPage } from './components/municipios/CadastroMunicipioPage'
 import { GerenciarUsuariosPage } from './components/usuarios/GerenciarUsuariosPage'
+import { CadastroFeriadosPage } from './components/feriados/CadastroFeriadosPage'
 import { FichaDePonto } from './pages/FichaDePonto/FichaDePonto'
+import { ConfiguracaoEmpresaPage } from './components/empresa/ConfiguracaoEmpresaPage'
 import { LoginPage } from './components/login/LoginPage'
 import { PasswordRecoveryPage } from './components/login/PasswordRecoveryPage'
 import { getStoredToken } from './lib/api'
@@ -50,11 +51,12 @@ function App() {
             <Route path="/relatorios/espelho" element={<RelatorioEspelhoPage />} />
             <Route path="/filiais" element={<CadastroFiliaisPage />} />
             <Route path="/ocorrencias/tipos" element={<CadastroTiposOcorrenciaPage />} />
-            <Route path="/ocorrencias/lancamento" element={<LancamentoOcorrenciaPage />} />
             <Route path="/mobile/integracao" element={<IntegracaoMobilePage />} />
             <Route path="/municipios" element={<CadastroMunicipioPage />} />
             <Route path="/usuarios" element={<GerenciarUsuariosPage />} />
+            <Route path="/feriados" element={<CadastroFeriadosPage />} />
             <Route path="/ficha-ponto" element={<FichaDePonto />} />
+            <Route path="/configuracoes/empresa" element={<ConfiguracaoEmpresaPage />} />
           </Route>
         </Route>
 

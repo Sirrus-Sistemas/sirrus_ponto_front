@@ -13,6 +13,8 @@ import styles from './GerenciarUsuariosPage.module.css'
 
 type Modo = 'criar' | 'editar' | null
 
+const PAGE_SIZE = 10
+
 const emptyNovoForm = () => ({ cpf: '', senha: '', confirmarSenha: '', role: 'funcionario' })
 const emptyEditForm = () => ({ role: 'funcionario', nova_senha: '', confirmarSenha: '', cpf: '', ativo: '1' })
 
@@ -37,6 +39,8 @@ export function GerenciarUsuariosPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+
+  const [pagina, setPagina] = useState(1)
 
   const loadLista = useCallback((silent = false) => {
     if (!silent) setLoadingLista(true)
@@ -321,6 +325,7 @@ export function GerenciarUsuariosPage() {
         {loadingLista ? (
           <p className={styles.loading}>Carregando lista…</p>
         ) : (
+          <>
           <div className={styles.tableWrap}>
             <table className={styles.table}>
               <thead>
@@ -340,7 +345,7 @@ export function GerenciarUsuariosPage() {
                     <td colSpan={7}>Nenhum funcionário encontrado.</td>
                   </tr>
                 ) : (
-                  lista.map((u) => (
+                  lista.slice((pagina - 1) * PAGE_SIZE, pagina * PAGE_SIZE).map((u) => (
                     <tr key={u.id}>
                       <td>{u.nome}</td>
                       <td style={{ color: '#6b7280' }}>{u.email ?? '—'}</td>
@@ -392,6 +397,69 @@ export function GerenciarUsuariosPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Paginação */}
+          {lista.length > PAGE_SIZE && (() => {
+            const totalPaginas = Math.ceil(lista.length / PAGE_SIZE)
+            return (
+              <div className={styles.pagination}>
+                <span className={styles.paginationInfo}>
+                  {(pagina - 1) * PAGE_SIZE + 1}–{Math.min(pagina * PAGE_SIZE, lista.length)} de {lista.length}
+                </span>
+                <div className={styles.paginationControls}>
+                  <button
+                    type="button"
+                    className={styles.pageBtn}
+                    onClick={() => setPagina(1)}
+                    disabled={pagina === 1}
+                    title="Primeira página"
+                  >«</button>
+                  <button
+                    type="button"
+                    className={styles.pageBtn}
+                    onClick={() => setPagina(p => p - 1)}
+                    disabled={pagina === 1}
+                    title="Página anterior"
+                  >‹</button>
+
+                  {Array.from({ length: totalPaginas }, (_, i) => i + 1)
+                    .filter(p => p === 1 || p === totalPaginas || Math.abs(p - pagina) <= 1)
+                    .reduce<(number | 'ellipsis')[]>((acc, p, idx, arr) => {
+                      if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push('ellipsis')
+                      acc.push(p)
+                      return acc
+                    }, [])
+                    .map((item, idx) =>
+                      item === 'ellipsis'
+                        ? <span key={`e-${idx}`} className={styles.pageEllipsis}>…</span>
+                        : <button
+                            key={item}
+                            type="button"
+                            className={`${styles.pageBtn} ${pagina === item ? styles.pageBtnActive : ''}`}
+                            onClick={() => setPagina(item)}
+                          >{item}</button>
+                    )
+                  }
+
+                  <button
+                    type="button"
+                    className={styles.pageBtn}
+                    onClick={() => setPagina(p => p + 1)}
+                    disabled={pagina === totalPaginas}
+                    title="Próxima página"
+                  >›</button>
+                  <button
+                    type="button"
+                    className={styles.pageBtn}
+                    onClick={() => setPagina(totalPaginas)}
+                    disabled={pagina === totalPaginas}
+                    title="Última página"
+                  >»</button>
+                </div>
+              </div>
+            )
+          })()}
+          </>
         )}
       </div>
     </div>

@@ -28,8 +28,70 @@
 
 .toolbarActions {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
+}
+
+/* ── Zoom controls ────────────────────────────────────────────────── */
+.zoomControls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.2rem 0.5rem;
+  margin-right: 0.5rem;
+}
+
+.btnZoom {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: transparent;
+  color: #fff;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.btnZoom:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.btnZoom:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.zoomLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  min-width: 38px;
+  text-align: center;
+  user-select: none;
+}
+
+.btnZoomReset {
+  font-size: 0.72rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.btnZoomReset:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
 }
 
 .btnPrint {
@@ -70,7 +132,25 @@
 
 /* ── Content ──────────────────────────────────────────────────────── */
 .content {
-  padding: 1.5rem 1.25rem 3rem;
+  padding: 2rem 1.5rem 3rem;
+  background: #d0d4d8;
+  min-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* Cada espelho aparece como uma folha de papel */
+.content > :global(*) {
+  background: #fff;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22);
+  border-radius: 2px;
+  padding: 7mm 6mm;
+  /* A4 landscape: 297mm × 210mm */
+  width: 297mm;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* ── Loading / Error ──────────────────────────────────────────────── */
@@ -123,5 +203,15 @@
 
   .content {
     padding: 0;
+    background: none;
+    gap: 0;
+  }
+
+  /* Remove o efeito de papel na impressão */
+  .content > :global(*) {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
   }
 }

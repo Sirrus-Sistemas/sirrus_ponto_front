@@ -285,7 +285,7 @@ export function CadastroFuncionarioPage() {
         role: func.role ?? 'funcionario',
         usa_escala: !!func.usa_escala,
         usa_mobile: !!func.usa_mobile,
-        pontomobile_id: func.pontomobile_id != null ? String(func.pontomobile_id) : '',
+        pontomobile_id: String(func.pontomobile_id ?? ''),
         ativo: !!func.ativo,
         cep: func.cep ?? '',
         logradouro: func.logradouro ?? '',
@@ -680,20 +680,16 @@ export function CadastroFuncionarioPage() {
               <div className={styles.field} style={{ flex: '0 0 160px' }}>
                 <label htmlFor="cf-cpf">
                   CPF <span className={styles.req}>*</span>
-                  {isEdit && <span className={styles.lockIcon}>🔒</span>}
                 </label>
                 <input
                   id="cf-cpf"
-                  required={!isEdit}
+                  required
                   inputMode="numeric"
                   autoComplete="off"
                   maxLength={14}
-                  readOnly={isEdit}
                   value={form.cpf}
-                  onChange={isEdit ? undefined : onCpfChange}
-                  className={isEdit ? styles.inputReadonly : undefined}
+                  onChange={onCpfChange}
                 />
-                {isEdit && <p className={styles.hint}>não pode ser alterado por aqui</p>}
               </div>
               <div className={styles.field} style={{ flex: 1 }}>
                 <label htmlFor="cf-nasc">Data de nascimento</label>
