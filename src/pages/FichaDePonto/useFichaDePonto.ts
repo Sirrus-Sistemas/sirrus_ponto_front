@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchEspelho, type EspelhoPayload, type StatusDia } from '../../services/espelhoApi';
 import { fetchMe, type FuncionarioMe } from '../../services/userApi';
 import { fetchFuncionarios, type FuncionarioListItem } from '../../services/funcionariosApi';
-import { fetchFicha, bloquearDia, desbloquearDia } from '../../services/fichaPontoApi';
+import { fetchFicha, bloquearDia, desbloquearDia, bloquearPeriodo as bloquearPeriodoApi, desbloquearPeriodo as desbloquearPeriodoApi } from '../../services/fichaPontoApi';
 import { ApiError } from '../../lib/api';
 import { parseDataHoraUtc } from '../../lib/parseDataHora';
 import type { DayRow, DayStatus, Employee, FichaDePontoData, MonthlySummary, Punch, PunchSource } from './types';
@@ -195,6 +195,8 @@ export interface UseFichaDePontoResult {
   funcionarios: FuncionarioListItem[];
   reload: () => void;
   toggleBloqueio: (row: DayRow) => Promise<void>;
+  bloquearPeriodo: (params: { data_inicio: string; data_fim: string; funcionario_ids?: number[] }) => Promise<{ funcionarios: number; dias: number; total: number }>;
+  desbloquearPeriodo: (params: { data_inicio: string; data_fim: string; funcionario_ids?: number[] }) => Promise<{ removidos: number }>;
 }
 
 export function useFichaDePonto(params: Params): UseFichaDePontoResult {
@@ -277,6 +279,26 @@ export function useFichaDePonto(params: Params): UseFichaDePontoResult {
 
   useEffect(() => { void load(); }, [load]);
 
+  const desbloquearPeriodo = useCallback(async (params: {
+    data_inicio: string;
+    data_fim: string;
+    funcionario_ids?: number[];
+  }): Promise<{ removidos: number }> => {
+    const result = await desbloquearPeriodoApi(params);
+    void load();
+    return result;
+  }, [load]);
+
+  const bloquearPeriodo = useCallback(async (params: {
+    data_inicio: string;
+    data_fim: string;
+    funcionario_ids?: number[];
+  }): Promise<{ funcionarios: number; dias: number; total: number }> => {
+    const result = await bloquearPeriodoApi(params);
+    void load();
+    return result;
+  }, [load]);
+
   const toggleBloqueio = useCallback(async (row: DayRow) => {
     const funcId = data?.funcionarioId;
     if (!funcId) return;
@@ -301,7 +323,7 @@ export function useFichaDePonto(params: Params): UseFichaDePontoResult {
   }, [data?.funcionarioId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return useMemo(
-    () => ({ data, loading, error, me, funcionarios, reload: load, toggleBloqueio }),
-    [data, loading, error, me, funcionarios, load, toggleBloqueio],
+    () => ({ data, loading, error, me, funcionarios, reload: load, toggleBloqueio, bloquearPeriodo, desbloquearPeriodo }),
+    [data, loading, error, me, funcionarios, load, toggleBloqueio, bloquearPeriodo, desbloquearPeriodo],
   );
 }

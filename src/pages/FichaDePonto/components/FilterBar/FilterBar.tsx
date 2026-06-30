@@ -1,4 +1,4 @@
-import { Printer, RefreshCw } from 'lucide-react';
+import { Lock, Printer, RefreshCw } from 'lucide-react';
 import { Avatar } from '../ui/Avatar';
 import styles from './FilterBar.module.css';
 import type { Employee } from '../../types';
@@ -29,6 +29,7 @@ interface FilterBarProps {
   onLotacaoChange: (id: number | undefined) => void;
   onLoad: () => void;
   onPrint?: () => void;
+  onBloquearPeriodo?: () => void;
 }
 
 export function FilterBar({
@@ -40,6 +41,7 @@ export function FilterBar({
   lotacoes, selectedLotacaoId, onLotacaoChange,
   onLoad,
   onPrint,
+  onBloquearPeriodo,
 }: FilterBarProps) {
   return (
     <div className={styles.bar}>
@@ -129,6 +131,13 @@ export function FilterBar({
           <button type="button" className={styles.printBtn} onClick={onPrint}>
             <Printer size={14} />
             Imprimir
+          </button>
+        )}
+
+        {onBloquearPeriodo && (
+          <button type="button" className={styles.lockBtn} onClick={onBloquearPeriodo}>
+            <Lock size={14} />
+            Bloquear período
           </button>
         )}
       </div>

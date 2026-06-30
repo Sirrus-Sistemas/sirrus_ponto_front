@@ -88,3 +88,27 @@ export async function desbloquearDia(funcionarioId: number, data: string): Promi
     method: 'DELETE',
   })
 }
+
+export async function desbloquearPeriodo(payload: {
+  data_inicio: string
+  data_fim: string
+  funcionario_ids?: number[]
+}): Promise<{ removidos: number }> {
+  const res = await apiRequest<{ success?: boolean; data: { removidos: number } }>(
+    '/api/marcacoes/desbloquear-periodo',
+    { method: 'POST', body: JSON.stringify(payload) },
+  )
+  return res.data
+}
+
+export async function bloquearPeriodo(payload: {
+  data_inicio: string
+  data_fim: string
+  funcionario_ids?: number[]
+}): Promise<{ funcionarios: number; dias: number; total: number }> {
+  const res = await apiRequest<{ success?: boolean; data: { funcionarios: number; dias: number; total: number } }>(
+    '/api/marcacoes/bloquear-periodo',
+    { method: 'POST', body: JSON.stringify(payload) },
+  )
+  return res.data
+}

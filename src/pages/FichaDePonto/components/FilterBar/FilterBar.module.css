@@ -154,6 +154,25 @@
 }
 .printBtn:hover { background: #F8FAFC; border-color: #CBD5E1; }
 
+.lockBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 14px;
+  background: #fff;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+  border-radius: 6px;
+  font-family: var(--sp-font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+.lockBtn:hover { background: #FFFBEB; border-color: #F59E0B; }
+
 .shortcuts {
   display: flex;
   align-items: center;

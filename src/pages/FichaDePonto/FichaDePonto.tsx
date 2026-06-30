@@ -4,6 +4,7 @@ import { FilterBar } from './components/FilterBar/FilterBar';
 import { EmployeeStrip } from './components/EmployeeStrip/EmployeeStrip';
 import { PunchGrid } from './components/PunchGrid/PunchGrid';
 import { ApuracaoFooter } from './components/ApuracaoFooter/ApuracaoFooter';
+import { BloquearPeriodoModal } from './components/BloquearPeriodoModal/BloquearPeriodoModal';
 import { fetchLotacoes, type Lotacao } from '../../services/lotacoesApi';
 import styles from './FichaDePonto.module.css';
 
@@ -17,7 +18,9 @@ export function FichaDePonto() {
   const [lotacoes, setLotacoes] = useState<Lotacao[]>([]);
   const [selectedLotacaoId, setSelectedLotacaoId] = useState<number | undefined>(undefined);
 
-  const { data, loading, error, me, funcionarios, reload, toggleBloqueio } = useFichaDePonto({
+  const [showBloquearModal, setShowBloquearModal] = useState(false);
+
+  const { data, loading, error, me, funcionarios, reload, toggleBloqueio, bloquearPeriodo, desbloquearPeriodo } = useFichaDePonto({
     employeeId: selectedFuncId,
     startMonth,
     startYear,
@@ -117,6 +120,7 @@ export function FichaDePonto() {
         onLotacaoChange={(id) => { setSelectedLotacaoId(id); setSelectedFuncId(undefined); }}
         onLoad={reload}
         onPrint={dataComLotacao ? handlePrint : undefined}
+        onBloquearPeriodo={canSelectFunc ? () => setShowBloquearModal(true) : undefined}
       />
 
       {dataComLotacao && (
@@ -162,6 +166,21 @@ export function FichaDePonto() {
       </div>
 
       {dataComLotacao && <ApuracaoFooter summary={dataComLotacao.summary} />}
+
+      {showBloquearModal && (
+        <BloquearPeriodoModal
+          funcionarios={funcionarios}
+          lotacoes={lotacoes}
+          defaultDataInicio={`${startYear}-${String(startMonth).padStart(2, '0')}-01`}
+          defaultDataFim={(() => {
+            const ultimo = new Date(endYear, endMonth, 0).getDate();
+            return `${endYear}-${String(endMonth).padStart(2, '0')}-${String(ultimo).padStart(2, '0')}`;
+          })()}
+          onClose={() => setShowBloquearModal(false)}
+          onBloquear={bloquearPeriodo}
+          onDesbloquear={desbloquearPeriodo}
+        />
+      )}
     </div>
   );
 }
