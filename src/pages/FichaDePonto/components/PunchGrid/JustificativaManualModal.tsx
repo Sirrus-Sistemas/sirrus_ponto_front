@@ -10,7 +10,6 @@ const SLOT_LABELS = ['E1', 'S1', 'E2', 'S2', 'E3', 'S3', 'E4', 'S4'];
 interface JustificativaManualModalProps {
   ctx: DayActionMenuContext;
   funcionarioNome: string;
-  tzOffset: string | null;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -18,7 +17,6 @@ interface JustificativaManualModalProps {
 export function JustificativaManualModal({
   ctx,
   funcionarioNome,
-  tzOffset: _tzOffset,
   onClose,
   onSuccess,
 }: JustificativaManualModalProps) {
@@ -28,49 +26,56 @@ export function JustificativaManualModal({
   const existingMotivo = ctx.row.punchMotivos[slotIndex];
 
   const pad = (n: number) => String(n).padStart(2, '0');
-  const dateStr = `${ctx.row.year}-${pad(ctx.row.month)}-${pad(ctx.row.day)}`;
   const displayDate = `${pad(ctx.row.day)}/${pad(ctx.row.month)}/${ctx.row.year}`;
 
-  const [horario, setHorario] = useState(existingPunch?.time ?? '');
   const [justificativa, setJustificativa] = useState(
     existingMotivo && existingMotivo !== 'Justificativa automática' ? existingMotivo : '',
   );
+  const [horario, setHorario] = useState(existingPunch?.time ?? '');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  function buildDataHora(time: string): string {
-    const full = time.length === 5 ? time + ':00' : time;
-    // Sem offset explícito: browser interpreta como horário local e converte para UTC,
-    // consistente com parseDataHoraUtc + getHours() usados na exibição.
-    return new Date(`${dateStr}T${full}`).toISOString().replace('T', ' ').slice(0, 19);
-  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
 
-    if (!horario) { setError('Informe o horário.'); return; }
-    if (!/^\d{2}:\d{2}$/.test(horario)) { setError('Formato inválido. Use HH:MM.'); return; }
-    if (!justificativa.trim()) { setError('Informe a justificativa.'); return; }
+    if (!justificativa.trim()) {
+      setError('Informe a justificativa.');
+      return;
+    }
 
-    setSubmitting(true);
-    try {
-      const data_hora = buildDataHora(horario);
+    // Se não há batida existente, precisa lançar uma nova com horário
+    if (existingPunchId == null) {
+      if (!horario.trim()) {
+        setError('Informe o horário para lançar a batida.');
+        return;
+      }
 
-      if (existingPunchId != null) {
-        await editarBatida(existingPunchId, {
-          data_hora,
-          justificativa: justificativa.trim(),
-          slot_override: slotIndex,
-        });
-      } else {
+      setSubmitting(true);
+      try {
+        const [hh, mm] = horario.split(':');
+        const dataHora = `${ctx.row.year}-${pad(ctx.row.month)}-${pad(ctx.row.day)} ${hh}:${mm}:00`;
         await lancarBatida({
           funcionario_id: ctx.funcionarioId,
-          data_hora,
+          data_hora: dataHora,
           justificativa: justificativa.trim(),
           slot_override: slotIndex,
         });
+        onSuccess();
+      } catch (err) {
+        setError(err instanceof ApiError ? err.message : 'Não foi possível lançar a batida.');
+      } finally {
+        setSubmitting(false);
       }
+      return;
+    }
+
+    // Se há batida existente, apenas atualiza a justificativa
+    setSubmitting(true);
+    try {
+      await editarBatida(existingPunchId, {
+        justificativa: justificativa.trim(),
+      });
       onSuccess();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Não foi possível salvar a justificativa.');
@@ -105,16 +110,18 @@ export function JustificativaManualModal({
         {error && <p className={styles.error} role="alert">{error}</p>}
 
         <form onSubmit={handleSubmit} noValidate>
-          <div className={styles.field} style={{ marginBottom: '0.85rem' }}>
-            <label htmlFor="jm-horario">Horário</label>
-            <input
-              id="jm-horario"
-              type="time"
-              value={horario}
-              onChange={(e) => setHorario(e.target.value)}
-              required
-            />
-          </div>
+          {existingPunchId == null && (
+            <div className={styles.field} style={{ marginBottom: '0.85rem' }}>
+              <label htmlFor="jm-horario">Horário (HH:MM)</label>
+              <input
+                id="jm-horario"
+                type="time"
+                value={horario}
+                onChange={(e) => setHorario(e.target.value)}
+                required
+              />
+            </div>
+          )}
 
           <div className={styles.field} style={{ marginBottom: '0.85rem' }}>
             <label htmlFor="jm-justificativa">Justificativa</label>
@@ -126,6 +133,11 @@ export function JustificativaManualModal({
               maxLength={500}
               required
             />
+            {existingPunchId != null && (
+              <small style={{ display: 'block', marginTop: '0.4rem', color: '#64748B', fontSize: '0.8rem' }}>
+                Para editar horário, use drag/reorder.
+              </small>
+            )}
           </div>
 
           <div className={styles.actions}>
