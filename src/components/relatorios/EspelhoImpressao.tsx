@@ -63,20 +63,38 @@ function applySlotOverride(sorted: MarcacaoEspelho[]): (MarcacaoEspelho | null)[
 }
 
 function buildSlots(marcacoes: MarcacaoEspelho[]) {
+  // Helper para deduplica por HH:MM — mesma lógica que useFichaDePonto.ts
+  function deduplicateByHHMM(items: MarcacaoEspelho[]): MarcacaoEspelho[] {
+    const seenTimes = new Set<string>()
+    return items.filter(m => {
+      const d = new Date(m.data_hora)
+      const key = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+      if (seenTimes.has(key)) return false
+      seenTimes.add(key)
+      return true
+    })
+  }
+
   // REP-only punches — coluna "Marcações REP" sempre em ordem cronológica (batidas originais)
-  const repPunches = marcacoes
+  const repPunchesSorted = marcacoes
     .filter((m) => m.tipo === 'rep')
     .sort((a, b) => new Date(a.data_hora).getTime() - new Date(b.data_hora).getTime())
+
+  // Deduplica REP por HH:MM para consistência com a tela
+  const repPunches = deduplicateByHHMM(repPunchesSorted)
 
   // All treated punches — coluna "Tratamento Efetuado" respeita slot_override
   const allSorted = [...marcacoes].sort(
     (a, b) => new Date(a.data_hora).getTime() - new Date(b.data_hora).getTime(),
   )
 
-  const repSlots: (MarcacaoEspelho | null)[] = Array.from({ length: NUM_SLOTS }, (_, i) => repPunches[i] ?? null)
-  const allSlots = applySlotOverride(allSorted)
+  // Deduplica todas as batidas por HH:MM para consistência com a tela
+  const allDeduped = deduplicateByHHMM(allSorted)
 
-  const motivoParts: string[] = allSorted
+  const repSlots: (MarcacaoEspelho | null)[] = Array.from({ length: NUM_SLOTS }, (_, i) => repPunches[i] ?? null)
+  const allSlots = applySlotOverride(allDeduped)
+
+  const motivoParts: string[] = allDeduped
     .filter((all) => all.tipo !== 'rep')
     .map((all) => (all.tipo === 'manual' && all.motivo_edicao) ? all.motivo_edicao : all.tipo_label)
 
@@ -219,6 +237,7 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
           {dias.map((dia) => {
             const isOcorrencia = dia.status === 'ocorrencia'
             const isFeriado = dia.modifiers?.includes('feriado') ?? false
+            const isAnomalo = dia.modifiers?.includes('jornada_anomala') ?? false
 
             const diaLabel =
               isFeriado
@@ -243,6 +262,7 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
               dia.status === 'falta' ? styles.trFalta : '',
               dia.status === 'folga' ? styles.trFolga : '',
               isOcorrencia ? styles.trOcorrencia : '',
+              isAnomalo ? styles.trAnomalo : '',
             ]
               .filter(Boolean)
               .join(' ')
@@ -296,7 +316,11 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
                   {totalExibicao != null ? minToHHMM(totalExibicao) : '-'}
                 </td>
                 <td>-</td>
-                <td className={styles.tdMotivo}>{motivoStr}</td>
+                <td className={styles.tdMotivo} style={isAnomalo ? { backgroundColor: '#ffe6e6' } : {}}>
+                  {isAnomalo && <span style={{ color: '#dc2626', fontWeight: 'bold' }}>⚠ REVISAR</span>}
+                  {isAnomalo && motivoStr && ' — '}
+                  {motivoStr}
+                </td>
                 {/* Right totals */}
                 <td className={styles.tdTime}>
                   {totalExibicao != null ? minToHHMM(totalExibicao) : '00:00'}
@@ -368,6 +392,22 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
           </tr>
         </tbody>
       </table>
+
+      {/* ── Aviso de Jornada Anomala ─────────────────────────────── */}
+      {dias.some(d => d.modifiers?.includes('jornada_anomala')) && (
+        <div style={{
+          backgroundColor: '#fef3c7',
+          border: '2px solid #f59e0b',
+          borderRadius: '4px',
+          padding: '12px',
+          marginTop: '12px',
+          fontSize: '14px',
+          color: '#92400e',
+          fontWeight: 'bold'
+        }}>
+          ⚠ ATENÇÃO: Este espelho contém dias com jornada anomala. Revise os dados marcados com "⚠ REVISAR".
+        </div>
+      )}
 
       {/* ── Assinaturas ───────────────────────────────────────────── */}
       <div className={styles.signatures}>
