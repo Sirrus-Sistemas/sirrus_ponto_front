@@ -9,27 +9,67 @@
 .inputDisplay {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   width: 100%;
   min-height: 42px;
-  padding: 0.55rem 0.75rem;
+  padding: 0 0.5rem 0 0.75rem;
   border: 1px solid var(--sp-border);
   border-radius: 10px;
   background: var(--sp-bg-card);
-  cursor: pointer;
   box-sizing: border-box;
   transition: border-color 0.15s, box-shadow 0.15s;
-  user-select: none;
 }
 
-.inputDisplay:hover:not(.inputDisabled) {
-  border-color: #14918b;
-}
-
-.inputDisplay:focus {
-  outline: none;
+.inputDisplay:focus-within:not(.inputDisabled) {
   border-color: #14918b;
   box-shadow: 0 0 0 1px #14918b;
+}
+
+.inputDisplay:hover:not(.inputDisabled):not(:focus-within) {
+  border-color: #14918b;
+}
+
+.textInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.55rem 0;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--sp-text);
+  outline: none;
+  min-width: 0;
+}
+
+.textInput::placeholder {
+  color: var(--sp-text-3);
+}
+
+.textInput:disabled {
+  cursor: not-allowed;
+}
+
+.calBtn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  padding: 0.3rem;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--sp-text-3);
+  transition: color 0.12s, background 0.12s;
+}
+
+.calBtn:hover:not(:disabled) {
+  color: #14918b;
+  background: var(--sp-bg-canvas);
+}
+
+.calBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
 }
 
 .inputDisabled {
@@ -43,24 +83,10 @@
   box-shadow: 0 0 0 1px #f87171 !important;
 }
 
-.inputValue {
-  font-size: 0.9rem;
-  color: var(--sp-text);
-  font-family: inherit;
-}
-
-.inputPlaceholder {
-  font-size: 0.9rem;
-  color: var(--sp-text-3);
-  font-family: inherit;
-}
-
 .calIcon {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-  color: var(--sp-text-3);
-  margin-left: 0.5rem;
 }
 
 /* ─── Popup ──────────────────────────────────────────────────────────────── */
