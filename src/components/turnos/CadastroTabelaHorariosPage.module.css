@@ -520,6 +520,74 @@
   font-weight: 600;
 }
 
+.dayPillSelected {
+  border-color: var(--primary) !important;
+  background: rgba(20, 145, 139, 0.15) !important;
+  box-shadow: 0 0 0 3px rgba(20, 145, 139, 0.2);
+}
+
+/* ── Editor por dia ──────────────────────────────────────────────── */
+.diaEditor {
+  margin-top: 0.85rem;
+  padding: 1rem 1.1rem 0.9rem;
+  border: 1px solid rgba(20, 145, 139, 0.3);
+  border-radius: 12px;
+  background: rgba(20, 145, 139, 0.04);
+  animation: slideDown 0.14s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.diaEditorHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+
+.diaEditorName {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--primary);
+}
+
+.btnDeactivate {
+  border: 1px solid var(--sp-border);
+  background: none;
+  padding: 0.28rem 0.7rem;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--sp-text-3);
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+}
+
+.btnDeactivate:hover {
+  color: #ef4444;
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+.diaEditorFields {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.85rem;
+}
+
+.diaEditorHint {
+  margin: 0.7rem 0 0;
+  font-size: 0.76rem;
+  color: var(--sp-text-3);
+  font-style: italic;
+}
+
 /* ── Save button ─────────────────────────────────────────────────── */
 .btnSave {
   border: none;

@@ -172,6 +172,7 @@ export function CadastroTabelaHorariosPage() {
   const [horariosDia, setHorariosDia] = useState<TurnoHorarioDia[]>([])
   const [loadingHorarios, setLoadingHorarios] = useState(false)
   const [savingHorarios, setSavingHorarios] = useState(false)
+  const [expandedDay, setExpandedDay] = useState<number | null>(null)
 
   const loadLista = useCallback((opts?: { silent?: boolean }) => {
     const silent = opts?.silent === true
@@ -222,9 +223,11 @@ export function CadastroTabelaHorariosPage() {
     setError(null)
     setSuccess(null)
     setHorariosDia([])
+    setExpandedDay(null)
   }
 
   function iniciarEdicao(t: Turno) {
+    setExpandedDay(null)
     setEditingId(t.id)
     setForm({
       nome: t.nome,
@@ -261,23 +264,39 @@ export function CadastroTabelaHorariosPage() {
       .finally(() => setLoadingHorarios(false))
   }, [editingId, lista])
 
-  function toggleDia(diaIndex: number) {
-    const { entrada, saida_intervalo, retorno_intervalo, saida } = dbFieldsFromBatidas(
-      form.batidaTimes,
-    )
+  function handleDayPillClick(d: TurnoHorarioDia) {
+    if (!d.trabalha) {
+      const { entrada, saida_intervalo, retorno_intervalo, saida } = dbFieldsFromBatidas(form.batidaTimes)
+      setHorariosDia((prev) =>
+        prev.map((day) =>
+          day.dia_semana !== d.dia_semana
+            ? day
+            : { ...day, trabalha: true, entrada, saida_intervalo, retorno_intervalo, saida }
+        )
+      )
+      setExpandedDay(d.dia_semana)
+    } else {
+      setExpandedDay((prev) => (prev === d.dia_semana ? null : d.dia_semana))
+    }
+  }
+
+  function deactivateDia(diaIndex: number) {
     setHorariosDia((prev) =>
-      prev.map((d) => {
-        if (d.dia_semana !== diaIndex) return d
-        const nowWork = !d.trabalha
-        return {
-          ...d,
-          trabalha: nowWork,
-          entrada: nowWork ? entrada : '',
-          saida_intervalo: nowWork ? saida_intervalo : '',
-          retorno_intervalo: nowWork ? retorno_intervalo : '',
-          saida: nowWork ? saida : '',
-        }
-      }),
+      prev.map((d) =>
+        d.dia_semana !== diaIndex
+          ? d
+          : { ...d, trabalha: false, entrada: '', saida_intervalo: '', retorno_intervalo: '', saida: '' }
+      )
+    )
+  }
+
+  function updateDiaTime(
+    diaIndex: number,
+    field: 'entrada' | 'saida_intervalo' | 'retorno_intervalo' | 'saida',
+    val: string,
+  ) {
+    setHorariosDia((prev) =>
+      prev.map((d) => (d.dia_semana !== diaIndex ? d : { ...d, [field]: val }))
     )
   }
 
@@ -303,9 +322,20 @@ export function CadastroTabelaHorariosPage() {
     }
 
     const reHhMm = /^\d{2}:\d{2}$/
-    for (let i = 0; i < form.batidaTimes.length; i++) {
-      if (!form.batidaTimes[i] || !reHhMm.test(form.batidaTimes[i])) {
-        setError(`Preencha o horário "${labelBatida(i, form.batidaTimes.length)}" no formato HH:MM.`)
+    const bLen = form.batidaTimes.length
+    // Entrada e Saída são obrigatórios; intermediários (intervalo/retorno) podem ficar em branco
+    if (!reHhMm.test(form.batidaTimes[0] ?? '')) {
+      setError('Preencha o horário "ENTRADA" no formato HH:MM.')
+      return
+    }
+    if (!reHhMm.test(form.batidaTimes[bLen - 1] ?? '')) {
+      setError('Preencha o horário "SAÍDA" no formato HH:MM.')
+      return
+    }
+    for (let i = 1; i < bLen - 1; i++) {
+      const t = form.batidaTimes[i]
+      if (t && !reHhMm.test(t)) {
+        setError(`O horário "${labelBatida(i, bLen)}" está em formato inválido. Use HH:MM ou deixe em branco.`)
         return
       }
     }
@@ -601,14 +631,18 @@ export function CadastroTabelaHorariosPage() {
 
                   {isEditing && !loadingHorarios && horariosDia.length > 0 && (
                     <>
-                      <div className={styles.diaSubLabel}>HORÁRIOS POR DIA</div>
+                      <div className={styles.diaSubLabel}>HORÁRIOS POR DIA — clique num dia para editar</div>
                       <div className={styles.dayPills}>
                         {horariosDia.map((d) => (
                           <button
                             type="button"
                             key={d.dia_semana}
-                            className={`${styles.dayPill} ${d.trabalha ? styles.dayPillActive : ''}`}
-                            onClick={() => toggleDia(d.dia_semana)}
+                            className={[
+                              styles.dayPill,
+                              d.trabalha ? styles.dayPillActive : '',
+                              expandedDay === d.dia_semana ? styles.dayPillSelected : '',
+                            ].filter(Boolean).join(' ')}
+                            onClick={() => handleDayPillClick(d)}
                           >
                             <span className={styles.dayPillName}>{DIAS_LABEL[d.dia_semana]}</span>
                             <span className={styles.dayPillCarga}>
@@ -617,6 +651,58 @@ export function CadastroTabelaHorariosPage() {
                           </button>
                         ))}
                       </div>
+
+                      {expandedDay !== null && horariosDia[expandedDay] && (
+                        <div className={styles.diaEditor}>
+                          <div className={styles.diaEditorHeader}>
+                            <span className={styles.diaEditorName}>{DIAS_LABEL[expandedDay]}</span>
+                            <button
+                              type="button"
+                              className={styles.btnDeactivate}
+                              onClick={() => { deactivateDia(expandedDay); setExpandedDay(null) }}
+                            >
+                              Marcar como folga
+                            </button>
+                          </div>
+                          <div className={styles.diaEditorFields}>
+                            <div className={styles.field}>
+                              <label>ENTRADA</label>
+                              <input
+                                type="time"
+                                value={horariosDia[expandedDay].entrada}
+                                onChange={(e) => updateDiaTime(expandedDay, 'entrada', e.target.value)}
+                              />
+                            </div>
+                            <div className={styles.field}>
+                              <label>SAÍDA INT.</label>
+                              <input
+                                type="time"
+                                value={horariosDia[expandedDay].saida_intervalo}
+                                onChange={(e) => updateDiaTime(expandedDay, 'saida_intervalo', e.target.value)}
+                              />
+                            </div>
+                            <div className={styles.field}>
+                              <label>RETORNO</label>
+                              <input
+                                type="time"
+                                value={horariosDia[expandedDay].retorno_intervalo}
+                                onChange={(e) => updateDiaTime(expandedDay, 'retorno_intervalo', e.target.value)}
+                              />
+                            </div>
+                            <div className={styles.field}>
+                              <label>SAÍDA</label>
+                              <input
+                                type="time"
+                                value={horariosDia[expandedDay].saida}
+                                onChange={(e) => updateDiaTime(expandedDay, 'saida', e.target.value)}
+                              />
+                            </div>
+                          </div>
+                          <p className={styles.diaEditorHint}>
+                            Deixe os campos de intervalo em branco para dias sem pausa (ex: Sáb 08:00–12:00)
+                          </p>
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
