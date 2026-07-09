@@ -2,6 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import styles from './DatePicker.module.css'
 
+// Auto-formata dígitos brutos em DD/MM/YYYY
+function digitsToDisplay(digits: string): string {
+  if (digits.length > 4) return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`
+  if (digits.length > 2) return `${digits.slice(0, 2)}/${digits.slice(2)}`
+  return digits
+}
+
 const MONTHS = [
   'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
   'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro',
@@ -57,6 +64,10 @@ export function DatePicker({ value, onChange, id, required, disabled, min, max, 
   const [viewMonth, setViewMonth] = useState(selected?.getMonth() ?? today.getMonth())
   const [popupStyle, setPopupStyle] = useState<React.CSSProperties>({})
 
+  // Campo de texto digitável
+  const [textVal, setTextVal] = useState(() => value ? formatDisplay(value) : '')
+  const prevValueRef = useRef(value)
+
   const containerRef = useRef<HTMLDivElement>(null)
   const popupRef = useRef<HTMLDivElement>(null)
 
@@ -96,12 +107,56 @@ export function DatePicker({ value, onChange, id, required, disabled, min, max, 
     }
   }, [open])
 
+  // Sincroniza textVal quando value muda externamente (reset do form, seleção no calendário)
+  useEffect(() => {
+    if (prevValueRef.current !== value) {
+      prevValueRef.current = value
+      setTextVal(value ? formatDisplay(value) : '')
+    }
+  }, [value])
+
   useEffect(() => {
     if (selected) {
       setViewYear(selected.getFullYear())
       setViewMonth(selected.getMonth())
     }
   }, [value])
+
+  function handleTextChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 8)
+    const display = digitsToDisplay(digits)
+    setTextVal(display)
+
+    if (digits.length === 8) {
+      const dd = parseInt(digits.slice(0, 2), 10)
+      const mm = parseInt(digits.slice(2, 4), 10)
+      const yyyy = parseInt(digits.slice(4, 8), 10)
+      const d = new Date(yyyy, mm - 1, dd)
+      if (d.getDate() === dd && d.getMonth() === mm - 1 && yyyy >= 1900 && yyyy <= 2099) {
+        emit(toIso(d))
+        return
+      }
+    }
+    if (!digits) emit('')
+  }
+
+  function handleBlur() {
+    // Se o texto não corresponde à data atual válida, desfaz para o último valor válido
+    const expected = value ? formatDisplay(value) : ''
+    if (textVal !== expected) {
+      // Tenta parsear o que o usuário digitou antes de desistir
+      const parts = textVal.split('/')
+      if (parts.length === 3) {
+        const [dd, mm, yyyy] = parts.map((s) => parseInt(s, 10))
+        const d = new Date(yyyy, mm - 1, dd)
+        if (d.getDate() === dd && d.getMonth() === mm - 1 && yyyy >= 1900 && yyyy <= 2099) {
+          emit(toIso(d))
+          return
+        }
+      }
+      setTextVal(expected)
+    }
+  }
 
   function prevMonth() {
     if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1) }
@@ -118,18 +173,23 @@ export function DatePicker({ value, onChange, id, required, disabled, min, max, 
   }
 
   function selectDay(date: Date) {
-    emit(toIso(date))
+    const iso = toIso(date)
+    setTextVal(formatDisplay(iso))
+    emit(iso)
     setOpen(false)
   }
 
   function goToday() {
-    emit(toIso(today))
+    const iso = toIso(today)
+    setTextVal(formatDisplay(iso))
+    emit(iso)
     setViewYear(today.getFullYear())
     setViewMonth(today.getMonth())
     setOpen(false)
   }
 
   function clear() {
+    setTextVal('')
     emit('')
     setOpen(false)
   }
@@ -207,21 +267,36 @@ export function DatePicker({ value, onChange, id, required, disabled, min, max, 
     <div ref={containerRef} className={`${styles.wrap} ${className ?? ''}`}>
       <div
         className={`${styles.inputDisplay} ${disabled ? styles.inputDisabled : ''} ${error ? styles.inputError : ''}`}
-        onClick={() => !disabled && setOpen((o) => !o)}
-        role="button"
-        tabIndex={disabled ? -1 : 0}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); !disabled && setOpen((o) => !o) } }}
       >
-        <span className={value ? styles.inputValue : styles.inputPlaceholder}>
-          {value ? formatDisplay(value) : (placeholder ?? 'dd/mm/aaaa')}
-        </span>
-        <svg className={styles.calIcon} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <rect x="3" y="4" width="14" height="14" rx="2" />
-          <path d="M7 2v4M13 2v4M3 9h14" />
-        </svg>
+        <input
+          id={id}
+          type="text"
+          className={styles.textInput}
+          placeholder={placeholder ?? 'dd/mm/aaaa'}
+          value={textVal}
+          disabled={disabled}
+          required={required}
+          inputMode="numeric"
+          autoComplete="off"
+          onChange={handleTextChange}
+          onBlur={handleBlur}
+        />
+        <button
+          type="button"
+          className={styles.calBtn}
+          disabled={disabled}
+          tabIndex={-1}
+          aria-label="Abrir calendário"
+          onClick={() => !disabled && setOpen((o) => !o)}
+        >
+          <svg className={styles.calIcon} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <rect x="3" y="4" width="14" height="14" rx="2" />
+            <path d="M7 2v4M13 2v4M3 9h14" />
+          </svg>
+        </button>
       </div>
 
-      <input type="hidden" id={id} value={value} required={required} />
+      <input type="hidden" value={value} />
 
       {createPortal(popup, document.body)}
     </div>

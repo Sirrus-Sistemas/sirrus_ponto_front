@@ -325,11 +325,13 @@ export function CadastroFuncionarioPage() {
 
     if (editingId === null) {
       // ── Create
+      if (!form.nome.trim() || form.nome.trim().length < 3) { setError('Informe o nome completo (mínimo 3 caracteres).'); return }
+      if (!form.email.trim()) { setError('Informe o e-mail do funcionário.'); return }
       const cpfDigits = digitsOnlyCpf(form.cpf)
       if (cpfDigits.length !== 11) { setError('Informe um CPF válido com 11 dígitos.'); return }
+      if (!form.data_admissao) { setError('Informe a data de admissão.'); return }
       if (!form.password || form.password.length < 6) { setError('A senha deve ter pelo menos 6 caracteres.'); return }
       if (form.password !== form.password2) { setError('As senhas não coincidem.'); return }
-      if (!form.data_admissao) { setError('Informe a data de admissão.'); return }
 
       setSubmitting(true)
       try {
@@ -372,6 +374,7 @@ export function CadastroFuncionarioPage() {
       }
     } else {
       // ── Update
+      if (!form.nome.trim() || form.nome.trim().length < 3) { setError('Informe o nome completo (mínimo 3 caracteres).'); return }
       if (!form.data_admissao) { setError('Informe a data de admissão.'); return }
 
       setSubmitting(true)
