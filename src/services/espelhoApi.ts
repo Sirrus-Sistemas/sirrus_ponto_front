@@ -16,6 +16,7 @@ export type ModifierDia =
   | 'escala_ausente'
   | 'sem_regime'
   | 'trabalho_em_folga'
+  | 'jornada_anomala'
 
 export type MarcacaoEspelho = {
   id: number

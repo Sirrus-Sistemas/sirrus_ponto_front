@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import type { DayRow } from '../../types';
+import type { DayRow, Punch } from '../../types';
 import { PunchRow, type CellDragHandlers } from './PunchRow';
 import { DayActionMenu, type DayActionMenuContext } from './DayActionMenu';
 import { OcorrenciaModal } from './OcorrenciaModal';
@@ -316,7 +316,7 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOff
       const offset = tzOffset ?? '-03:00';
 
       const toUtc = (localTime: string): { dataHoraUtc: string; diaRef: string } => {
-        const [hh, mm] = localTime.split(':').map(Number);
+        const [hh] = localTime.split(':').map(Number);
         const full = localTime.length === 5 ? localTime + ':00' : localTime;
 
         // Detectar madrugada: hora < 6 pertence ao dia anterior

@@ -66,7 +66,7 @@ export function SidePanel({ funcionarioId, onReload }: SidePanelProps) {
         <div className={styles.headerTitle}>
           <AlertTriangle size={14} />
           <span>Batidas Bloqueadas</span>
-          {grupos.length > 0 && <badge className={styles.badge}>{grupos.length}</badge>}
+          {grupos.length > 0 && <span className={styles.badge}>{grupos.length}</span>}
         </div>
         <ChevronDown size={16} className={isExpanded ? styles.chevronOpen : ''} />
       </div>
