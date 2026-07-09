@@ -1,10 +1,10 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { PanelRightOpen } from 'lucide-react';
 import type { DayRow } from '../../types';
 import { PunchRow, type CellDragHandlers } from './PunchRow';
 import { DayActionMenu, type DayActionMenuContext } from './DayActionMenu';
 import { OcorrenciaModal } from './OcorrenciaModal';
 import { JustificativaManualModal } from './JustificativaManualModal';
+import { SidePanel } from './SidePanel';
 import { excluirBatida, editarBatida } from '../../../../services/fichaPontoApi';
 import { lancarBatida } from '../../../../services/fichaPontoApi';
 import { deleteOcorrencia } from '../../../../services/ocorrenciasApi';
@@ -66,6 +66,7 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOff
   const [ocorrenciaModal, setOcorrenciaModal] = useState<OcorrenciaModalState | null>(null);
   const [justManualCtx, setJustManualCtx] = useState<DayActionMenuContext | null>(null);
   const [actionMsg, setActionMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
+  const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const gridWrapRef = useRef<HTMLDivElement>(null);
 
   // Drag state (pointer-events based — sem HTML5 Drag API)
@@ -240,14 +241,10 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOff
     setMoving(true);
     try {
       if (isSameDay) {
-        // Mesmo dia: altera data_hora para reordenar + slot_override para fixar posição
-        const [hh, mm] = from.time.split(':').map(Number);
-        const localDate = new Date(toRow.year, toRow.month - 1, toRow.day, hh, mm, 0);
-        const data_hora = localDate.toISOString().replace('T', ' ').slice(0, 19);
+        // Mesmo dia: apenas reordena usando slot_override, mantém data_hora intacta
         await editarBatida(from.punchId, {
-          data_hora,
-          motivo: 'Movido manualmente',
           slot_override: confirmMove.toSlotIndex,
+          motivo: 'Reordenado no mesmo dia',
         });
       } else {
         // Dia diferente (turno noturno): mantém data_hora original intacta para cálculo
@@ -305,7 +302,9 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOff
     }
 
     // Só lança batidas nos slots que ainda estão vazios
-    const timesToFill = times.filter((_: string, i: number) => row.punches[i] == null);
+    // Verifica se o horário previsto já tem um punch com esse horário
+    const existingTimes = new Set(row.punches.filter((p): p is Punch => p != null).map(p => p.time));
+    const timesToFill = times.filter((t: string) => !existingTimes.has(t));
 
     if (timesToFill.length === 0) {
       showMsg('error', 'Todos os horários previstos já estão preenchidos.');
@@ -314,21 +313,43 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOff
 
     try {
       const pad = (n: number) => String(n).padStart(2, '0');
-      const datePrefix = `${row.year}-${pad(row.month)}-${pad(row.day)}`;
       const offset = tzOffset ?? '-03:00';
 
-      const toUtc = (localTime: string): string => {
+      const toUtc = (localTime: string): { dataHoraUtc: string; diaRef: string } => {
+        const [hh, mm] = localTime.split(':').map(Number);
         const full = localTime.length === 5 ? localTime + ':00' : localTime;
+
+        // Detectar madrugada: hora < 6 pertence ao dia anterior
+        let refYear = row.year;
+        let refMonth = row.month;
+        let refDay = row.day;
+
+        if (hh < 6) {
+          // Madrugada: dia anterior
+          const d = new Date(row.year, row.month - 1, row.day - 1);
+          refYear = d.getFullYear();
+          refMonth = d.getMonth() + 1;
+          refDay = d.getDate();
+        }
+
+        const datePrefix = `${refYear}-${pad(refMonth)}-${pad(refDay)}`;
         const d = new Date(`${datePrefix}T${full}${offset}`);
-        return d.toISOString().replace('T', ' ').slice(0, 19);
+        const dataHoraUtc = d.toISOString().replace('T', ' ').slice(0, 19);
+        const diaRef = `${row.year}-${pad(row.month)}-${pad(row.day)}`;
+
+        return { dataHoraUtc, diaRef };
       };
 
       await Promise.all(
-        timesToFill.map((t: string) => lancarBatida({
-          funcionario_id: funcId,
-          data_hora: toUtc(t),
-          motivo: 'Justificativa automática',
-        }))
+        timesToFill.map((t: string) => {
+          const { dataHoraUtc, diaRef } = toUtc(t);
+          return lancarBatida({
+            funcionario_id: funcId,
+            data_hora: dataHoraUtc,
+            dia_referencia: diaRef,
+            motivo: 'Justificativa automática',
+          });
+        })
       );
       showMsg('ok', `${timesToFill.length} batida(s) lançada(s) manualmente (${timesToFill.join(', ')}).`);
       onReload();
@@ -479,11 +500,31 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOff
         </table>
       </div>
 
-      <div className={styles.sidePanel}>
-        <button type="button" className={styles.panelToggle} title="Expandir painel">
-          <PanelRightOpen size={16} />
-        </button>
-        <span className={styles.panelLabel}>Painel lateral</span>
+      <div className={`${styles.sidePanel} ${sidePanelOpen ? styles.sidePanelOpen : ''}`}>
+        {sidePanelOpen ? (
+          <SidePanel funcionarioId={funcionarioId} onReload={onReload} />
+        ) : (
+          <button
+            type="button"
+            className={styles.panelToggle}
+            onClick={() => setSidePanelOpen(true)}
+            title="Abrir painel de batidas bloqueadas"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 2v12M13 2v12M6 5h4M6 8h4M6 11h4" />
+            </svg>
+          </button>
+        )}
+        {sidePanelOpen && (
+          <button
+            type="button"
+            className={styles.panelClose}
+            onClick={() => setSidePanelOpen(false)}
+            title="Fechar painel"
+          >
+            ✕
+          </button>
+        )}
       </div>
 
       {menuCtx && (

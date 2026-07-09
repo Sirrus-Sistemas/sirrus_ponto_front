@@ -10,6 +10,7 @@ const SLOT_LABELS = ['E1', 'S1', 'E2', 'S2', 'E3', 'S3', 'E4', 'S4'];
 interface JustificativaManualModalProps {
   ctx: DayActionMenuContext;
   funcionarioNome: string;
+  tzOffset: string | null;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -17,6 +18,7 @@ interface JustificativaManualModalProps {
 export function JustificativaManualModal({
   ctx,
   funcionarioNome,
+  tzOffset,
   onClose,
   onSuccess,
 }: JustificativaManualModalProps) {
@@ -53,14 +55,38 @@ export function JustificativaManualModal({
 
       setSubmitting(true);
       try {
-        const [hh, mm] = horario.split(':');
-        const dataHora = `${ctx.row.year}-${pad(ctx.row.month)}-${pad(ctx.row.day)} ${hh}:${mm}:00`;
-        await lancarBatida({
+        const [hh, mm] = horario.split(':').map(Number);
+        const offset = tzOffset ?? '-03:00';
+
+        // Detectar madrugada: hora < 6 pertence ao dia anterior (em UTC)
+        let refYear = ctx.row.year;
+        let refMonth = ctx.row.month;
+        let refDay = ctx.row.day;
+
+        if (hh < 6) {
+          // Madrugada: a data UTC é do dia anterior
+          const d = new Date(ctx.row.year, ctx.row.month - 1, ctx.row.day - 1);
+          refYear = d.getFullYear();
+          refMonth = d.getMonth() + 1;
+          refDay = d.getDate();
+        }
+
+        // Construir data em hora local e converter para UTC
+        const datePrefix = `${refYear}-${pad(refMonth)}-${pad(refDay)}`;
+        const localDateStr = `${datePrefix}T${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:00${offset}`;
+        const d = new Date(localDateStr);
+        const dataHora = d.toISOString().replace('T', ' ').slice(0, 19);
+        const diaRef = `${ctx.row.year}-${pad(ctx.row.month)}-${pad(ctx.row.day)}`;
+
+        const payload = {
           funcionario_id: ctx.funcionarioId,
           data_hora: dataHora,
+          dia_referencia: diaRef,
           justificativa: justificativa.trim(),
           slot_override: slotIndex,
-        });
+        };
+
+        await lancarBatida(payload);
         onSuccess();
       } catch (err) {
         setError(err instanceof ApiError ? err.message : 'Não foi possível lançar a batida.');

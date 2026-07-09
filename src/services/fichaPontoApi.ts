@@ -48,6 +48,7 @@ export async function lancarBatida(payload: {
   motivo?: string
   justificativa?: string
   slot_override?: number | null
+  dia_referencia?: string | null
 }): Promise<{ id: number; data_hora: string; tipo: string; motivo_edicao: string | null }> {
   const res = await apiRequest<MarcacaoResponse>('/api/marcacoes/lancar', {
     method: 'POST',
@@ -111,4 +112,27 @@ export async function bloquearPeriodo(payload: {
     { method: 'POST', body: JSON.stringify(payload) },
   )
   return res.data
+}
+
+export type Bloqueada = {
+  id: number
+  funcionario_id: number
+  funcionario_nome: string
+  data_hora: string
+  tipo: string
+  mobile_ref_id: number | null
+  grupo_id: string
+  motivo_bloqueio: string
+  desbloqueado_por: number | null
+  desbloqueado_em: string | null
+}
+
+export async function fetchBloqueadas(funcionarioId?: number): Promise<Bloqueada[]> {
+  const qs = funcionarioId ? `?funcionario_id=${funcionarioId}` : ''
+  const res = await apiRequest<{ success?: boolean; data: Bloqueada[] }>(`/api/mobile/bloqueadas${qs}`)
+  return res.data
+}
+
+export async function desbloquearBloqueada(id: number): Promise<void> {
+  await apiRequest(`/api/mobile/bloqueadas/${id}/desbloquear`, { method: 'POST' })
 }

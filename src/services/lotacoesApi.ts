@@ -34,6 +34,7 @@ export type Lotacao = {
   tabela_zerada_e_folga: number
   hora_inicio_100pct: string | null
   hora_inicio_adicional_noturno: string
+  calcula_pares_sequenciais_noturno?: number
   ativo?: number
   total_funcionarios?: number
   updated_at?: string | null

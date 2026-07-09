@@ -60,6 +60,7 @@ const emptyForm = () => ({
   atribuir_100pct_terceiro_domingo: false,
   lancar_debitos_domingo_50pct: false,
   tabela_zerada_e_folga: false,
+  calcula_pares_sequenciais_noturno: false,
   hora_inicio_100pct: '',
   hora_inicio_adicional_noturno: '22:00',
   ativo: '1',
@@ -87,6 +88,7 @@ function lotacaoParaForm(l: Lotacao): ReturnType<typeof emptyForm> {
     atribuir_100pct_terceiro_domingo: l.atribuir_100pct_terceiro_domingo === 1,
     lancar_debitos_domingo_50pct: l.lancar_debitos_domingo_50pct === 1,
     tabela_zerada_e_folga: l.tabela_zerada_e_folga === 1,
+    calcula_pares_sequenciais_noturno: l.calcula_pares_sequenciais_noturno === 1,
     hora_inicio_100pct: horaParaInput(l.hora_inicio_100pct),
     hora_inicio_adicional_noturno: horaParaInput(l.hora_inicio_adicional_noturno) || '22:00',
     ativo: String(l.ativo ?? 1),
@@ -115,6 +117,7 @@ function formParaPayload(f: ReturnType<typeof emptyForm>): LotacaoPayload {
     atribuir_100pct_terceiro_domingo: f.atribuir_100pct_terceiro_domingo ? 1 : 0,
     lancar_debitos_domingo_50pct: f.lancar_debitos_domingo_50pct ? 1 : 0,
     tabela_zerada_e_folga: f.tabela_zerada_e_folga ? 1 : 0,
+    calcula_pares_sequenciais_noturno: f.calcula_pares_sequenciais_noturno ? 1 : 0,
     hora_inicio_100pct: f.hora_inicio_100pct || null,
     hora_inicio_adicional_noturno: f.hora_inicio_adicional_noturno || '22:00',
   }
@@ -423,6 +426,11 @@ export function CadastroLotacoesPage() {
               <ToggleRow checked={form.sabado_somente_extras}     onChange={toggle('sabado_somente_extras')}       label="Somente extras (sábado 60%)" indent />
             )}
             <ToggleRow checked={form.juntar_100pct_sabado_normal} onChange={toggle('juntar_100pct_sabado_normal')} label="Juntar 100% dos sábados com extras normais" />
+          </div>
+
+          <div className={styles.paramGroup}>
+            <div className={styles.paramGroupTitle}><ClockIcon /> Turno noturno</div>
+            <ToggleRow checked={form.calcula_pares_sequenciais_noturno} onChange={toggle('calcula_pares_sequenciais_noturno')} label="Calcular pares sequenciais para turno noturno" desc="Para turnos que cruzam meia-noite: soma pares de batidas em sequência, sem reordenar por data/hora absoluta. Resolve cálculos incorretos de horas." />
           </div>
 
           <div className={styles.paramGroup}>
