@@ -120,10 +120,11 @@ function buildDays(payload: EspelhoPayload, bloqueadoMap: Record<string, boolean
 
     slots.forEach((m, i) => {
       if (m) {
-        const d = parseDataHoraUtc(m.data_hora);
-        const hh = String(d.getHours()).padStart(2, '0');
-        const mm = String(d.getMinutes()).padStart(2, '0');
-        punches[i] = { time: `${hh}:${mm}`, source: mapTipo(m.tipo) };
+        // data_hora_local já está no fuso do funcionário (CONVERT_TZ no SQL).
+        // Extrair HH:MM direto da string evita qualquer conversão pelo fuso do navegador.
+        const localStr = m.data_hora_local ?? m.data_hora;
+        const timePart = localStr.slice(11, 16); // "HH:MM"
+        punches[i] = { time: timePart, source: mapTipo(m.tipo) };
         punchIds[i] = m.id;          // índice = posição no grid
         punchMotivos[i] = m.motivo_edicao ?? null;
       }

@@ -19,6 +19,8 @@ import { GerenciarUsuariosPage } from './components/usuarios/GerenciarUsuariosPa
 import { CadastroFeriadosPage } from './components/feriados/CadastroFeriadosPage'
 import { FichaDePonto } from './pages/FichaDePonto/FichaDePonto'
 import { ConfiguracaoEmpresaPage } from './components/empresa/ConfiguracaoEmpresaPage'
+import { CadastroRelogiosPage } from './components/relogios/CadastroRelogiosPage'
+import { RelogioComunicacaoPage } from './components/relogios/RelogioComunicacaoPage'
 import { LoginPage } from './components/login/LoginPage'
 import { PasswordRecoveryPage } from './components/login/PasswordRecoveryPage'
 import { getStoredToken } from './lib/api'
@@ -57,6 +59,8 @@ function App() {
             <Route path="/feriados" element={<CadastroFeriadosPage />} />
             <Route path="/ficha-ponto" element={<FichaDePonto />} />
             <Route path="/configuracoes/empresa" element={<ConfiguracaoEmpresaPage />} />
+            <Route path="/relogios" element={<CadastroRelogiosPage />} />
+            <Route path="/relogios/comunicacao" element={<RelogioComunicacaoPage />} />
           </Route>
         </Route>
 
