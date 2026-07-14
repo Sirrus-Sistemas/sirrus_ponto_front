@@ -33,6 +33,11 @@ type FormState = {
   usa_afd: boolean
   filial_id: string
   ativo: boolean
+  sincronizar_desde: string
+}
+
+function hoje(): string {
+  return new Date().toISOString().slice(0, 10)
 }
 
 const emptyForm = (): FormState => ({
@@ -46,6 +51,7 @@ const emptyForm = (): FormState => ({
   usa_afd: false,
   filial_id: '',
   ativo: true,
+  sincronizar_desde: hoje(),
 })
 
 export function CadastroRelogiosPage() {
@@ -115,6 +121,7 @@ export function CadastroRelogiosPage() {
       usa_afd: r.usa_afd,
       filial_id: r.filial_id != null ? String(r.filial_id) : '',
       ativo: r.ativo,
+      sincronizar_desde: r.sincronizar_desde ? r.sincronizar_desde.slice(0, 10) : hoje(),
     })
     setError(null)
     setSuccess(null)
@@ -127,6 +134,7 @@ export function CadastroRelogiosPage() {
 
     if (!form.numero_serie.trim()) { setError('Informe o número de série.'); return }
     if (!form.descricao.trim())   { setError('Informe uma descrição para o equipamento.'); return }
+    if (!form.sincronizar_desde) { setError('Informe a partir de qual data sincronizar marcações.'); return }
 
     const info = modeloInfo(form.modelo)
     const isAfd = info?.afd ?? form.usa_afd
@@ -143,6 +151,7 @@ export function CadastroRelogiosPage() {
         usuario:      !isAfd && form.usuario.trim()  ? form.usuario.trim() : null,
         senha:        form.senha.trim() || null,
         filial_id:    form.filial_id ? Number(form.filial_id) : null,
+        sincronizar_desde: form.sincronizar_desde,
       }
 
       if (editingId !== null) {
@@ -391,6 +400,26 @@ export function CadastroRelogiosPage() {
                           <option key={f.id} value={f.id}>{f.nome}</option>
                         ))}
                       </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SINCRONIZAÇÃO */}
+                <div className={styles.section}>
+                  <div className={styles.sectionLabel}>SINCRONIZAÇÃO</div>
+                  <div style={{ maxWidth: 260 }}>
+                    <div className={styles.field}>
+                      <label>SINCRONIZAR MARCAÇÕES A PARTIR DE</label>
+                      <input
+                        type="date"
+                        value={form.sincronizar_desde}
+                        onChange={update('sincronizar_desde')}
+                        required
+                      />
+                      <p className={styles.hint}>
+                        Marcações anteriores a esta data são descartadas. Importante em relógios
+                        antigos, para não importar anos de histórico de ex-funcionários.
+                      </p>
                     </div>
                   </div>
                 </div>

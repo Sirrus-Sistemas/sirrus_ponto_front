@@ -304,6 +304,26 @@ export function AppShell() {
                 Comunicação Equipamentos
               </NavLink>
             ) : null}
+            {me?.role === 'admin' ? (
+              <NavLink
+                to="/relogios/marcacoes-pendentes"
+                className={({ isActive }) => navClass(isActive)}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <span className={styles.navIcon} aria-hidden><IconComunicacao /></span>
+                Marcações Pendentes
+              </NavLink>
+            ) : null}
+            {me?.role === 'admin' ? (
+              <NavLink
+                to="/relogios/importar-afd"
+                className={({ isActive }) => navClass(isActive)}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <span className={styles.navIcon} aria-hidden><IconComunicacao /></span>
+                Importar AFD
+              </NavLink>
+            ) : null}
           </nav>
 
           <div className={styles.sidebarFooter}>

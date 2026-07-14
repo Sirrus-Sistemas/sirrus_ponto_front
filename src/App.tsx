@@ -21,6 +21,8 @@ import { FichaDePonto } from './pages/FichaDePonto/FichaDePonto'
 import { ConfiguracaoEmpresaPage } from './components/empresa/ConfiguracaoEmpresaPage'
 import { CadastroRelogiosPage } from './components/relogios/CadastroRelogiosPage'
 import { RelogioComunicacaoPage } from './components/relogios/RelogioComunicacaoPage'
+import { RelogioMarcacoesPendentesPage } from './components/relogios/RelogioMarcacoesPendentesPage'
+import { RelogioImportarAfdPage } from './components/relogios/RelogioImportarAfdPage'
 import { LoginPage } from './components/login/LoginPage'
 import { PasswordRecoveryPage } from './components/login/PasswordRecoveryPage'
 import { getStoredToken } from './lib/api'
@@ -61,6 +63,8 @@ function App() {
             <Route path="/configuracoes/empresa" element={<ConfiguracaoEmpresaPage />} />
             <Route path="/relogios" element={<CadastroRelogiosPage />} />
             <Route path="/relogios/comunicacao" element={<RelogioComunicacaoPage />} />
+            <Route path="/relogios/marcacoes-pendentes" element={<RelogioMarcacoesPendentesPage />} />
+            <Route path="/relogios/importar-afd" element={<RelogioImportarAfdPage />} />
           </Route>
         </Route>
 

@@ -27,6 +27,10 @@ export type Relogio = {
   usuario: string | null
   senha: string | null
   usa_afd: boolean
+  // Marcações anteriores a esta data são descartadas pelo sistema de
+  // coleta local — evita importar anos de histórico de ex-funcionários de
+  // relógios antigos.
+  sincronizar_desde: string
   ativo: boolean
   criado_em: string
   atualizado_em: string
@@ -42,6 +46,7 @@ export type CreateRelogioPayload = {
   senha?: string | null
   usa_afd: boolean
   filial_id?: number | null
+  sincronizar_desde: string
 }
 
 export type UpdateRelogioPayload = CreateRelogioPayload & { ativo: boolean }
@@ -71,4 +76,23 @@ export async function updateRelogio(id: number, data: UpdateRelogioPayload): Pro
 
 export async function deleteRelogio(id: number): Promise<void> {
   await apiRequest(`/api/relogios/${id}`, { method: 'DELETE' })
+}
+
+export type ImportarAfdResumo = {
+  total_linhas: number
+  inserida: number
+  duplicada: number
+  pendente: number
+}
+
+export async function importarAfd(relogioId: number, arquivo: File): Promise<ImportarAfdResumo> {
+  const formData = new FormData()
+  formData.append('relogio_id', String(relogioId))
+  formData.append('file', arquivo)
+
+  const res = await apiRequest<ApiEnvelope<ImportarAfdResumo>>('/api/relogios/marcacoes/importar-afd', {
+    method: 'POST',
+    body: formData,
+  })
+  return res.data
 }
