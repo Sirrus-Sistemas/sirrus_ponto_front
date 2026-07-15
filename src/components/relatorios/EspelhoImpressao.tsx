@@ -1,4 +1,3 @@
-import { formatHoraLocalPtBr } from '../../lib/parseDataHora'
 import type { EspelhoPayload, MarcacaoEspelho } from '../../services/espelhoApi'
 import styles from './EspelhoImpressao.module.css'
 
@@ -20,8 +19,10 @@ function formatDataPrint(iso: string): string {
 }
 
 function horaMin(m: MarcacaoEspelho): string {
+  // data_hora_local já está no fuso local (ou é a hora local do relógio para tipo='rep').
+  // Extrair HH:MM direto da string evita dupla conversão pelo fuso do navegador.
   const iso = m.data_hora_local ?? m.data_hora
-  return formatHoraLocalPtBr(iso)
+  return iso.slice(11, 16)
 }
 
 function fmtCpf(cpf: string | null): string {
@@ -63,12 +64,12 @@ function applySlotOverride(sorted: MarcacaoEspelho[]): (MarcacaoEspelho | null)[
 }
 
 function buildSlots(marcacoes: MarcacaoEspelho[]) {
-  // Helper para deduplica por HH:MM — mesma lógica que useFichaDePonto.ts
+  // Deduplica por HH:MM usando data_hora_local (já no fuso correto) — igual a useFichaDePonto.ts
   function deduplicateByHHMM(items: MarcacaoEspelho[]): MarcacaoEspelho[] {
     const seenTimes = new Set<string>()
     return items.filter(m => {
-      const d = new Date(m.data_hora)
-      const key = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+      const iso = m.data_hora_local ?? m.data_hora
+      const key = iso.slice(11, 16) // "HH:MM"
       if (seenTimes.has(key)) return false
       seenTimes.add(key)
       return true
