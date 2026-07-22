@@ -11,6 +11,7 @@ export type EmpresaInfo = {
   municipio_nome: string | null
   municipio_estado: string | null
   municipio_fuso_horario: string | null
+  aprovacao_mobile_ativa: number
 }
 
 export async function fetchEmpresa(): Promise<EmpresaInfo> {
@@ -22,5 +23,12 @@ export async function updateEmpresaMunicipio(municipioId: number | null): Promis
   await apiRequest<{ success: boolean }>('/api/empresa/municipio', {
     method: 'PUT',
     body: JSON.stringify({ municipio_id: municipioId }),
+  })
+}
+
+export async function updateAprovacaoMobile(ativo: boolean): Promise<void> {
+  await apiRequest<{ success: boolean }>('/api/empresa/aprovacao-mobile', {
+    method: 'PUT',
+    body: JSON.stringify({ ativo }),
   })
 }

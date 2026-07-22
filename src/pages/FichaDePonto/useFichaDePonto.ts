@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchEspelho, type EspelhoPayload, type StatusDia } from '../../services/espelhoApi';
 import { fetchMe, type FuncionarioMe } from '../../services/userApi';
 import { fetchFuncionarios, type FuncionarioListItem } from '../../services/funcionariosApi';
-import { fetchFicha, bloquearDia, desbloquearDia, bloquearPeriodo as bloquearPeriodoApi, desbloquearPeriodo as desbloquearPeriodoApi } from '../../services/fichaPontoApi';
+import { fetchFicha, bloquearDia, desbloquearDia, bloquearPeriodo as bloquearPeriodoApi, desbloquearPeriodo as desbloquearPeriodoApi, justificarPeriodo as justificarPeriodoApi, type HorariosManuais, type JustificarPeriodoResultado } from '../../services/fichaPontoApi';
 import { ApiError } from '../../lib/api';
 import { parseDataHoraUtc } from '../../lib/parseDataHora';
 import type { DayRow, DayStatus, Employee, FichaDePontoData, MonthlySummary, Punch, PunchSource } from './types';
@@ -198,6 +198,14 @@ export interface UseFichaDePontoResult {
   toggleBloqueio: (row: DayRow) => Promise<void>;
   bloquearPeriodo: (params: { data_inicio: string; data_fim: string; funcionario_ids?: number[] }) => Promise<{ funcionarios: number; dias: number; total: number }>;
   desbloquearPeriodo: (params: { data_inicio: string; data_fim: string; funcionario_ids?: number[] }) => Promise<{ removidos: number }>;
+  justificarPeriodo: (params: {
+    funcionario_id: number;
+    data_inicio: string;
+    data_fim: string;
+    modo: 'manual' | 'automatico';
+    horarios?: HorariosManuais;
+    justificativa: string;
+  }) => Promise<JustificarPeriodoResultado>;
 }
 
 export function useFichaDePonto(params: Params): UseFichaDePontoResult {
@@ -300,6 +308,19 @@ export function useFichaDePonto(params: Params): UseFichaDePontoResult {
     return result;
   }, [load]);
 
+  const justificarPeriodo = useCallback(async (params: {
+    funcionario_id: number;
+    data_inicio: string;
+    data_fim: string;
+    modo: 'manual' | 'automatico';
+    horarios?: HorariosManuais;
+    justificativa: string;
+  }): Promise<JustificarPeriodoResultado> => {
+    const result = await justificarPeriodoApi(params);
+    void load();
+    return result;
+  }, [load]);
+
   const toggleBloqueio = useCallback(async (row: DayRow) => {
     const funcId = data?.funcionarioId;
     if (!funcId) return;
@@ -324,7 +345,7 @@ export function useFichaDePonto(params: Params): UseFichaDePontoResult {
   }, [data?.funcionarioId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return useMemo(
-    () => ({ data, loading, error, me, funcionarios, reload: load, toggleBloqueio, bloquearPeriodo, desbloquearPeriodo }),
-    [data, loading, error, me, funcionarios, load, toggleBloqueio, bloquearPeriodo, desbloquearPeriodo],
+    () => ({ data, loading, error, me, funcionarios, reload: load, toggleBloqueio, bloquearPeriodo, desbloquearPeriodo, justificarPeriodo }),
+    [data, loading, error, me, funcionarios, load, toggleBloqueio, bloquearPeriodo, desbloquearPeriodo, justificarPeriodo],
   );
 }

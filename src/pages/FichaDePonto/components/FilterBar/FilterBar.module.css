@@ -173,6 +173,25 @@
 }
 .lockBtn:hover { background: #FFFBEB; border-color: #F59E0B; }
 
+.justificarBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 14px;
+  background: #fff;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+  border-radius: 6px;
+  font-family: var(--sp-font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+.justificarBtn:hover { background: #EFF6FF; border-color: #93C5FD; }
+
 .shortcuts {
   display: flex;
   align-items: center;

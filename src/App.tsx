@@ -14,6 +14,7 @@ import { RelatoriosPage } from './components/relatorios/RelatoriosPage'
 import { CadastroTiposOcorrenciaPage } from './components/ocorrencias/CadastroTiposOcorrenciaPage'
 import { EspelhoPrintPage } from './components/relatorios/EspelhoPrintPage'
 import { IntegracaoMobilePage } from './components/mobile/IntegracaoMobilePage'
+import { AprovacaoBatidasPage } from './components/mobile/AprovacaoBatidasPage'
 import { CadastroMunicipioPage } from './components/municipios/CadastroMunicipioPage'
 import { GerenciarUsuariosPage } from './components/usuarios/GerenciarUsuariosPage'
 import { CadastroFeriadosPage } from './components/feriados/CadastroFeriadosPage'
@@ -56,6 +57,7 @@ function App() {
             <Route path="/filiais" element={<CadastroFiliaisPage />} />
             <Route path="/ocorrencias/tipos" element={<CadastroTiposOcorrenciaPage />} />
             <Route path="/mobile/integracao" element={<IntegracaoMobilePage />} />
+            <Route path="/mobile/aprovacao" element={<AprovacaoBatidasPage />} />
             <Route path="/municipios" element={<CadastroMunicipioPage />} />
             <Route path="/usuarios" element={<GerenciarUsuariosPage />} />
             <Route path="/feriados" element={<CadastroFeriadosPage />} />

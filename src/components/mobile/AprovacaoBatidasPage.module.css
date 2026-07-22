@@ -1,0 +1,270 @@
+.page {
+  width: 100%;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--sp-text);
+  margin: 0 0 0.25rem;
+}
+
+.subtitle {
+  color: var(--sp-text-2);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.loading,
+.denied {
+  color: var(--sp-text-2);
+  padding: 2rem 0;
+}
+
+/* ── Filtros (card escuro, mesmo padrão do Importar marcações) ── */
+
+.filterCard {
+  background: var(--sp-bg-sidebar, #1a3c38);
+  border-radius: var(--sp-radius-lg, 14px);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.fieldDark {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.fieldDark label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.selectDark {
+  min-width: 160px;
+  height: 38px;
+  padding: 0 0.6rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font: inherit;
+  font-size: 0.85rem;
+}
+.selectDark option { color: #1f2937; }
+
+.datepickerWrap :global(.MuiOutlinedInput-root),
+.datepickerWrap :global(.MuiPickersOutlinedInput-root) {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #fff;
+}
+.datepickerWrap :global(.MuiOutlinedInput-notchedOutline),
+.datepickerWrap :global(.MuiPickersOutlinedInput-notchedOutline) {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.datepickerWrap :global(.MuiSvgIcon-root) {
+  color: rgba(255, 255, 255, 0.7);
+}
+.datepickerWrap :global(.MuiPickersSectionList-sectionContent),
+.datepickerWrap :global(.MuiPickersInputBase-sectionContent),
+.datepickerWrap :global(.MuiPickersInputBase-sectionsContainer) {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff;
+}
+
+.btnBuscar {
+  height: 38px;
+  padding: 0 1.25rem;
+  border-radius: 8px;
+  border: none;
+  background: #14918b;
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btnBuscar:disabled { opacity: 0.55; cursor: not-allowed; }
+.btnBuscar:not(:disabled):hover { background: #0f7a75; }
+
+.error {
+  padding: 0.65rem 0.9rem;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  background: #fee2e2;
+  color: #dc2626;
+  margin-bottom: 1rem;
+}
+
+/* ── Barra de ações em massa ── */
+
+.bulkBar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.bulkCount {
+  font-size: 0.88rem;
+  color: var(--sp-text-2);
+  margin-right: auto;
+}
+
+.btnAprovar {
+  padding: 0.5rem 1.1rem;
+  border-radius: 8px;
+  border: none;
+  background: #059669;
+  color: #fff;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btnAprovar:disabled { opacity: 0.5; cursor: not-allowed; }
+.btnAprovar:not(:disabled):hover { background: #047857; }
+
+.btnNegar {
+  padding: 0.5rem 1.1rem;
+  border-radius: 8px;
+  border: none;
+  background: #dc2626;
+  color: #fff;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btnNegar:disabled { opacity: 0.5; cursor: not-allowed; }
+.btnNegar:not(:disabled):hover { background: #b91c1c; }
+
+/* ── Tabela ── */
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--sp-border);
+  border-radius: 12px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.table th {
+  text-align: left;
+  padding: 0.65rem 0.85rem;
+  background: #f8fafc;
+  color: var(--sp-text-3);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--sp-border);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid var(--sp-border);
+  color: var(--sp-text);
+  vertical-align: middle;
+}
+
+.emptyRow {
+  text-align: center;
+  color: var(--sp-text-3);
+  padding: 2rem !important;
+}
+
+.thumb {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  object-fit: cover;
+  cursor: pointer;
+  display: block;
+}
+
+.mapLink {
+  font-size: 0.82rem;
+  color: #14918b;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.mapLink:hover { text-decoration: underline; }
+
+.tipoBadge {
+  display: inline-flex;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.tipoEntrada { background: #D1FAE5; color: #065F46; }
+.tipoSaida   { background: #FEF3C7; color: #92400E; }
+
+.rowActions {
+  display: flex;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.btnRowAprovar,
+.btnRowNegar {
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  border: none;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btnRowAprovar { background: #D1FAE5; color: #065F46; }
+.btnRowAprovar:hover { background: #A7F3D0; }
+.btnRowNegar { background: #FEE2E2; color: #991B1B; }
+.btnRowNegar:hover { background: #FECACA; }
+.btnRowAprovar:disabled, .btnRowNegar:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.resultPills {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.pillOk {
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: #D1FAE5;
+  color: #065F46;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.pillErr {
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: #FEE2E2;
+  color: #991B1B;
+  font-size: 0.8rem;
+  font-weight: 600;
+}

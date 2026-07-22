@@ -268,6 +268,52 @@
   display: none;
 }
 
+/* ── Auditoria ────────────────────────────────────────────────────── */
+.badgeOk,
+.badgeWarn,
+.badgeDanger {
+  display: inline-flex;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badgeOk     { background: #D1FAE5; color: #065F46; }
+.badgeWarn   { background: #FEF3C7; color: #92400E; }
+.badgeDanger { background: #FEE2E2; color: #991B1B; }
+
+.auditDetalhe {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 0.75rem 0.5rem;
+}
+.auditDetalhe pre {
+  margin: 0.35rem 0 0;
+  padding: 0.6rem;
+  background: var(--sp-bg-card-soft);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  max-height: 280px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+@media (max-width: 640px) {
+  .auditDetalhe { grid-template-columns: 1fr; }
+}
+
+.auditPagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--sp-text-3);
+}
+
 @media print {
   .pageTitle,
   .pageSubtitle,

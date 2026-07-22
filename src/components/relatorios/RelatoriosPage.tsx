@@ -4,11 +4,12 @@ import { RelatorioFuncionariosTab } from './RelatorioFuncionariosTab'
 import { RelatorioFaltasTab } from './RelatorioFaltasTab'
 import { RelatorioAtrasosTab } from './RelatorioAtrasosTab'
 import { RelatorioOcorrenciasTab } from './RelatorioOcorrenciasTab'
+import { RelatorioAuditoriaTab } from './RelatorioAuditoriaTab'
 import styles from './RelatoriosPage.module.css'
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
-type TabId = 'espelho' | 'funcionarios' | 'faltas' | 'atrasos' | 'ocorrencias'
+type TabId = 'espelho' | 'funcionarios' | 'faltas' | 'atrasos' | 'ocorrencias' | 'auditoria'
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'espelho',      label: 'Folha de Ponto' },
@@ -16,6 +17,7 @@ const TABS: { id: TabId; label: string }[] = [
   { id: 'faltas',       label: 'Faltas' },
   { id: 'atrasos',      label: 'Atrasos' },
   { id: 'ocorrencias',  label: 'Ocorrências' },
+  { id: 'auditoria',    label: 'Auditoria' },
 ]
 
 // ─── "Folha de Ponto" redirect tab ───────────────────────────────────────────
@@ -67,6 +69,7 @@ export function RelatoriosPage() {
         {activeTab === 'faltas'       && <RelatorioFaltasTab />}
         {activeTab === 'atrasos'      && <RelatorioAtrasosTab />}
         {activeTab === 'ocorrencias'  && <RelatorioOcorrenciasTab />}
+        {activeTab === 'auditoria'    && <RelatorioAuditoriaTab />}
       </div>
     </div>
   )

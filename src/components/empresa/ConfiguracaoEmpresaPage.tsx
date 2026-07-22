@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchEmpresa, updateEmpresaMunicipio, type EmpresaInfo } from '../../services/empresaApi'
+import { fetchEmpresa, updateEmpresaMunicipio, updateAprovacaoMobile, type EmpresaInfo } from '../../services/empresaApi'
 import { fetchMunicipios, type Municipio } from '../../services/municipiosApi'
 import styles from './ConfiguracaoEmpresaPage.module.css'
 
@@ -16,6 +16,10 @@ export function ConfiguracaoEmpresaPage() {
   const [municipioOpen, setMunicipioOpen] = useState(false)
   const [municipioFuso, setMunicipioFuso] = useState<string | null>(null)
 
+  // Aprovação de batidas mobile
+  const [aprovacaoAtiva, setAprovacaoAtiva] = useState(false)
+  const [savingAprovacao, setSavingAprovacao] = useState(false)
+
   useEffect(() => {
     let cancelled = false
     fetchEmpresa()
@@ -24,6 +28,7 @@ export function ConfiguracaoEmpresaPage() {
         setEmpresa(emp)
         setMunicipioId(emp.municipio_id)
         setMunicipioFuso(emp.municipio_fuso_horario)
+        setAprovacaoAtiva(Number(emp.aprovacao_mobile_ativa) === 1)
         if (emp.municipio_nome) {
           setMunicipioQuery(`${emp.municipio_nome} — ${emp.municipio_estado ?? ''}`)
         }
@@ -71,6 +76,21 @@ export function ConfiguracaoEmpresaPage() {
       setFeedback({ type: 'error', msg: 'Erro ao salvar. Tente novamente.' })
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleToggleAprovacao() {
+    const novoValor = !aprovacaoAtiva
+    setSavingAprovacao(true)
+    setFeedback(null)
+    try {
+      await updateAprovacaoMobile(novoValor)
+      setAprovacaoAtiva(novoValor)
+      setFeedback({ type: 'ok', msg: 'Configuração salva com sucesso.' })
+    } catch {
+      setFeedback({ type: 'error', msg: 'Erro ao salvar. Tente novamente.' })
+    } finally {
+      setSavingAprovacao(false)
     }
   }
 
@@ -166,6 +186,24 @@ export function ConfiguracaoEmpresaPage() {
             {saving ? 'Salvando…' : 'Salvar'}
           </button>
         </div>
+      </div>
+
+      {/* Aprovação de batidas do app mobile */}
+      <div className={styles.card}>
+        <p className={styles.sectionTitle}>Ponto Mobile</p>
+        <label className={styles.field} style={{ flexDirection: 'row', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={aprovacaoAtiva}
+            onChange={handleToggleAprovacao}
+            disabled={savingAprovacao}
+          />
+          <span>Exigir aprovação de batidas do app mobile antes de entrarem no ponto</span>
+        </label>
+        <p className={styles.hint}>
+          Com isso ligado, batidas do app ficam pendentes até serem aprovadas ou negadas em
+          "Aprovação de Batidas" — a mesma aprovação usada no sistema desktop.
+        </p>
       </div>
     </div>
   )

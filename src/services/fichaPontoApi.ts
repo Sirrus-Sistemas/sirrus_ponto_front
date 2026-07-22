@@ -114,6 +114,34 @@ export async function bloquearPeriodo(payload: {
   return res.data
 }
 
+export type HorariosManuais = Partial<Record<
+  'entrada1' | 'saida1' | 'entrada2' | 'saida2' | 'entrada3' | 'saida3' | 'entrada4' | 'saida4',
+  string
+>>
+
+export type JustificarPeriodoResultado = {
+  dias_lancados: number
+  dias_ja_completos: number
+  dias_ignorados_bloqueado: number
+  dias_ignorados_sem_expediente: number
+  total_batidas: number
+}
+
+export async function justificarPeriodo(payload: {
+  funcionario_id: number
+  data_inicio: string
+  data_fim: string
+  modo: 'manual' | 'automatico'
+  horarios?: HorariosManuais
+  justificativa: string
+}): Promise<JustificarPeriodoResultado> {
+  const res = await apiRequest<{ success?: boolean; data: JustificarPeriodoResultado }>(
+    '/api/marcacoes/justificar-periodo',
+    { method: 'POST', body: JSON.stringify(payload) },
+  )
+  return res.data
+}
+
 export type Bloqueada = {
   id: number
   funcionario_id: number

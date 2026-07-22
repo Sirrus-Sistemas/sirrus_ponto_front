@@ -1,4 +1,4 @@
-import { Lock, Printer, RefreshCw } from 'lucide-react';
+import { CalendarCheck, Lock, Printer, RefreshCw } from 'lucide-react';
 import { Avatar } from '../ui/Avatar';
 import styles from './FilterBar.module.css';
 import type { Employee } from '../../types';
@@ -30,6 +30,7 @@ interface FilterBarProps {
   onLoad: () => void;
   onPrint?: () => void;
   onBloquearPeriodo?: () => void;
+  onJustificarPeriodo?: () => void;
 }
 
 export function FilterBar({
@@ -42,6 +43,7 @@ export function FilterBar({
   onLoad,
   onPrint,
   onBloquearPeriodo,
+  onJustificarPeriodo,
 }: FilterBarProps) {
   return (
     <div className={styles.bar}>
@@ -138,6 +140,13 @@ export function FilterBar({
           <button type="button" className={styles.lockBtn} onClick={onBloquearPeriodo}>
             <Lock size={14} />
             Bloquear período
+          </button>
+        )}
+
+        {onJustificarPeriodo && (
+          <button type="button" className={styles.justificarBtn} onClick={onJustificarPeriodo}>
+            <CalendarCheck size={14} />
+            Justificar período
           </button>
         )}
       </div>
