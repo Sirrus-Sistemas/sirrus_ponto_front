@@ -330,6 +330,7 @@ export function CadastroFuncionarioPage() {
       const cpfDigits = digitsOnlyCpf(form.cpf)
       if (cpfDigits.length !== 11) { setError('Informe um CPF válido com 11 dígitos.'); return }
       if (!form.data_admissao) { setError('Informe a data de admissão.'); return }
+      if (!form.municipio_id) { setError('Selecione a cidade/município (define o fuso horário do colaborador).'); return }
       if (!form.password || form.password.length < 6) { setError('A senha deve ter pelo menos 6 caracteres.'); return }
       if (form.password !== form.password2) { setError('As senhas não coincidem.'); return }
 
@@ -376,6 +377,7 @@ export function CadastroFuncionarioPage() {
       // ── Update
       if (!form.nome.trim() || form.nome.trim().length < 3) { setError('Informe o nome completo (mínimo 3 caracteres).'); return }
       if (!form.data_admissao) { setError('Informe a data de admissão.'); return }
+      if (!form.municipio_id) { setError('Selecione a cidade/município (define o fuso horário do colaborador).'); return }
 
       setSubmitting(true)
       try {
@@ -940,7 +942,7 @@ export function CadastroFuncionarioPage() {
             </div>
 
             <div className={styles.field}>
-              <label htmlFor="cf-municipio">Cidade / Município</label>
+              <label htmlFor="cf-municipio">Cidade / Município <span className={styles.req}>*</span></label>
               <div className={styles.comboWrap}>
                 <span className={styles.comboSearchIcon}>🔍</span>
                 <input
