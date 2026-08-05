@@ -724,6 +724,31 @@ export function CadastroTabelaHorariosPage() {
                       ))}
                     </select>
                   </div>
+                  <div className={styles.rowTwo}>
+                    <div className={styles.field}>
+                      <label htmlFor="th-tolerancia-atraso">TOLERÂNCIA DE ATRASO (MIN)</label>
+                      <input
+                        id="th-tolerancia-atraso"
+                        type="number"
+                        min={0}
+                        value={form.tolerancia_atraso_min}
+                        onChange={updateField('tolerancia_atraso_min')}
+                      />
+                    </div>
+                    <div className={styles.field}>
+                      <label htmlFor="th-tolerancia-extra">TOLERÂNCIA DE EXTRA (MIN)</label>
+                      <input
+                        id="th-tolerancia-extra"
+                        type="number"
+                        min={0}
+                        value={form.tolerancia_extra_min}
+                        onChange={updateField('tolerancia_extra_min')}
+                      />
+                    </div>
+                  </div>
+                  <p className={styles.diaEditorHint}>
+                    Atrasos/extras dentro da tolerância não geram débito nem crédito de horas no espelho de ponto.
+                  </p>
                 </div>
 
                 <button
