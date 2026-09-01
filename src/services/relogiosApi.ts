@@ -85,10 +85,16 @@ export type ImportarAfdResumo = {
   pendente: number
 }
 
-export async function importarAfd(relogioId: number, arquivo: File): Promise<ImportarAfdResumo> {
+export async function importarAfd(
+  relogioId: number,
+  arquivo: File,
+  periodo?: { dataInicio?: string; dataFim?: string },
+): Promise<ImportarAfdResumo> {
   const formData = new FormData()
   formData.append('relogio_id', String(relogioId))
   formData.append('file', arquivo)
+  if (periodo?.dataInicio) formData.append('data_inicio', periodo.dataInicio)
+  if (periodo?.dataFim) formData.append('data_fim', periodo.dataFim)
 
   const res = await apiRequest<ApiEnvelope<ImportarAfdResumo>>('/api/relogios/marcacoes/importar-afd', {
     method: 'POST',

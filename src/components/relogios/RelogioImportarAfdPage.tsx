@@ -11,6 +11,8 @@ export function RelogioImportarAfdPage() {
   const [relogios, setRelogios] = useState<Relogio[]>([])
   const [relogioId, setRelogioId] = useState<number | ''>('')
   const [arquivo, setArquivo] = useState<File | null>(null)
+  const [dataInicio, setDataInicio] = useState('')
+  const [dataFim, setDataFim] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [resumo, setResumo] = useState<ImportarAfdResumo | null>(null)
@@ -31,9 +33,11 @@ export function RelogioImportarAfdPage() {
     setError(null)
     setResumo(null)
     try {
-      const dados = await importarAfd(relogioId, arquivo)
+      const dados = await importarAfd(relogioId, arquivo, { dataInicio, dataFim })
       setResumo(dados)
       setArquivo(null)
+      setDataInicio('')
+      setDataFim('')
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Erro ao importar o arquivo AFD.')
     } finally {
@@ -89,6 +93,33 @@ export function RelogioImportarAfdPage() {
             onChange={(e) => setArquivo(e.target.files?.[0] ?? null)}
           />
         </div>
+
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+          <div className={styles.modalField}>
+            <label>DE (opcional)</label>
+            <input
+              type="date"
+              value={dataInicio}
+              onChange={(e) => setDataInicio(e.target.value)}
+              max={dataFim || undefined}
+              style={{ padding: '0.5rem 0.75rem', borderRadius: 8, border: '1px solid var(--sp-border)' }}
+            />
+          </div>
+          <div className={styles.modalField}>
+            <label>ATÉ (opcional)</label>
+            <input
+              type="date"
+              value={dataFim}
+              onChange={(e) => setDataFim(e.target.value)}
+              min={dataInicio || undefined}
+              style={{ padding: '0.5rem 0.75rem', borderRadius: 8, border: '1px solid var(--sp-border)' }}
+            />
+          </div>
+        </div>
+        <p className={styles.subtitle} style={{ marginTop: '0.35rem' }}>
+          Deixe em branco para importar todo o histórico do arquivo. Preenchendo, só as marcações
+          dentro do período selecionado são importadas — o restante do arquivo é ignorado.
+        </p>
 
         {error && <p className={`${styles.feedback} ${styles.feedbackError}`}>{error}</p>}
 
