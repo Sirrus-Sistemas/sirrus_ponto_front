@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { fetchEmpresa, updateEmpresaMunicipio, updateAprovacaoMobile, type EmpresaInfo } from '../../services/empresaApi'
 import { fetchMunicipios, type Municipio } from '../../services/municipiosApi'
+import { fetchLotacoes } from '../../services/lotacoesApi'
+import { fetchTurnos } from '../../services/turnosApi'
+import { fetchFuncionarios } from '../../services/funcionariosApi'
 import styles from './ConfiguracaoEmpresaPage.module.css'
 
 export function ConfiguracaoEmpresaPage() {
@@ -19,6 +23,31 @@ export function ConfiguracaoEmpresaPage() {
   // Aprovação de batidas mobile
   const [aprovacaoAtiva, setAprovacaoAtiva] = useState(false)
   const [savingAprovacao, setSavingAprovacao] = useState(false)
+
+  // Import inicial: só oferece enquanto a empresa não tiver nenhuma lotação,
+  // tabela de horários ou funcionário além do(s) admin(s) usado(s) para o
+  // cadastro inicial — sempre existe pelo menos um admin (é quem está
+  // logado vendo esta tela), então "vazio" não pode exigir zero
+  // funcionários no total, só zero funcionários/gestores de verdade.
+  const [podeImportar, setPodeImportar] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    Promise.all([
+      fetchLotacoes(),
+      fetchTurnos(),
+      fetchFuncionarios({ page: 1, limit: 50 }),
+    ])
+      .then(([lotacoes, turnos, funcionarios]) => {
+        if (cancelled) return
+        const semFuncionariosReais =
+          !funcionarios.pagination.hasNext &&
+          funcionarios.data.every((f) => f.role === 'admin')
+        setPodeImportar(lotacoes.length === 0 && turnos.length === 0 && semFuncionariosReais)
+      })
+      .catch(() => { if (!cancelled) setPodeImportar(false) })
+    return () => { cancelled = true }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -124,6 +153,26 @@ export function ConfiguracaoEmpresaPage() {
           ) : null}
         </div>
       </div>
+
+      {/* Import inicial de cadastro */}
+      {podeImportar && (
+        <div className={styles.card}>
+          <p className={styles.sectionTitle}>Importar cadastro inicial</p>
+          <p className={styles.hint}>
+            Esta empresa ainda não tem lotações, tabela de horários nem funcionários cadastrados.
+            Popule tudo de uma vez a partir de uma planilha, em vez de cadastrar um por um.
+          </p>
+          <div className={styles.actions}>
+            <Link
+              to="/configuracoes/importar-cadastro"
+              className={styles.btnPrimary}
+              style={{ textDecoration: 'none', display: 'inline-block' }}
+            >
+              Importar cadastro inicial
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Seletor de município */}
       <div className={styles.card}>
