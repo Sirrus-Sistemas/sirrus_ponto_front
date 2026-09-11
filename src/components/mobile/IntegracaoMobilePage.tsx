@@ -137,6 +137,7 @@ export function IntegracaoMobilePage() {
   const FUNC_PAGE_SIZE = 10
 
   const [syncFilialLoading, setSyncFilialLoading] = useState<number | null>(null)
+  const [syncFilialMsg, setSyncFilialMsg] = useState<Record<number, string>>({})
 
   const [syncFuncLoading, setSyncFuncLoading] = useState<number | null>(null)
   const [syncFuncMsg, setSyncFuncMsg] = useState<Record<number, string>>({})
@@ -202,11 +203,12 @@ export function IntegracaoMobilePage() {
 
   async function handleSyncFilial(id: number) {
     setSyncFilialLoading(id)
+    setSyncFilialMsg((m) => ({ ...m, [id]: '' }))
     try {
       const r = await syncFilial(id)
       setFiliais((prev) => prev.map((f) => (f.id === id ? { ...f, pontomobile_id: r.pontomobile_id } : f)))
-    } catch {
-      // erro silencioso — filial não muda de estado
+    } catch (e) {
+      setSyncFilialMsg((m) => ({ ...m, [id]: errMsg(e, 'Erro ao sincronizar filial.') }))
     } finally {
       setSyncFilialLoading(null)
     }
@@ -629,6 +631,9 @@ export function IntegracaoMobilePage() {
                             ? 'Re-sync'
                             : 'Sincronizar'}
                         </button>
+                        {syncFilialMsg[f.id] ? (
+                          <div className={styles.syncErrMsg}>{syncFilialMsg[f.id]}</div>
+                        ) : null}
                       </td>
                     </tr>
                   ))
