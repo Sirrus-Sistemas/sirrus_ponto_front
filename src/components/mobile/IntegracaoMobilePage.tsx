@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
@@ -14,6 +14,7 @@ import {
   syncFilial,
   syncFuncionario,
   syncAllFuncionarios,
+  fetchSyncJobStatus,
   pullMarcacoes,
   type FilialMobileItem,
 } from '../../services/mobileApi'
@@ -141,6 +142,7 @@ export function IntegracaoMobilePage() {
   const [syncFuncMsg, setSyncFuncMsg] = useState<Record<number, string>>({})
 
   const [syncAllLoading, setSyncAllLoading] = useState(false)
+  const [syncAllProgress, setSyncAllProgress] = useState<{ processados: number; total: number } | null>(null)
   const [syncAllResult, setSyncAllResult] = useState<{ sincronizados: number; erros: { funcionario_id: number; error: string }[] } | null>(null)
   const [syncAllError, setSyncAllError] = useState<string | null>(null)
 
@@ -223,17 +225,47 @@ export function IntegracaoMobilePage() {
     }
   }
 
+  const syncAllPollAtivo = useRef<string | null>(null)
+
   async function handleSyncAll() {
     setSyncAllLoading(true)
+    setSyncAllProgress(null)
     setSyncAllResult(null)
     setSyncAllError(null)
     try {
-      const r = await syncAllFuncionarios(filtroFilialId || undefined)
-      setSyncAllResult(r)
+      const { job_id } = await syncAllFuncionarios(filtroFilialId || undefined)
+      syncAllPollAtivo.current = job_id
+      void pollSyncAllJob(job_id)
     } catch (e) {
       setSyncAllError(errMsg(e, 'Erro ao sincronizar funcionários.'))
-    } finally {
       setSyncAllLoading(false)
+    }
+  }
+
+  // Sincronização em lote roda em segundo plano no servidor (pode levar minutos
+  // com muitos funcionários) — aqui só consultamos o progresso periodicamente.
+  async function pollSyncAllJob(jobId: string) {
+    if (syncAllPollAtivo.current !== jobId) return // uma nova sincronização foi disparada por cima desta
+    try {
+      const status = await fetchSyncJobStatus(jobId)
+      if (syncAllPollAtivo.current !== jobId) return
+      setSyncAllProgress({ processados: status.processados, total: status.total })
+
+      if (status.status === 'em_andamento') {
+        setTimeout(() => { void pollSyncAllJob(jobId) }, 2000)
+        return
+      }
+
+      setSyncAllLoading(false)
+      if (status.status === 'erro') {
+        setSyncAllError(status.erro_geral ?? 'Erro ao sincronizar funcionários.')
+        return
+      }
+      setSyncAllResult({ sincronizados: status.sincronizados, erros: status.erros })
+    } catch (e) {
+      if (syncAllPollAtivo.current !== jobId) return
+      setSyncAllLoading(false)
+      setSyncAllError(errMsg(e, 'Erro ao consultar progresso da sincronização.'))
     }
   }
 
@@ -463,6 +495,13 @@ export function IntegracaoMobilePage() {
 
           {syncAllError ? (
             <p className={styles.error} role="alert">{syncAllError}</p>
+          ) : null}
+          {syncAllLoading && syncAllProgress ? (
+            <div className={styles.syncAllResult}>
+              <span className={styles.pillProgressSm}>
+                {syncAllProgress.processados}/{syncAllProgress.total} processado(s)
+              </span>
+            </div>
           ) : null}
           {syncAllResult ? (
             <div className={styles.syncAllResult}>

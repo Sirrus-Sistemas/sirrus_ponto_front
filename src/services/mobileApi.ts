@@ -13,6 +13,15 @@ export type SyncAllResult = {
   erros: { funcionario_id: number; error: string }[]
 }
 
+export type SyncJobStatus = {
+  status: 'em_andamento' | 'concluido' | 'erro'
+  total: number
+  processados: number
+  sincronizados: number
+  erros: { funcionario_id: number; error: string }[]
+  erro_geral: string | null
+}
+
 export type PullResult = {
   importados: number
   ignorados: number
@@ -45,11 +54,16 @@ export async function syncFuncionario(id: number): Promise<{ funcionario_id: num
   return r.data
 }
 
-export async function syncAllFuncionarios(filialId?: number): Promise<SyncAllResult> {
-  const r = await apiRequest<{ data: SyncAllResult }>('/api/mobile/sync/funcionarios', {
+export async function syncAllFuncionarios(filialId?: number): Promise<{ job_id: string }> {
+  const r = await apiRequest<{ data: { job_id: string } }>('/api/mobile/sync/funcionarios', {
     method: 'POST',
     body: JSON.stringify(filialId ? { filial_id: filialId } : {}),
   })
+  return r.data
+}
+
+export async function fetchSyncJobStatus(jobId: string): Promise<SyncJobStatus> {
+  const r = await apiRequest<{ data: SyncJobStatus }>(`/api/mobile/sync/funcionarios/${jobId}`)
   return r.data
 }
 
