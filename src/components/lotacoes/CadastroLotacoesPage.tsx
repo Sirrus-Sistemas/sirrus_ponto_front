@@ -61,6 +61,7 @@ const emptyForm = () => ({
   lancar_debitos_domingo_50pct: false,
   tabela_zerada_e_folga: false,
   calcula_pares_sequenciais_noturno: false,
+  nao_calcular_extras_debito: false,
   hora_inicio_100pct: '',
   hora_inicio_adicional_noturno: '22:00',
   ativo: '1',
@@ -89,6 +90,7 @@ function lotacaoParaForm(l: Lotacao): ReturnType<typeof emptyForm> {
     lancar_debitos_domingo_50pct: l.lancar_debitos_domingo_50pct === 1,
     tabela_zerada_e_folga: l.tabela_zerada_e_folga === 1,
     calcula_pares_sequenciais_noturno: l.calcula_pares_sequenciais_noturno === 1,
+    nao_calcular_extras_debito: l.nao_calcular_extras_debito === 1,
     hora_inicio_100pct: horaParaInput(l.hora_inicio_100pct),
     hora_inicio_adicional_noturno: horaParaInput(l.hora_inicio_adicional_noturno) || '22:00',
     ativo: String(l.ativo ?? 1),
@@ -118,6 +120,7 @@ function formParaPayload(f: ReturnType<typeof emptyForm>): LotacaoPayload {
     lancar_debitos_domingo_50pct: f.lancar_debitos_domingo_50pct ? 1 : 0,
     tabela_zerada_e_folga: f.tabela_zerada_e_folga ? 1 : 0,
     calcula_pares_sequenciais_noturno: f.calcula_pares_sequenciais_noturno ? 1 : 0,
+    nao_calcular_extras_debito: f.nao_calcular_extras_debito ? 1 : 0,
     hora_inicio_100pct: f.hora_inicio_100pct || null,
     hora_inicio_adicional_noturno: f.hora_inicio_adicional_noturno || '22:00',
   }
@@ -301,6 +304,13 @@ export function CadastroLotacoesPage() {
             onChange={toggle('calcular_extras_escalonado')}
             label="Horas extras escalonadas"
             desc="Aplica 50 / 80 / 80 / 100% conforme a faixa de horas."
+          />
+
+          <ToggleRow
+            checked={form.nao_calcular_extras_debito}
+            onChange={toggle('nao_calcular_extras_debito')}
+            label="Não calcular horas extras nem débito"
+            desc="Zera todo cálculo de hora extra e de débito/falta no relatório e na ficha de ponto — sobrepõe as demais regras desta lotação. Use só para o funcionário que não tem controle de jornada."
           />
 
           {!isNew && (

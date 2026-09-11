@@ -32,6 +32,8 @@ export type Lotacao = {
   atribuir_100pct_terceiro_domingo: number
   lancar_debitos_domingo_50pct: number
   tabela_zerada_e_folga: number
+  /** Quando 1, zera horas extras e débito/falta no relatório e na ficha de ponto. */
+  nao_calcular_extras_debito?: number
   hora_inicio_100pct: string | null
   hora_inicio_adicional_noturno: string
   calcula_pares_sequenciais_noturno?: number
