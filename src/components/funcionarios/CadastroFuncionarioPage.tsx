@@ -82,6 +82,7 @@ type FormState = {
   role: 'admin' | 'gestor' | 'funcionario'
   usa_escala: boolean
   usa_mobile: boolean
+  admin_ponto_mobile: boolean
   pontomobile_id: string
   ativo: boolean
   cep: string
@@ -114,6 +115,7 @@ const emptyForm = (): FormState => ({
   role: 'funcionario',
   usa_escala: false,
   usa_mobile: false,
+  admin_ponto_mobile: false,
   pontomobile_id: '',
   ativo: true,
   cep: '',
@@ -285,6 +287,7 @@ export function CadastroFuncionarioPage() {
         role: func.role ?? 'funcionario',
         usa_escala: !!func.usa_escala,
         usa_mobile: !!func.usa_mobile,
+        admin_ponto_mobile: !!func.admin_ponto_mobile,
         pontomobile_id: String(func.pontomobile_id ?? ''),
         ativo: !!func.ativo,
         cep: func.cep ?? '',
@@ -345,6 +348,7 @@ export function CadastroFuncionarioPage() {
           role: form.role,
           usa_escala: form.usa_escala ? 1 : 0,
           usa_mobile: form.usa_mobile ? 1 : 0,
+          admin_ponto_mobile: form.admin_ponto_mobile ? 1 : 0,
         } as Parameters<typeof createFuncionario>[0]
 
         if (form.telefone.trim()) payload.telefone = form.telefone.trim()
@@ -389,6 +393,7 @@ export function CadastroFuncionarioPage() {
           ativo: form.ativo ? 1 : 0,
           usa_escala: form.usa_escala ? 1 : 0,
           usa_mobile: form.usa_mobile ? 1 : 0,
+          admin_ponto_mobile: form.admin_ponto_mobile ? 1 : 0,
           telefone: form.telefone.trim() || null,
           cargo: form.cargo.trim() || null,
           matricula: form.matricula.trim() || null,
@@ -877,6 +882,24 @@ export function CadastroFuncionarioPage() {
                 className={`${styles.toggle} ${form.usa_mobile ? styles.toggleOn : ''}`}
                 onClick={() => setForm((f) => ({ ...f, usa_mobile: !f.usa_mobile }))}
                 style={!form.pontomobile_id ? { opacity: 0.4, cursor: 'not-allowed' } : undefined}
+              >
+                <span className={styles.toggleThumb} />
+              </button>
+            </div>
+
+            <div className={styles.toggleRow}>
+              <div className={styles.toggleLabel}>
+                <p className={styles.toggleTitle}>Administrador do Ponto Mobile</p>
+                <p className={styles.toggleDesc}>
+                  Acesso de administrador dentro do app Sirrus Ponto Mobile — enviado na próxima sincronização
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={form.admin_ponto_mobile}
+                className={`${styles.toggle} ${form.admin_ponto_mobile ? styles.toggleOn : ''}`}
+                onClick={() => setForm((f) => ({ ...f, admin_ponto_mobile: !f.admin_ponto_mobile }))}
               >
                 <span className={styles.toggleThumb} />
               </button>
