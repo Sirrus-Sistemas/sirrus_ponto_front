@@ -29,9 +29,15 @@ const emptyForm = (dataInicio: string, dataFim: string) => ({
   turno: 'integral' as TurnoOcorrencia,
   tipo_hora: 'hora_50_60' as TipoHora,
   tem_quantidade: false,
-  quantidade_horas: '',
+  quantidade_horas_hhmm: '', // "HH:MM" — convertido pra decimal só no envio, ver hhmmParaDecimal
   descricao: '',
 });
+
+/** "HH:MM" → horas decimais (2 casas, mesma precisão do DECIMAL(5,2) da coluna quantidade_horas). */
+function hhmmParaDecimal(hhmm: string): number {
+  const [h, m] = hhmm.split(':').map(Number);
+  return Math.round(((h * 60 + m) / 60) * 100) / 100;
+}
 
 export function OcorrenciaModal({
   funcionarioId,
@@ -67,7 +73,7 @@ export function OcorrenciaModal({
     if (!form.data_fim)    { setError('Informe a data final.'); return; }
     if (form.data_fim < form.data_inicio) { setError('Data final não pode ser anterior à data inicial.'); return; }
     if (!form.tipo_ocorrencia_id) { setError('Selecione um tipo de ocorrência.'); return; }
-    if (form.tem_quantidade && !form.quantidade_horas) { setError('Informe a quantidade de horas.'); return; }
+    if (form.tem_quantidade && !form.quantidade_horas_hhmm) { setError('Informe a quantidade de horas.'); return; }
 
     setSubmitting(true);
     try {
@@ -78,8 +84,8 @@ export function OcorrenciaModal({
         tipo_ocorrencia_id: Number(form.tipo_ocorrencia_id),
         turno: form.turno,
         tipo_hora: form.tipo_hora,
-        quantidade_horas: form.tem_quantidade && form.quantidade_horas
-          ? Number(form.quantidade_horas)
+        quantidade_horas: form.tem_quantidade && form.quantidade_horas_hhmm
+          ? hhmmParaDecimal(form.quantidade_horas_hhmm)
           : null,
         descricao: form.descricao || null,
       });
@@ -180,14 +186,11 @@ export function OcorrenciaModal({
             <label htmlFor="om-tem-qtd">Especificar quantidade de horas</label>
             {form.tem_quantidade && (
               <input
-                type="number"
+                id="om-qtd-horas"
+                type="time"
                 className={styles.horasInput}
-                min="0.25"
-                max="24"
-                step="0.25"
-                placeholder="Ex: 2.5"
-                value={form.quantidade_horas}
-                onChange={(e) => setField('quantidade_horas', e.target.value)}
+                value={form.quantidade_horas_hhmm}
+                onChange={(e) => setField('quantidade_horas_hhmm', e.target.value)}
               />
             )}
           </div>

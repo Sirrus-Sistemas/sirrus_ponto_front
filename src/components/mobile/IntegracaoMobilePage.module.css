@@ -152,25 +152,30 @@
   min-width: 120px;
 }
 
-/* força fundo branco nos DatePicker MUI dentro do card escuro */
-.datepickerWrap :global(.MuiInputBase-root),
-.datepickerWrap :global(.MuiOutlinedInput-root) {
-  background-color: #ffffff !important;
-  color: #1f2937 !important;
+/* campo (fechado) combinando com os outros filtros do card escuro — o
+   popup do calendário continua claro de propósito (ver muiPopupSlotProps).
+   O MUI X Date Pickers usa seus próprios componentes de input (prefixo
+   MuiPickers*), não os MuiInputBase/MuiOutlinedInput do @mui/material — as
+   classes certas são estas abaixo, não as do TextField padrão. */
+.datepickerWrap :global(.MuiPickersInputBase-root),
+.datepickerWrap :global(.MuiPickersOutlinedInput-root) {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
   border-radius: 8px;
 }
 
-.datepickerWrap :global(.MuiInputBase-input) {
-  color: #1f2937 !important;
-  background-color: #ffffff !important;
+.datepickerWrap :global(.MuiPickersInputBase-sectionContent),
+.datepickerWrap :global(.MuiPickersInputBase-sectionBefore),
+.datepickerWrap :global(.MuiPickersInputBase-sectionAfter) {
+  color: #fff !important;
 }
 
-.datepickerWrap :global(.MuiOutlinedInput-notchedOutline) {
-  border-color: rgba(255, 255, 255, 0.35) !important;
+.datepickerWrap :global(.MuiPickersOutlinedInput-notchedOutline) {
+  border-color: rgba(255, 255, 255, 0.18) !important;
 }
 
 .datepickerWrap :global(.MuiIconButton-root) {
-  color: #4b5563 !important;
+  color: rgba(255, 255, 255, 0.7) !important;
 }
 
 .btnImportar {
@@ -563,6 +568,40 @@
   color: #c0392b;
   font-size: 0.88rem;
   margin: 0 0 0.5rem;
+}
+
+/* ── Alerta de conflito de pontomobile_id ───────────────────────────────── */
+
+.conflitoBanner {
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.conflitoTitle {
+  font-weight: 700;
+  color: #9a3412;
+  margin-bottom: 0.35rem;
+}
+
+.conflitoDesc {
+  font-size: 0.85rem;
+  color: #7c2d12;
+  margin: 0 0 0.6rem;
+  line-height: 1.4;
+}
+
+.conflitoLista {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  color: #7c2d12;
+}
+
+.conflitoLista li {
+  margin-bottom: 0.2rem;
 }
 
 /* ── Pagination ──────────────────────────────────────────────────────────── */

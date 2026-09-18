@@ -22,10 +22,16 @@ export type SyncJobStatus = {
   erro_geral: string | null
 }
 
+export type ConflitoPontomobileId = {
+  pontomobile_id: number
+  funcionarios: { id: number; nome: string; cpf?: string | null }[]
+}
+
 export type PullResult = {
   importados: number
   ignorados: number
   erros: { id: number; error: string }[]
+  conflitos_pontomobile_id?: ConflitoPontomobileId[]
 }
 
 export async function fetchMobileStatus(): Promise<{ configurado: boolean }> {
@@ -35,6 +41,12 @@ export async function fetchMobileStatus(): Promise<{ configurado: boolean }> {
 
 export async function fetchMobileFiliais(): Promise<FilialMobileItem[]> {
   const r = await apiRequest<{ data: FilialMobileItem[] }>('/api/mobile/filiais')
+  return r.data
+}
+
+/** Funcionários ativos que compartilham o mesmo pontomobile_id — nunca deveria acontecer. */
+export async function fetchConflitosPontomobileId(): Promise<ConflitoPontomobileId[]> {
+  const r = await apiRequest<{ data: ConflitoPontomobileId[] }>('/api/mobile/conflitos-pontomobile-id')
   return r.data
 }
 

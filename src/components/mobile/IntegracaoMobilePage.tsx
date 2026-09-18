@@ -11,12 +11,14 @@ import type { AppShellOutletContext } from '../layout/appShellContext'
 import {
   fetchMobileStatus,
   fetchMobileFiliais,
+  fetchConflitosPontomobileId,
   syncFilial,
   syncFuncionario,
   syncAllFuncionarios,
   fetchSyncJobStatus,
   pullMarcacoes,
   type FilialMobileItem,
+  type ConflitoPontomobileId,
 } from '../../services/mobileApi'
 import { fetchFuncionarios, type FuncionarioListItem } from '../../services/funcionariosApi'
 import { fetchLotacoes, type Lotacao } from '../../services/lotacoesApi'
@@ -128,6 +130,7 @@ export function IntegracaoMobilePage() {
   const [configurado, setConfigurado] = useState<boolean | null>(null)
   const [filiais, setFiliais] = useState<FilialMobileItem[]>([])
   const [funcionarios, setFuncionarios] = useState<FuncionarioListItem[]>([])
+  const [conflitosPontomobile, setConflitosPontomobile] = useState<ConflitoPontomobileId[]>([])
 
   const [filtroFilialId, setFiltroFilialId] = useState<number | ''>('')
   const [filtroLotacaoId, setFiltroLotacaoId] = useState<number | ''>('')
@@ -160,16 +163,18 @@ export function IntegracaoMobilePage() {
 
   const load = useCallback(async () => {
     try {
-      const [status, fils, funcs, lots] = await Promise.all([
+      const [status, fils, funcs, lots, conflitos] = await Promise.all([
         fetchMobileStatus(),
         fetchMobileFiliais(),
         fetchFuncionarios({ limit: 1000, ativo: 1 }),
         fetchLotacoes(),
+        fetchConflitosPontomobileId().catch(() => []),
       ])
       setConfigurado(status.configurado)
       setFiliais(fils)
       setFuncionarios(funcs.data)
       setLotacoes(lots)
+      setConflitosPontomobile(conflitos)
     } catch {
       setConfigurado(false)
     }
@@ -324,6 +329,28 @@ export function IntegracaoMobilePage() {
             : 'API mobile não configurada'}
         </div>
       </div>
+
+      {/* ── Alerta: pontomobile_id duplicado ───────────────────────────────── */}
+      {conflitosPontomobile.length > 0 && (
+        <div className={styles.conflitoBanner}>
+          <div className={styles.conflitoTitle}>
+            ⚠ {conflitosPontomobile.length} conflito(s) de vínculo com o Ponto Mobile
+          </div>
+          <p className={styles.conflitoDesc}>
+            Os funcionários abaixo compartilham o mesmo cadastro no Ponto Mobile (mesmo pontomobile_id) —
+            isso faz as batidas de um serem importadas pro outro. Corrija o vínculo em Funcionários antes
+            de importar marcações pra essas pessoas.
+          </p>
+          <ul className={styles.conflitoLista}>
+            {conflitosPontomobile.map((c) => (
+              <li key={c.pontomobile_id}>
+                <strong>pontomobile_id {c.pontomobile_id}:</strong>{' '}
+                {c.funcionarios.map((f) => f.nome).join(' × ')}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* ── Importar Marcações ───────────────────────────────────────────── */}
       <div className={styles.importCard}>
