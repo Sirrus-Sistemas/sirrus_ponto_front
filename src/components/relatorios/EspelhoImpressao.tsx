@@ -32,6 +32,19 @@ function fmtCpf(cpf: string | null): string {
   return cpf
 }
 
+/** Empresa pode ser CNPJ (14 dígitos) ou, mais raramente, CPF de pessoa física (11). */
+function fmtDocumentoEmpresa(doc: string | null): { label: string; valor: string } {
+  if (!doc) return { label: 'CNPJ', valor: '' }
+  const d = doc.replace(/\D/g, '')
+  if (d.length === 14) {
+    return { label: 'CNPJ', valor: `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}` }
+  }
+  if (d.length === 11) {
+    return { label: 'CPF', valor: `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}` }
+  }
+  return { label: 'CNPJ', valor: doc }
+}
+
 // ─── Per-day row logic ────────────────────────────────────────────────────────
 
 const NUM_SLOTS = 8 // Ent1 Sai1 Ent2 Sai2 Ent3 Sai3 Ent4 Sai4
@@ -415,11 +428,12 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
         <div className={styles.sigBlock}>
           <div className={styles.sigLine}></div>
           <p>{meta.empresa_razao_social ?? ''}</p>
-          <p>CPF:&nbsp;{fmtCpf(meta.funcionario_cpf)}</p>
+          <p>{fmtDocumentoEmpresa(meta.empresa_cnpj).label}:&nbsp;{fmtDocumentoEmpresa(meta.empresa_cnpj).valor}</p>
         </div>
         <div className={styles.sigBlock}>
           <div className={styles.sigLine}></div>
           <p>{meta.funcionario_nome ?? ''}</p>
+          <p>CPF:&nbsp;{fmtCpf(meta.funcionario_cpf)}</p>
         </div>
       </div>
 
