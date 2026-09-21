@@ -365,7 +365,7 @@ export function EspelhoPontoPage() {
                           ))}
                     </td>
                     <td className={styles.colTempo}>
-                      {dia.marcacoes.length ? formatMinutos(dia.minutos_trabalhados) : '—'}
+                      {dia.marcacoes.length ? formatMinutos(dia.minutos_trabalhados_ajustado) : '—'}
                     </td>
                     <td className={styles.colTempo}>{previstoCell(dia)}</td>
                     <td className={`${styles.colTempo} ${styles.colSaldo}`}>
@@ -406,7 +406,7 @@ export function EspelhoPontoPage() {
                     </span>
                   </span>
                   <span className={styles.cardDaySub}>
-                    {dia.marcacoes.length ? formatMinutos(dia.minutos_trabalhados) : '—'}
+                    {dia.marcacoes.length ? formatMinutos(dia.minutos_trabalhados_ajustado) : '—'}
                   </span>
                 </div>
                 {dia.ocorrencia?.descricao ? (

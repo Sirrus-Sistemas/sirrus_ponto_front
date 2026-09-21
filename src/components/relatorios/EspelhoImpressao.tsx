@@ -292,10 +292,12 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
               )
             }
 
-            // For occurrence rows without punches, use minutos_previstos as the "total" to display
+            // For occurrence rows without punches, use minutos_previstos as the "total" to display.
+            // With punches, use the value already adjusted by any credit/debit occurrence on the
+            // day (minutos_trabalhados_ajustado) — plain minutos_trabalhados ignores the occurrence.
             const totalExibicao =
               dia.marcacoes.length > 0
-                ? dia.minutos_trabalhados
+                ? dia.minutos_trabalhados_ajustado
                 : isOcorrencia && dia.minutos_previstos != null
                   ? dia.minutos_previstos
                   : null

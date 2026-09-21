@@ -56,6 +56,8 @@ export type DiaEspelho = {
   marcacoes: MarcacaoEspelho[]
   /** Soma dos intervalos entre pares de batidas (1ª–2ª, 3ª–4ª, …). */
   minutos_trabalhados: number
+  /** minutos_trabalhados ajustado por ocorrência de crédito/débito no dia (igual ao anterior quando não há ocorrência). Use este pra exibir o "Total" do dia. */
+  minutos_trabalhados_ajustado: number
   /** Meta da jornada em dias de trabalho; null em folga/feriado/futuro. */
   minutos_previstos: number | null
   /** trabalhadas − previsto (somente quando há previsto). */
