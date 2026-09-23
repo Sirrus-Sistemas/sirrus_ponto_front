@@ -204,7 +204,7 @@ export function OcorrenciaModal({
               checked={form.informativa}
               onChange={(e) => setField('informativa', e.target.checked)}
             />
-            <label htmlFor="om-informativa">Informativa (só explica o motivo — não soma nem subtrai horas)</label>
+            <label htmlFor="om-informativa">Informativa (não soma nem subtrai horas)</label>
           </div>
 
           <div className={styles.field}>
