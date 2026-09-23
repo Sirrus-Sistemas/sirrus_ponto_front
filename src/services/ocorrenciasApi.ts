@@ -27,6 +27,7 @@ export type Ocorrencia = {
   turno: TurnoOcorrencia | null
   tipo_hora: TipoHora | null
   quantidade_horas: number | null
+  informativa: boolean
   descricao: string | null
 }
 
@@ -38,6 +39,7 @@ export type OcorrenciaPayload = {
   turno: TurnoOcorrencia
   tipo_hora: TipoHora
   quantidade_horas?: number | null
+  informativa?: number
   descricao?: string | null
 }
 

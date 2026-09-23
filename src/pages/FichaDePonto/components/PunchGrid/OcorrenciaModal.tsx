@@ -30,6 +30,7 @@ const emptyForm = (dataInicio: string, dataFim: string) => ({
   tipo_hora: 'hora_50_60' as TipoHora,
   tem_quantidade: false,
   quantidade_horas_hhmm: '', // "HH:MM" — convertido pra decimal só no envio, ver hhmmParaDecimal
+  informativa: false,
   descricao: '',
 });
 
@@ -87,6 +88,7 @@ export function OcorrenciaModal({
         quantidade_horas: form.tem_quantidade && form.quantidade_horas_hhmm
           ? hhmmParaDecimal(form.quantidade_horas_hhmm)
           : null,
+        informativa: form.informativa ? 1 : 0,
         descricao: form.descricao || null,
       });
       onSuccess();
@@ -193,6 +195,16 @@ export function OcorrenciaModal({
                 onChange={(e) => setField('quantidade_horas_hhmm', e.target.value)}
               />
             )}
+          </div>
+
+          <div className={styles.checkRow}>
+            <input
+              id="om-informativa"
+              type="checkbox"
+              checked={form.informativa}
+              onChange={(e) => setField('informativa', e.target.checked)}
+            />
+            <label htmlFor="om-informativa">Informativa (só explica o motivo — não soma nem subtrai horas)</label>
           </div>
 
           <div className={styles.field}>
