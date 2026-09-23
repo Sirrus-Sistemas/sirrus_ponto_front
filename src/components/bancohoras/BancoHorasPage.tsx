@@ -12,6 +12,7 @@ import {
   type SaldoBancoHoras,
   type TipoHora,
   type TipoLancamento,
+  type OrigemLancamento,
 } from '../../services/bancoHorasApi'
 import styles from './BancoHorasPage.module.css'
 
@@ -32,6 +33,12 @@ function hhmmToMin(v: string): number | null {
   const m = v.trim().match(/^(\d{1,3}):([0-5]\d)$/)
   if (!m) return null
   return Number(m[1]) * 60 + Number(m[2])
+}
+
+/** Só dígitos (ex.: "630" digitado) → "H:MM" (os 2 últimos dígitos viram minutos). */
+function digitosParaHoras(digitos: string): string {
+  if (digitos.length <= 2) return digitos
+  return `${digitos.slice(0, -2)}:${digitos.slice(-2)}`
 }
 
 const TIPO_HORA_LABEL: Record<TipoHora, string> = { '50pct': '50%', '100pct': '100%' }
@@ -152,11 +159,12 @@ export function BancoHorasPage() {
     }
   }
 
-  async function handleExcluir(id: number, descricao: string | null) {
+  async function handleExcluir(id: number, descricao: string | null, origem: OrigemLancamento, mesReferencia: string, tipoHora: TipoHora) {
     if (!funcionarioId) return
-    const confirmar = window.confirm(
-      `Excluir este lançamento${descricao ? ` ("${descricao}")` : ''}? Essa ação fica registrada na auditoria e não pode ser desfeita.`,
-    )
+    const mensagem = origem === 'fechamento_mensal'
+      ? `Excluir o fechamento de ${mesReferencia} (${TIPO_HORA_LABEL[tipoHora]})? Isso reabre esse mês pra poder ser fechado de novo — use depois de corrigir a ficha de ponto. Fica registrado na auditoria e não pode ser desfeito.`
+      : `Excluir este lançamento${descricao ? ` ("${descricao}")` : ''}? Essa ação fica registrada na auditoria e não pode ser desfeita.`
+    const confirmar = window.confirm(mensagem)
     if (!confirmar) return
 
     setExcluindoId(id)
@@ -256,7 +264,14 @@ export function BancoHorasPage() {
               <div className={styles.fieldRow}>
                 <div className={styles.field}>
                   <label htmlFor="bh-horas">Qtde. Horas (HH:MM)</label>
-                  <input id="bh-horas" placeholder="03:00" value={horas} onChange={(e) => setHoras(e.target.value)} />
+                  <input
+                    id="bh-horas"
+                    placeholder="03:00"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    value={horas}
+                    onChange={(e) => setHoras(digitosParaHoras(e.target.value.replace(/\D/g, '').slice(0, 5)))}
+                  />
                 </div>
                 <div className={styles.field}>
                   <label htmlFor="bh-tipohora">Tipo de Hora</label>
@@ -344,16 +359,14 @@ export function BancoHorasPage() {
                         <td>{l.origem === 'manual' ? 'Manual' : 'Fechamento mensal'}</td>
                         <td>{l.descricao ?? '—'}</td>
                         <td>
-                          {l.origem === 'manual' ? (
-                            <button
-                              type="button"
-                              className={styles.btnExcluir}
-                              onClick={() => void handleExcluir(l.id, l.descricao)}
-                              disabled={excluindoId === l.id}
-                            >
-                              {excluindoId === l.id ? '…' : 'Excluir'}
-                            </button>
-                          ) : null}
+                          <button
+                            type="button"
+                            className={styles.btnExcluir}
+                            onClick={() => void handleExcluir(l.id, l.descricao, l.origem, l.mes_referencia, l.tipo_hora)}
+                            disabled={excluindoId === l.id}
+                          >
+                            {excluindoId === l.id ? '…' : 'Excluir'}
+                          </button>
                         </td>
                       </tr>
                     ))
