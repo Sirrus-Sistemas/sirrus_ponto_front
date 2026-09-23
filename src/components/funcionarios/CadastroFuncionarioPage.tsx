@@ -81,6 +81,7 @@ type FormState = {
   lotacao_id: string
   role: 'admin' | 'gestor' | 'funcionario'
   usa_escala: boolean
+  usa_banco_horas: boolean
   usa_mobile: boolean
   admin_ponto_mobile: boolean
   pontomobile_id: string
@@ -114,6 +115,7 @@ const emptyForm = (): FormState => ({
   lotacao_id: '',
   role: 'funcionario',
   usa_escala: false,
+  usa_banco_horas: false,
   usa_mobile: false,
   admin_ponto_mobile: false,
   pontomobile_id: '',
@@ -286,6 +288,7 @@ export function CadastroFuncionarioPage() {
         lotacao_id:      validLotacao ? String(func.lotacao_id)      : '',
         role: func.role ?? 'funcionario',
         usa_escala: !!func.usa_escala,
+        usa_banco_horas: !!func.usa_banco_horas,
         usa_mobile: !!func.usa_mobile,
         admin_ponto_mobile: !!func.admin_ponto_mobile,
         pontomobile_id: String(func.pontomobile_id ?? ''),
@@ -347,6 +350,7 @@ export function CadastroFuncionarioPage() {
           password: form.password,
           role: form.role,
           usa_escala: form.usa_escala ? 1 : 0,
+          usa_banco_horas: form.usa_banco_horas ? 1 : 0,
           usa_mobile: form.usa_mobile ? 1 : 0,
           admin_ponto_mobile: form.admin_ponto_mobile ? 1 : 0,
         } as Parameters<typeof createFuncionario>[0]
@@ -392,6 +396,7 @@ export function CadastroFuncionarioPage() {
           role: form.role,
           ativo: form.ativo ? 1 : 0,
           usa_escala: form.usa_escala ? 1 : 0,
+          usa_banco_horas: form.usa_banco_horas ? 1 : 0,
           usa_mobile: form.usa_mobile ? 1 : 0,
           admin_ponto_mobile: form.admin_ponto_mobile ? 1 : 0,
           telefone: form.telefone.trim() || null,
@@ -859,6 +864,24 @@ export function CadastroFuncionarioPage() {
                 aria-checked={form.usa_escala}
                 className={`${styles.toggle} ${form.usa_escala ? styles.toggleOn : ''}`}
                 onClick={() => setForm((f) => ({ ...f, usa_escala: !f.usa_escala }))}
+              >
+                <span className={styles.toggleThumb} />
+              </button>
+            </div>
+
+            <div className={styles.toggleCard}>
+              <div className={styles.toggleInfo}>
+                <p className={styles.toggleLabel}>Usa banco de horas</p>
+                <p className={styles.toggleDesc}>
+                  exibe o bloco Banco de Horas na ficha de ponto impressa — desligado, hora extra é sempre paga em folha
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={form.usa_banco_horas}
+                className={`${styles.toggle} ${form.usa_banco_horas ? styles.toggleOn : ''}`}
+                onClick={() => setForm((f) => ({ ...f, usa_banco_horas: !f.usa_banco_horas }))}
               >
                 <span className={styles.toggleThumb} />
               </button>

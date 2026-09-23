@@ -20,6 +20,7 @@ export type CreateFuncionarioPayload = {
   gestor_id?: number | null
   role?: 'admin' | 'gestor' | 'funcionario'
   usa_escala?: number
+  usa_banco_horas?: number
   usa_mobile?: number
   admin_ponto_mobile?: number
   cep?: string | null
@@ -47,6 +48,7 @@ export type UpdateFuncionarioPayload = {
   role?: 'admin' | 'gestor' | 'funcionario'
   ativo?: number
   usa_escala?: number
+  usa_banco_horas?: number
   usa_mobile?: number
   admin_ponto_mobile?: number
   cep?: string | null
@@ -96,6 +98,7 @@ export type FuncionarioDetail = {
   role: 'admin' | 'gestor' | 'funcionario'
   ativo: number
   usa_escala: number
+  usa_banco_horas: number
   usa_mobile: number
   admin_ponto_mobile: number
   pontomobile_id: number | null

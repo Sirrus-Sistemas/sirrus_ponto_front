@@ -5,6 +5,7 @@ import { fetchMunicipios, type Municipio } from '../../services/municipiosApi'
 import { fetchLotacoes } from '../../services/lotacoesApi'
 import { fetchTurnos } from '../../services/turnosApi'
 import { fetchFuncionarios } from '../../services/funcionariosApi'
+import { fetchPodeImportarBancoHoras } from '../../services/bancoHorasApi'
 import styles from './ConfiguracaoEmpresaPage.module.css'
 
 export function ConfiguracaoEmpresaPage() {
@@ -31,6 +32,12 @@ export function ConfiguracaoEmpresaPage() {
   // funcionários no total, só zero funcionários/gestores de verdade.
   const [podeImportar, setPodeImportar] = useState(false)
 
+  // Import do banco de horas do Sirrus Ponto Velox: só oferece enquanto
+  // a empresa não tiver nenhum lançamento no banco de horas do sistema web —
+  // independente do estado do import de cadastro inicial acima, e nunca
+  // volta a aparecer depois do primeiro lançamento (manual ou importado).
+  const [podeImportarBancoHoras, setPodeImportarBancoHoras] = useState(false)
+
   useEffect(() => {
     let cancelled = false
     Promise.all([
@@ -46,6 +53,14 @@ export function ConfiguracaoEmpresaPage() {
         setPodeImportar(lotacoes.length === 0 && turnos.length === 0 && semFuncionariosReais)
       })
       .catch(() => { if (!cancelled) setPodeImportar(false) })
+    return () => { cancelled = true }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    fetchPodeImportarBancoHoras()
+      .then((pode) => { if (!cancelled) setPodeImportarBancoHoras(pode) })
+      .catch(() => { if (!cancelled) setPodeImportarBancoHoras(false) })
     return () => { cancelled = true }
   }, [])
 
@@ -169,6 +184,26 @@ export function ConfiguracaoEmpresaPage() {
               style={{ textDecoration: 'none', display: 'inline-block' }}
             >
               Importar cadastro inicial
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Import do banco de horas do sistema antigo */}
+      {podeImportarBancoHoras && (
+        <div className={styles.card}>
+          <p className={styles.sectionTitle}>Importar banco de horas</p>
+          <p className={styles.hint}>
+            Esta empresa ainda não tem nenhum lançamento no banco de horas. Se ela já usava banco de
+            horas no Sirrus Ponto Velox, importe o saldo de uma vez a partir de uma planilha.
+          </p>
+          <div className={styles.actions}>
+            <Link
+              to="/configuracoes/importar-banco-horas"
+              className={styles.btnPrimary}
+              style={{ textDecoration: 'none', display: 'inline-block' }}
+            >
+              Importar banco de horas
             </Link>
           </div>
         </div>

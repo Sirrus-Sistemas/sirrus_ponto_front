@@ -19,8 +19,10 @@ import { CadastroMunicipioPage } from './components/municipios/CadastroMunicipio
 import { GerenciarUsuariosPage } from './components/usuarios/GerenciarUsuariosPage'
 import { CadastroFeriadosPage } from './components/feriados/CadastroFeriadosPage'
 import { FichaDePonto } from './pages/FichaDePonto/FichaDePonto'
+import { BancoHorasPage } from './components/bancohoras/BancoHorasPage'
 import { ConfiguracaoEmpresaPage } from './components/empresa/ConfiguracaoEmpresaPage'
 import { ImportarCadastroInicialPage } from './components/empresa/ImportarCadastroInicialPage'
+import { ImportarBancoHorasPage } from './components/empresa/ImportarBancoHorasPage'
 import { CadastroRelogiosPage } from './components/relogios/CadastroRelogiosPage'
 import { RelogioComunicacaoPage } from './components/relogios/RelogioComunicacaoPage'
 import { RelogioMarcacoesPendentesPage } from './components/relogios/RelogioMarcacoesPendentesPage'
@@ -63,8 +65,10 @@ function App() {
             <Route path="/usuarios" element={<GerenciarUsuariosPage />} />
             <Route path="/feriados" element={<CadastroFeriadosPage />} />
             <Route path="/ficha-ponto" element={<FichaDePonto />} />
+            <Route path="/banco-horas" element={<BancoHorasPage />} />
             <Route path="/configuracoes/empresa" element={<ConfiguracaoEmpresaPage />} />
             <Route path="/configuracoes/importar-cadastro" element={<ImportarCadastroInicialPage />} />
+            <Route path="/configuracoes/importar-banco-horas" element={<ImportarBancoHorasPage />} />
             <Route path="/relogios" element={<CadastroRelogiosPage />} />
             <Route path="/relogios/comunicacao" element={<RelogioComunicacaoPage />} />
             <Route path="/relogios/marcacoes-pendentes" element={<RelogioMarcacoesPendentesPage />} />

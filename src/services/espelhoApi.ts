@@ -91,7 +91,15 @@ export type ResumoEspelho = {
   dias_ocorrencia: number
   total_extras_100pct_minutos: number
   total_extras_50pct_minutos: number
+  /** Soma dos dias com saldo negativo (dias em débito) — independente do saldo líquido do mês. */
+  total_debito_minutos: number
   total_minutos_noturno: number
+  /** Banco de horas: saldo acumulado ANTES deste mês (carteiras 50%/100% independentes). */
+  banco_horas_saldo_anterior_50pct_minutos: number
+  /** Saldo anterior + líquido deste mês (mesmo valor que "Fechar mês" gravaria). */
+  banco_horas_saldo_atual_50pct_minutos: number
+  banco_horas_saldo_anterior_100pct_minutos: number
+  banco_horas_saldo_atual_100pct_minutos: number
 }
 
 export type EspelhoMeta = {
@@ -102,6 +110,8 @@ export type EspelhoMeta = {
   funcionario_pis: string | null
   funcionario_cpf: string | null
   funcionario_data_admissao: string | null
+  /** Cadastro do funcionário: exibe o bloco Banco de Horas na ficha impressa. */
+  usa_banco_horas: boolean
   empresa_razao_social: string | null
   empresa_cnpj: string | null
   empresa_endereco: string | null
