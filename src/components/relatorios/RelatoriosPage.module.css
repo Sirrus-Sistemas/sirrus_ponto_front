@@ -87,7 +87,8 @@
   color: var(--sp-text-3);
 }
 
-.field select {
+.field select,
+.field input {
   min-width: 140px;
   padding: 0.45rem 0.65rem;
   border-radius: var(--sp-radius-md);

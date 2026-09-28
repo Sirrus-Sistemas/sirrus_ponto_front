@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import { ApiError } from '../../lib/api'
 import type { AppShellOutletContext } from '../layout/appShellContext'
@@ -41,6 +41,45 @@ export function GerenciarUsuariosPage() {
   const [success, setSuccess] = useState<string | null>(null)
 
   const [pagina, setPagina] = useState(1)
+
+  const [busca, setBusca] = useState('')
+  const [filtroRole, setFiltroRole] = useState<'' | 'admin' | 'gestor' | 'funcionario'>('')
+  const [filtroSituacao, setFiltroSituacao] = useState<'' | 'ativo' | 'bloqueado'>('')
+  const [filtroAcesso, setFiltroAcesso] = useState<'' | 'com_acesso' | 'sem_acesso'>('')
+
+  const filtrosAtivos = busca.trim() !== '' || filtroRole !== '' || filtroSituacao !== '' || filtroAcesso !== ''
+
+  function limparFiltros() {
+    setBusca('')
+    setFiltroRole('')
+    setFiltroSituacao('')
+    setFiltroAcesso('')
+  }
+
+  const listaFiltrada = useMemo(() => {
+    const termo = busca.trim().toLowerCase()
+    const termoCpf = termo.replace(/\D/g, '')
+    return lista.filter((u) => {
+      if (termo) {
+        const noNome = u.nome.toLowerCase().includes(termo)
+        const noEmail = (u.email ?? '').toLowerCase().includes(termo)
+        const noCpf = termoCpf !== '' && (u.cpf ?? '').includes(termoCpf)
+        if (!noNome && !noEmail && !noCpf) return false
+      }
+      if (filtroRole && (!u.tem_acesso || u.role !== filtroRole)) return false
+      if (filtroSituacao) {
+        if (!u.tem_acesso) return false
+        const ativo = Number(u.usuario_ativo) === 1
+        if (filtroSituacao === 'ativo' && !ativo) return false
+        if (filtroSituacao === 'bloqueado' && ativo) return false
+      }
+      if (filtroAcesso === 'com_acesso' && !u.tem_acesso) return false
+      if (filtroAcesso === 'sem_acesso' && u.tem_acesso) return false
+      return true
+    })
+  }, [lista, busca, filtroRole, filtroSituacao, filtroAcesso])
+
+  useEffect(() => { setPagina(1) }, [busca, filtroRole, filtroSituacao, filtroAcesso])
 
   const loadLista = useCallback((silent = false) => {
     if (!silent) setLoadingLista(true)
@@ -141,13 +180,23 @@ export function GerenciarUsuariosPage() {
   }
 
   async function handleRevogar(u: UsuarioAcesso) {
-    if (!confirm(`Revogar acesso de ${u.nome}? O funcionário não conseguirá mais fazer login.`)) return
+    if (!confirm(`Bloquear acesso de ${u.nome}? O funcionário não conseguirá mais fazer login até ser desbloqueado.`)) return
     try {
       await revogarAcesso(u.id)
-      setSuccess(`Acesso de ${u.nome} revogado.`)
+      setSuccess(`Acesso de ${u.nome} bloqueado.`)
       await loadLista(true)
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Não foi possível revogar o acesso.')
+      setError(err instanceof ApiError ? err.message : 'Não foi possível bloquear o acesso.')
+    }
+  }
+
+  async function handleDesbloquear(u: UsuarioAcesso) {
+    try {
+      await atualizarAcesso(u.id, { ativo: 1 })
+      setSuccess(`Acesso de ${u.nome} desbloqueado.`)
+      await loadLista(true)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Não foi possível desbloquear o acesso.')
     }
   }
 
@@ -322,6 +371,48 @@ export function GerenciarUsuariosPage() {
       <div className={styles.card}>
         <h2 className={styles.sectionTitle}>Funcionários e acessos</h2>
 
+        <div className={styles.filterGrid}>
+          <div className={styles.field}>
+            <label htmlFor="uf-busca">Pesquisar</label>
+            <input
+              id="uf-busca"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Nome, e-mail ou CPF"
+            />
+          </div>
+          <div className={styles.field}>
+            <label htmlFor="uf-role">Nível de acesso</label>
+            <select id="uf-role" value={filtroRole} onChange={(e) => setFiltroRole(e.target.value as typeof filtroRole)}>
+              <option value="">Todos</option>
+              <option value="admin">Admin</option>
+              <option value="gestor">Gestor</option>
+              <option value="funcionario">Funcionário</option>
+            </select>
+          </div>
+          <div className={styles.field}>
+            <label htmlFor="uf-situacao">Situação</label>
+            <select id="uf-situacao" value={filtroSituacao} onChange={(e) => setFiltroSituacao(e.target.value as typeof filtroSituacao)}>
+              <option value="">Todas</option>
+              <option value="ativo">Ativo</option>
+              <option value="bloqueado">Bloqueado</option>
+            </select>
+          </div>
+          <div className={styles.field}>
+            <label htmlFor="uf-acesso">Acesso ao sistema</label>
+            <select id="uf-acesso" value={filtroAcesso} onChange={(e) => setFiltroAcesso(e.target.value as typeof filtroAcesso)}>
+              <option value="">Todos</option>
+              <option value="com_acesso">Tem acesso</option>
+              <option value="sem_acesso">Sem acesso</option>
+            </select>
+          </div>
+          {filtrosAtivos && (
+            <button type="button" className={styles.btnGhost} onClick={limparFiltros}>
+              Limpar filtros
+            </button>
+          )}
+        </div>
+
         {loadingLista ? (
           <p className={styles.loading}>Carregando lista…</p>
         ) : (
@@ -340,12 +431,16 @@ export function GerenciarUsuariosPage() {
                 </tr>
               </thead>
               <tbody>
-                {lista.length === 0 ? (
+                {listaFiltrada.length === 0 ? (
                   <tr className={styles.emptyRow}>
-                    <td colSpan={7}>Nenhum funcionário encontrado.</td>
+                    <td colSpan={7}>
+                      {lista.length === 0
+                        ? 'Nenhum funcionário encontrado.'
+                        : 'Nenhum resultado para a pesquisa/filtros selecionados.'}
+                    </td>
                   </tr>
                 ) : (
-                  lista.slice((pagina - 1) * PAGE_SIZE, pagina * PAGE_SIZE).map((u) => (
+                  listaFiltrada.slice((pagina - 1) * PAGE_SIZE, pagina * PAGE_SIZE).map((u) => (
                     <tr key={u.id}>
                       <td>{u.nome}</td>
                       <td style={{ color: '#6b7280' }}>{u.email ?? '—'}</td>
@@ -379,14 +474,16 @@ export function GerenciarUsuariosPage() {
                               <button type="button" className={styles.btnLink} onClick={() => abrirEditar(u)}>
                                 Editar
                               </button>
+                              <span className={styles.separator}>·</span>
                               {u.usuario_ativo ? (
-                                <>
-                                  <span className={styles.separator}>·</span>
-                                  <button type="button" className={styles.btnDanger} onClick={() => handleRevogar(u)}>
-                                    Bloquear
-                                  </button>
-                                </>
-                              ) : null}
+                                <button type="button" className={styles.btnDanger} onClick={() => handleRevogar(u)}>
+                                  Bloquear
+                                </button>
+                              ) : (
+                                <button type="button" className={styles.btnLink} onClick={() => handleDesbloquear(u)}>
+                                  Desbloquear
+                                </button>
+                              )}
                             </>
                           )}
                         </div>
@@ -399,12 +496,12 @@ export function GerenciarUsuariosPage() {
           </div>
 
           {/* Paginação */}
-          {lista.length > PAGE_SIZE && (() => {
-            const totalPaginas = Math.ceil(lista.length / PAGE_SIZE)
+          {listaFiltrada.length > PAGE_SIZE && (() => {
+            const totalPaginas = Math.ceil(listaFiltrada.length / PAGE_SIZE)
             return (
               <div className={styles.pagination}>
                 <span className={styles.paginationInfo}>
-                  {(pagina - 1) * PAGE_SIZE + 1}–{Math.min(pagina * PAGE_SIZE, lista.length)} de {lista.length}
+                  {(pagina - 1) * PAGE_SIZE + 1}–{Math.min(pagina * PAGE_SIZE, listaFiltrada.length)} de {listaFiltrada.length}
                 </span>
                 <div className={styles.paginationControls}>
                   <button

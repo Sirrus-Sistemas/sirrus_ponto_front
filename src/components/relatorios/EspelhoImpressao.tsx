@@ -143,6 +143,7 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
   const totalDebitoMin = resumo.total_debito_minutos ?? 0
 
   const totalExtras100pctMin = resumo.total_extras_100pct_minutos ?? 0
+  const totalDebito100Min    = resumo.total_debito_100pct_minutos ?? 0
   const totalExtras50pctMin  = resumo.total_extras_50pct_minutos ?? 0
   const totalNoturnoMin      = resumo.total_minutos_noturno ?? 0
 
@@ -417,7 +418,7 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
             <td>Total Extras 100%:&nbsp;{totalExtras100pctMin ? `(+) ${minToHHMM(totalExtras100pctMin)}` : '(+) 00:00'}</td>
             <td></td>
             <td></td>
-            <td>{mostrarBancoHoras ? <>100% Horas do Mês:&nbsp;{fmtSaldo(totalExtras100pctMin)}</> : null}</td>
+            <td>{mostrarBancoHoras ? <>100% Horas do Mês:&nbsp;{fmtSaldo(totalExtras100pctMin - totalDebito100Min)}</> : null}</td>
           </tr>
           <tr>
             <td></td>

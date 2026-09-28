@@ -57,6 +57,33 @@ export type FecharMesResultado = {
   }[]
 }
 
+export type SaldoEmpresaBancoHoras = {
+  funcionario_id: number
+  funcionario_nome: string
+  matricula: string | null
+  filial_id: number | null
+  filial_nome: string | null
+  lotacao_id: number | null
+  lotacao_nome: string | null
+  saldo_50pct_minutos: number
+  saldo_100pct_minutos: number
+}
+
+/** Saldo consolidado de todos os funcionários com banco de horas ativo — visão do RH. */
+export async function fetchRelatorioBancoHoras(params?: {
+  filialId?: number
+  lotacaoId?: number
+  mesReferencia?: string // "YYYY-MM" — saldo "até o fim desse mês"; omitido = saldo atual real
+}): Promise<SaldoEmpresaBancoHoras[]> {
+  const qs = new URLSearchParams()
+  if (params?.filialId) qs.set('filial_id', String(params.filialId))
+  if (params?.lotacaoId) qs.set('lotacao_id', String(params.lotacaoId))
+  if (params?.mesReferencia) qs.set('mes_referencia', params.mesReferencia)
+  const query = qs.toString() ? `?${qs}` : ''
+  const r = await apiRequest<{ data: SaldoEmpresaBancoHoras[] }>(`/api/banco-horas/relatorio/saldos${query}`)
+  return r.data
+}
+
 export async function fetchBancoHoras(funcionarioId: number, params?: { page?: number; limit?: number }): Promise<SaldoBancoHoras> {
   const qs = new URLSearchParams()
   if (params?.page) qs.set('page', String(params.page))

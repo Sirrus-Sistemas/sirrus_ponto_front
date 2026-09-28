@@ -93,6 +93,8 @@ export type ResumoEspelho = {
   total_extras_50pct_minutos: number
   /** Soma dos dias com saldo negativo (dias em débito) — independente do saldo líquido do mês. */
   total_debito_minutos: number
+  /** Débito de ocorrências lançadas com tipo_hora = 'hora_100' — abate da carteira 100%, não da 50%. */
+  total_debito_100pct_minutos: number
   total_minutos_noturno: number
   /** Banco de horas: saldo acumulado ANTES deste mês (carteiras 50%/100% independentes). */
   banco_horas_saldo_anterior_50pct_minutos: number
