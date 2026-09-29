@@ -369,13 +369,21 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOff
 
   async function handleExcluirOcorrencia(ctx: DayActionMenuContext) {
     const { row } = ctx;
-    if (!row.ocorrenciaId) {
+    const ids = row.ocorrenciaIds.length > 0 ? row.ocorrenciaIds : (row.ocorrenciaId != null ? [row.ocorrenciaId] : []);
+    if (ids.length === 0) {
       showMsg('error', `Nenhuma ocorrência registrada em ${ctx.dayLabel}.`);
       return;
     }
+    // Um dia pode ter mais de uma ocorrência (períodos diferentes, ex.: 1º e 2º
+    // período) — este menu é por dia, não por período, então exclui todas.
+    if (ids.length > 1 && !confirm(`${ctx.dayLabel} tem ${ids.length} ocorrências lançadas (períodos diferentes). Excluir todas?`)) {
+      return;
+    }
     try {
-      await deleteOcorrencia(row.ocorrenciaId);
-      showMsg('ok', `Ocorrência de ${ctx.dayLabel} excluída com sucesso.`);
+      await Promise.all(ids.map((id) => deleteOcorrencia(id)));
+      showMsg('ok', ids.length > 1
+        ? `${ids.length} ocorrências de ${ctx.dayLabel} excluídas com sucesso.`
+        : `Ocorrência de ${ctx.dayLabel} excluída com sucesso.`);
       onReload();
     } catch {
       showMsg('error', 'Não foi possível excluir a ocorrência.');

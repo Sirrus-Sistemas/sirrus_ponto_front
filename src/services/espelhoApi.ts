@@ -42,6 +42,7 @@ export type OcorrenciaDia = {
   tipo_lancamento: 'credito' | 'debito' | null
   turno: string | null
   quantidade_horas: number | null
+  informativa: boolean
 }
 
 export type DiaEspelho = {
@@ -52,7 +53,10 @@ export type DiaEspelho = {
   modifiers: ModifierDia[]
   dia_trabalho: boolean
   feriado: FeriadoDia | null
+  /** Mantido por compatibilidade — primeira ocorrência do dia (ou a 'integral', quando existe). Ver `ocorrencias` para todas. */
   ocorrencia: OcorrenciaDia | null
+  /** Todas as ocorrências do dia — pode ter mais de uma quando são de períodos diferentes (ex.: 1º e 2º período), cada uma afetando só o par de batidas do seu período. */
+  ocorrencias: OcorrenciaDia[]
   marcacoes: MarcacaoEspelho[]
   /** Soma dos intervalos entre pares de batidas (1ª–2ª, 3ª–4ª, …). */
   minutos_trabalhados: number

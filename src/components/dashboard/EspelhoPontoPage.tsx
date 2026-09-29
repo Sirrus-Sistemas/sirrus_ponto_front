@@ -65,7 +65,26 @@ const STATUS_CLASS: Partial<Record<StatusDia, string>> = {
   ocorrencia: styles.statusOcorrencia,
 }
 
+const TURNO_LABEL_CURTO: Record<string, string> = {
+  integral: '',
+  '1_periodo': '1º Período',
+  '2_periodo': '2º Período',
+  '3_periodo': '3º Período',
+  '4_periodo': '4º Período',
+}
+
 function obsForRow(dia: DiaEspelho, batidasTurno: number | null | undefined): string {
+  if (dia.ocorrencias && dia.ocorrencias.length > 1) {
+    // Dia com ocorrência de mais de um período (ex.: 1º e 2º) — combina as duas.
+    return dia.ocorrencias
+      .map((o) => {
+        const texto = o.tipo_ocorrencia_descricao || o.descricao || ''
+        const label = TURNO_LABEL_CURTO[o.turno ?? ''] || ''
+        return label ? `${label}: ${texto}` : texto
+      })
+      .filter(Boolean)
+      .join(' · ')
+  }
   if (dia.ocorrencia?.tipo_ocorrencia_descricao) return dia.ocorrencia.tipo_ocorrencia_descricao
   if (dia.ocorrencia?.descricao) return dia.ocorrencia.descricao
   if (dia.feriado) return dia.feriado.descricao

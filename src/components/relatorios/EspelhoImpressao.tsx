@@ -13,6 +13,14 @@ function minToHHMM(min: number): string {
   return `${String(h).padStart(2, '0')}:${pad2(m)}`
 }
 
+const TURNO_LABEL_CURTO: Record<string, string> = {
+  integral: '',
+  '1_periodo': '1º Período',
+  '2_periodo': '2º Período',
+  '3_periodo': '3º Período',
+  '4_periodo': '4º Período',
+}
+
 function formatDataPrint(iso: string): string {
   // "YYYY-MM-DD" → "DD/MM/AA"
   return `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(2, 4)}`
@@ -303,23 +311,33 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
               )
             }
 
-            // For occurrence rows without punches: a débito occurrence (ex.: folga
-            // compensativa ainda não compensada) conta como falta — Total 0, o
-            // dia inteiro vai pro Débito. Crédito (atestado, férias etc.) cobre a
-            // jornada, mostrando minutos_previstos como "trabalhado". Com punches,
-            // usa o valor já ajustado por ocorrência de crédito/débito no dia
-            // (minutos_trabalhados_ajustado) — plain minutos_trabalhados a ignora.
+            // Com punches, usa o valor já ajustado por ocorrência de crédito/débito
+            // no dia (minutos_trabalhados_ajustado) — plain minutos_trabalhados a
+            // ignora. Sem punches (dia todo coberto por ocorrência, um ou mais
+            // períodos): Total = previsto + saldo já cobre os dois casos — crédito
+            // (saldo 0, mostra o previsto inteiro), débito (saldo = -previsto,
+            // mostra 0, como falta) e o caso misto de período (só a fração
+            // efetivamente coberta por crédito conta).
             const totalExibicao =
               dia.marcacoes.length > 0
                 ? dia.minutos_trabalhados_ajustado
                 : isOcorrencia
-                  ? (dia.ocorrencia?.tipo_lancamento === 'debito' ? 0 : dia.minutos_previstos ?? null)
+                  ? (dia.minutos_previstos != null && dia.saldo_minutos != null
+                      ? dia.minutos_previstos + dia.saldo_minutos
+                      : dia.minutos_previstos ?? null)
                   : null
 
-            const ocorrenciaLabel =
-              dia.ocorrencia?.tipo_ocorrencia_descricao ||
-              dia.ocorrencia?.descricao ||
-              'OCORRÊNCIA'
+            const ocorrenciaLabel = (dia.ocorrencias && dia.ocorrencias.length > 1)
+              ? dia.ocorrencias
+                  .map((o) => {
+                    const texto = o.tipo_ocorrencia_descricao || o.descricao || 'OCORRÊNCIA'
+                    const label = TURNO_LABEL_CURTO[o.turno ?? ''] || ''
+                    return label ? `${label}: ${texto}` : texto
+                  })
+                  .join(' + ')
+              : dia.ocorrencia?.tipo_ocorrencia_descricao ||
+                dia.ocorrencia?.descricao ||
+                'OCORRÊNCIA'
             const { repSlots, allSlots, motivoStr: motivoMarcacao } = buildSlots(dia.marcacoes)
             const motivoStr = isOcorrencia
               ? [ocorrenciaLabel, motivoMarcacao].filter(Boolean).join(' — ')

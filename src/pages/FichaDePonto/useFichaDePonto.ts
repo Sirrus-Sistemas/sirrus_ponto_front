@@ -144,6 +144,7 @@ function buildDays(payload: EspelhoPayload, bloqueadoMap: Record<string, boolean
       batidasEsperadas: dia.batidas_esperadas ?? null,
       bloqueado: bloqueadoMap[dia.data] ?? dia.bloqueado ?? false,
       ocorrenciaId: dia.ocorrencia?.id,
+      ocorrenciaIds: (dia.ocorrencias ?? []).map((o) => o.id),
       holidayName: dia.feriado?.descricao,
     };
   });

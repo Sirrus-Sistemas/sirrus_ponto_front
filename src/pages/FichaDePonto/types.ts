@@ -28,7 +28,10 @@ export interface DayRow {
   horariosPrevistos: string[]; // horários esperados do turno/escala para justificativa automática (HH:MM)
   batidasEsperadas?: number | null; // quantidade de batidas esperadas conforme turno
   bloqueado: boolean;
+  /** Mantido por compatibilidade — primeira ocorrência do dia. Ver `ocorrenciaIds` para todas. */
   ocorrenciaId?: number;
+  /** Todas as ocorrências do dia — um dia pode ter mais de uma quando são de períodos diferentes (ex.: 1º e 2º período). */
+  ocorrenciaIds: number[];
   note?: string;
   isToday?: boolean;
   holidayName?: string;
