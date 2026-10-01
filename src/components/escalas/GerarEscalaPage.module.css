@@ -311,6 +311,31 @@
   flex-shrink: 0;
 }
 
+/* ── Localizar escala existente ───────────────────────────────────────────── */
+
+.searchCard {
+  margin-bottom: 16px;
+}
+
+.searchGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px 12px;
+}
+
+.searchGrid .field {
+  margin-bottom: 0;
+}
+
+.resultRow {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.resultRow:hover td {
+  background: var(--sp-bg-card-soft);
+}
+
 /* ── Form fields ───────────────────────────────────────────────────────────── */
 
 .field {

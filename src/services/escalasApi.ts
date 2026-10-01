@@ -57,6 +57,36 @@ export async function fetchFuncionariosComEscala(filialId?: number): Promise<Fun
   return res.data
 }
 
+export type EscalaGerada = {
+  funcionario_id: number
+  nome: string
+  matricula: string | null
+  cargo: string | null
+  filial_nome: string | null
+  lotacao_id: number | null
+  lotacao_nome: string | null
+  periodo_inicio: string
+  periodo_fim: string
+  tipo_ciclo: TipoCiclo | null
+  total_dias: number
+}
+
+/** Funcionários que já têm escala gerada num mês/ano — pra localizar e editar. */
+export async function fetchEscalasGeradas(params: {
+  ano: number
+  mes: number
+  lotacaoId?: number
+  filialId?: number
+}): Promise<EscalaGerada[]> {
+  const qs = new URLSearchParams({ ano: String(params.ano), mes: String(params.mes) })
+  if (params.lotacaoId) qs.set('lotacao_id', String(params.lotacaoId))
+  if (params.filialId) qs.set('filial_id', String(params.filialId))
+  const res = await apiRequest<{ success: boolean; data: EscalaGerada[] }>(
+    `/api/escalas/geradas?${qs.toString()}`
+  )
+  return res.data
+}
+
 export async function previewEscala(payload: EscalaPayload): Promise<DiaEscala[]> {
   const res = await apiRequest<{ success: boolean; data: DiaEscala[] }>('/api/escalas/preview', {
     method: 'POST',

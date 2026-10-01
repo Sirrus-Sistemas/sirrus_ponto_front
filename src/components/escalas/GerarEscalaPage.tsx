@@ -9,6 +9,7 @@ import {
   ChevronUp,
   Clock,
   Plus,
+  Search,
   User,
   X,
 } from 'lucide-react'
@@ -16,14 +17,17 @@ import type { AppShellOutletContext } from '../layout/appShellContext'
 import { ApiError } from '../../lib/api'
 import {
   fetchEscala,
+  fetchEscalasGeradas,
   fetchFuncionariosComEscala,
   previewEscala,
   deleteEscala,
   salvarEscala,
   type DiaEscala,
+  type EscalaGerada,
   type FuncionarioEscala,
   type TipoCiclo,
 } from '../../services/escalasApi'
+import { fetchLotacoes, type Lotacao } from '../../services/lotacoesApi'
 import { MiniCalendar } from './MiniCalendar'
 import {
   calcTotalHours,
@@ -123,6 +127,17 @@ export function GerarEscalaPage() {
 
   const [funcionarios, setFuncionarios] = useState<FuncionarioEscala[]>([])
   const [loadingFuncs, setLoadingFuncs] = useState(true)
+
+  // ── Localizar escala existente (mês/ano + lotação) ──────────────────────────
+  const hoje = new Date()
+  const [lotacoes, setLotacoes] = useState<Lotacao[]>([])
+  const [buscaMes, setBuscaMes] = useState(hoje.getMonth() + 1)
+  const [buscaAno, setBuscaAno] = useState(hoje.getFullYear())
+  const [buscaLotacaoId, setBuscaLotacaoId] = useState<number | ''>('')
+  const [buscaTexto, setBuscaTexto] = useState('')
+  const [resultados, setResultados] = useState<EscalaGerada[] | null>(null)
+  const [loadingBusca, setLoadingBusca] = useState(false)
+
   const [form, setForm] = useState<FormState>(emptyForm)
   const [preview, setPreview] = useState<DiaEscala[] | null>(null)
   const [loadingPreview, setLoadingPreview] = useState(false)
@@ -146,6 +161,44 @@ export function GerarEscalaPage() {
       .finally(() => { if (!cancelled) setLoadingFuncs(false) })
     return () => { cancelled = true }
   }, [])
+
+  // Load lotações (filtro da busca de escalas existentes)
+  useEffect(() => {
+    fetchLotacoes().then(setLotacoes).catch(() => {})
+  }, [])
+
+  // Busca escalas já geradas no mês/ano/lotação selecionados
+  useEffect(() => {
+    let cancelled = false
+    setLoadingBusca(true)
+    fetchEscalasGeradas({ ano: buscaAno, mes: buscaMes, lotacaoId: buscaLotacaoId || undefined })
+      .then((list) => { if (!cancelled) setResultados(list) })
+      .catch(() => { if (!cancelled) setResultados([]) })
+      .finally(() => { if (!cancelled) setLoadingBusca(false) })
+    return () => { cancelled = true }
+  }, [buscaAno, buscaMes, buscaLotacaoId])
+
+  const resultadosFiltrados = useMemo(() => {
+    if (!resultados) return []
+    const termo = buscaTexto.trim().toLowerCase()
+    if (!termo) return resultados
+    return resultados.filter((r) =>
+      r.nome.toLowerCase().includes(termo) || (r.matricula ?? '').toLowerCase().includes(termo)
+    )
+  }, [resultados, buscaTexto])
+
+  function selecionarEscalaExistente(r: EscalaGerada) {
+    setForm((prev) => ({
+      ...prev,
+      funcionario_id: String(r.funcionario_id),
+      data_inicio: r.periodo_inicio,
+      data_fim: r.periodo_fim,
+    }))
+    setSubmitAttempted(false)
+    setSuccess(null)
+    setSaveError(null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   // Autofill work hours from selected employee's shift
   useEffect(() => {
@@ -453,6 +506,104 @@ export function GerarEscalaPage() {
             {saving ? 'Salvando…' : isEditing ? 'Atualizar escala' : 'Gerar escala'}
           </button>
         </div>
+      </div>
+
+      {/* ── Localizar escala existente ── */}
+      <div className={`${styles.card} ${styles.searchCard}`}>
+        <div className={styles.cardHeader}>
+          <Search size={14} className={styles.cardIcon} />
+          <span>Localizar escala existente</span>
+        </div>
+
+        <div className={styles.searchGrid}>
+          <div className={styles.field}>
+            <label htmlFor="ge-busca-mes" className={styles.label}>Mês</label>
+            <select
+              id="ge-busca-mes"
+              className={styles.select}
+              value={buscaMes}
+              onChange={(e) => setBuscaMes(Number(e.target.value))}
+            >
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                <option key={m} value={m}>
+                  {new Date(2000, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long' })}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className={styles.field}>
+            <label htmlFor="ge-busca-ano" className={styles.label}>Ano</label>
+            <select
+              id="ge-busca-ano"
+              className={styles.select}
+              value={buscaAno}
+              onChange={(e) => setBuscaAno(Number(e.target.value))}
+            >
+              {Array.from({ length: 5 }, (_, i) => hoje.getFullYear() - 2 + i).map((a) => (
+                <option key={a} value={a}>{a}</option>
+              ))}
+            </select>
+          </div>
+          <div className={styles.field}>
+            <label htmlFor="ge-busca-lotacao" className={styles.label}>Lotação</label>
+            <select
+              id="ge-busca-lotacao"
+              className={styles.select}
+              value={buscaLotacaoId}
+              onChange={(e) => setBuscaLotacaoId(e.target.value ? Number(e.target.value) : '')}
+            >
+              <option value="">Todas as lotações</option>
+              {lotacoes.map((l) => (
+                <option key={l.id} value={l.id}>{l.nome}</option>
+              ))}
+            </select>
+          </div>
+          <div className={styles.field}>
+            <label htmlFor="ge-busca-texto" className={styles.label}>Funcionário</label>
+            <input
+              id="ge-busca-texto"
+              className={styles.input}
+              placeholder="Nome ou matrícula…"
+              value={buscaTexto}
+              onChange={(e) => setBuscaTexto(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {loadingBusca ? (
+          <p className={styles.hint}>Buscando…</p>
+        ) : resultadosFiltrados.length === 0 ? (
+          <p className={styles.hint}>
+            Nenhum funcionário com escala gerada para o período/filtro selecionado.
+          </p>
+        ) : (
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Funcionário</th>
+                  <th>Lotação</th>
+                  <th>Período</th>
+                  <th>Ciclo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {resultadosFiltrados.map((r) => (
+                  <tr
+                    key={r.funcionario_id}
+                    className={styles.resultRow}
+                    onClick={() => selecionarEscalaExistente(r)}
+                  >
+                    <td>{r.nome}{r.matricula ? ` (${r.matricula})` : ''}</td>
+                    <td>{r.lotacao_nome ?? '—'}</td>
+                    <td>{formatDate(r.periodo_inicio)} – {formatDate(r.periodo_fim)}</td>
+                    <td>{CICLOS.find((c) => c.value === r.tipo_ciclo)?.label ?? r.tipo_ciclo ?? '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* ── Stepper ── */}
