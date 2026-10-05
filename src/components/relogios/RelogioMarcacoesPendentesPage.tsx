@@ -93,9 +93,17 @@ export function RelogioMarcacoesPendentesPage() {
   }
 
   const modalFiltered = useMemo(() => {
-    if (!modalSearch) return modalFuncs
-    const q = modalSearch.toLowerCase()
-    return modalFuncs.filter((f) => f.nome.toLowerCase().includes(q))
+    const q = modalSearch.trim().toLowerCase()
+    if (!q) return modalFuncs
+    // Marcações de relógio às vezes trazem o PIS com uma letra na frente
+    // (ex.: "I01275464565") — busca pelos dígitos crus cobre isso sem o
+    // usuário precisar "limpar" o valor antes de colar na busca.
+    const qDigits = modalSearch.replace(/\D/g, '')
+    return modalFuncs.filter((f) => {
+      if (f.nome.toLowerCase().includes(q)) return true
+      if (qDigits && ((f.cpf ?? '').includes(qDigits) || (f.pis ?? '').includes(qDigits))) return true
+      return false
+    })
   }, [modalFuncs, modalSearch])
 
   if (!meReady) return <p className={styles.loading}>Carregando…</p>
@@ -212,7 +220,7 @@ export function RelogioMarcacoesPendentesPage() {
               <label>BUSCAR FUNCIONÁRIO</label>
               <input
                 type="search"
-                placeholder="Nome…"
+                placeholder="Nome, CPF ou PIS…"
                 value={modalSearch}
                 onChange={(e) => setModalSearch(e.target.value)}
                 autoFocus
@@ -241,7 +249,9 @@ export function RelogioMarcacoesPendentesPage() {
                     </div>
                     <div>
                       <div className={styles.funcNome}>{f.nome}</div>
-                      <div className={styles.funcMeta}>{cpfMask(f.cpf)}</div>
+                      <div className={styles.funcMeta}>
+                        {cpfMask(f.cpf)}{f.pis ? ` · PIS ${f.pis}` : ''}
+                      </div>
                     </div>
                   </div>
                 )

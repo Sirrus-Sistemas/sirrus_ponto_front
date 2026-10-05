@@ -386,12 +386,15 @@ export function CadastroFuncionarioPage() {
       if (!form.nome.trim() || form.nome.trim().length < 3) { setError('Informe o nome completo (mínimo 3 caracteres).'); return }
       if (!form.data_admissao) { setError('Informe a data de admissão.'); return }
       if (!form.municipio_id) { setError('Selecione a cidade/município (define o fuso horário do colaborador).'); return }
+      const cpfDigitsUpdate = digitsOnlyCpf(form.cpf)
+      if (cpfDigitsUpdate.length !== 11) { setError('Informe um CPF válido com 11 dígitos.'); return }
 
       setSubmitting(true)
       try {
         const payload: Parameters<typeof updateFuncionario>[1] = {
           nome: form.nome.trim(),
           email: form.email.trim(),
+          cpf: cpfDigitsUpdate,
           data_admissao: form.data_admissao,
           role: form.role,
           ativo: form.ativo ? 1 : 0,

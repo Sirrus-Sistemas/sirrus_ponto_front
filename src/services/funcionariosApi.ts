@@ -36,6 +36,7 @@ export type CreateFuncionarioPayload = {
 export type UpdateFuncionarioPayload = {
   nome?: string
   email?: string
+  cpf?: string
   telefone?: string | null
   cargo?: string | null
   matricula?: string | null
@@ -66,6 +67,7 @@ export type FuncionarioListItem = {
   nome: string
   email: string
   cpf: string | null
+  pis: string | null
   cargo: string | null
   matricula: string | null
   role: 'admin' | 'gestor' | 'funcionario'
