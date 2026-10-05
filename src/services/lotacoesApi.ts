@@ -36,6 +36,8 @@ export type Lotacao = {
   nao_calcular_extras_debito?: number
   hora_inicio_100pct: string | null
   hora_inicio_adicional_noturno: string
+  /** Quando 1, não calcula adicional noturno (22h-5h) nem o acréscimo da hora reduzida — convenção/acordo coletivo que dispensa. */
+  nao_calcular_adicional_noturno?: number
   calcula_pares_sequenciais_noturno?: number
   ativo?: number
   total_funcionarios?: number

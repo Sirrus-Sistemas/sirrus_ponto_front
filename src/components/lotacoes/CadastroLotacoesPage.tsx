@@ -64,6 +64,7 @@ const emptyForm = () => ({
   nao_calcular_extras_debito: false,
   hora_inicio_100pct: '',
   hora_inicio_adicional_noturno: '22:00',
+  nao_calcular_adicional_noturno: false,
   ativo: '1',
 })
 
@@ -93,6 +94,7 @@ function lotacaoParaForm(l: Lotacao): ReturnType<typeof emptyForm> {
     nao_calcular_extras_debito: l.nao_calcular_extras_debito === 1,
     hora_inicio_100pct: horaParaInput(l.hora_inicio_100pct),
     hora_inicio_adicional_noturno: horaParaInput(l.hora_inicio_adicional_noturno) || '22:00',
+    nao_calcular_adicional_noturno: l.nao_calcular_adicional_noturno === 1,
     ativo: String(l.ativo ?? 1),
   }
 }
@@ -123,6 +125,7 @@ function formParaPayload(f: ReturnType<typeof emptyForm>): LotacaoPayload {
     nao_calcular_extras_debito: f.nao_calcular_extras_debito ? 1 : 0,
     hora_inicio_100pct: f.hora_inicio_100pct || null,
     hora_inicio_adicional_noturno: f.hora_inicio_adicional_noturno || '22:00',
+    nao_calcular_adicional_noturno: f.nao_calcular_adicional_noturno ? 1 : 0,
   }
 }
 
@@ -471,8 +474,15 @@ export function CadastroLotacoesPage() {
           </div>
           <div className={styles.field}>
             <label htmlFor="lot-noturno" className={styles.label}>Início do adicional noturno</label>
-            <input id="lot-noturno" className={styles.input} type="time" value={form.hora_inicio_adicional_noturno} onChange={setField('hora_inicio_adicional_noturno')} />
+            <input id="lot-noturno" className={styles.input} type="time" value={form.hora_inicio_adicional_noturno} onChange={setField('hora_inicio_adicional_noturno')} disabled={form.nao_calcular_adicional_noturno} />
           </div>
+
+          <ToggleRow
+            checked={form.nao_calcular_adicional_noturno}
+            onChange={toggle('nao_calcular_adicional_noturno')}
+            label="Não calcular adicional noturno"
+            desc="Zera o cálculo de adicional noturno (22h-5h) e o acréscimo da hora reduzida (CLT art. 73 §1º) no relatório e na ficha de ponto — use quando a convenção/acordo coletivo da categoria dispensar esse adicional."
+          />
         </div>
       </div>
     )
