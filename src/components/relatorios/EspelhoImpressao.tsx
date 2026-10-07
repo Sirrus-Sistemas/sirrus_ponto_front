@@ -26,6 +26,11 @@ function formatDataPrint(iso: string): string {
   return `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(2, 4)}`
 }
 
+function formatDataAdmissao(iso: string): string {
+  // "YYYY-MM-DD" → "DD/MM/AAAA"
+  return `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`
+}
+
 function horaMin(m: MarcacaoEspelho): string {
   // data_hora_local já está no fuso local (ou é a hora local do relógio para tipo='rep').
   // Extrair HH:MM direto da string evita dupla conversão pelo fuso do navegador.
@@ -154,6 +159,8 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
   const totalDebito100Min    = resumo.total_debito_100pct_minutos ?? 0
   const totalExtras50pctMin  = resumo.total_extras_50pct_minutos ?? 0
   const totalNoturnoMin      = resumo.total_minutos_noturno ?? 0
+  const totalOcorrenciaDebitoMin  = resumo.total_ocorrencia_debito_minutos ?? 0
+  const totalOcorrenciaCreditoMin = resumo.total_ocorrencia_credito_minutos ?? 0
 
   // No sistema antigo, o bloco Banco de Horas só saía impresso pra quem tinha
   // esse parâmetro habilitado no cadastro — hora extra de quem não tem é
@@ -205,7 +212,7 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
                 Período:&nbsp;{periodoInicio}&nbsp;A&nbsp;{periodoFim}&nbsp;&nbsp;
                 Admissão:&nbsp;
                 {meta.funcionario_data_admissao
-                  ? formatDataPrint(meta.funcionario_data_admissao)
+                  ? formatDataAdmissao(meta.funcionario_data_admissao)
                   : ''}
               </td>
               <td className={styles.phRight}>
@@ -373,10 +380,10 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
                 <td className={styles.tdTime}>
                   {totalExibicao != null ? minToHHMM(totalExibicao) : '00:00'}
                 </td>
-                <td className={styles.tdTime}>{extras ? minToHHMM(extras) : '00:00'}</td>
-                <td className={styles.tdTime}>{extras100 ? minToHHMM(extras100) : '00:00'}</td>
-                <td className={styles.tdTime}>{debito ? minToHHMM(debito) : '00:00'}</td>
-                <td className={styles.tdTime}>{noturno ? minToHHMM(noturno) : '00:00'}</td>
+                <td className={styles.tdTime}>{extras ? minToHHMM(extras) : '-'}</td>
+                <td className={styles.tdTime}>{extras100 ? minToHHMM(extras100) : '-'}</td>
+                <td className={styles.tdTime}>{debito ? minToHHMM(debito) : '-'}</td>
+                <td className={styles.tdTime}>{noturno ? minToHHMM(noturno) : '-'}</td>
                 <td>0</td>
                 <td className={styles.tdTime}>
                   {totalExibicao != null ? minToHHMM(totalExibicao) : '00:00'}
@@ -416,24 +423,26 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
           <tr>
             <td>Total Feriados:&nbsp;<strong>{meta.dias_feriado_calendario}</strong></td>
             <td>Total Débito:&nbsp;50%:&nbsp;<strong>{minToHHMM(totalDebitoMin)}</strong></td>
-            <td>Total:&nbsp;0:00</td>
+            <td>Total:&nbsp;<strong>{minToHHMM(totalOcorrenciaDebitoMin)}</strong></td>
             <td>Horas em Adicional:&nbsp;{totalHorasEmAdicionalMin ? minToHHMM(totalHorasEmAdicionalMin) : '00:00'}</td>
             <td>{mostrarBancoHoras ? <>50% Saldo Atual:&nbsp;<strong>{fmtSaldo(bancoAtual50)}</strong></> : null}</td>
           </tr>
           <tr>
             <td>Horas Trabalhadas:&nbsp;<strong>{minToHHMM(resumo.minutos_trabalhados_mes)}</strong></td>
             <td>Total Horas:&nbsp;50%:&nbsp;
-              {saldoMin >= 0
-                ? `(+) ${minToHHMM(saldoMin)}`
-                : `(-) ${minToHHMM(Math.abs(saldoMin))}`}
+              <strong>
+                {saldoMin >= 0
+                  ? `(+) ${minToHHMM(saldoMin)}`
+                  : `(-) ${minToHHMM(Math.abs(saldoMin))}`}
+              </strong>
             </td>
-            <td>Total:&nbsp;0:00</td>
+            <td>Total:&nbsp;<strong>{minToHHMM(totalOcorrenciaCreditoMin)}</strong></td>
             <td></td>
             <td>{mostrarBancoHoras ? <>100% Saldo Anterior:&nbsp;{fmtSaldo(bancoAnterior100)}</> : null}</td>
           </tr>
           <tr>
             <td></td>
-            <td>Total Extras 100%:&nbsp;{totalExtras100pctMin ? `(+) ${minToHHMM(totalExtras100pctMin)}` : '(+) 00:00'}</td>
+            <td>Total Extras 100%:&nbsp;<strong>{totalExtras100pctMin ? `(+) ${minToHHMM(totalExtras100pctMin)}` : '(+) 00:00'}</strong></td>
             <td></td>
             <td></td>
             <td>{mostrarBancoHoras ? <>100% Horas do Mês:&nbsp;{fmtSaldo(totalExtras100pctMin - totalDebito100Min)}</> : null}</td>

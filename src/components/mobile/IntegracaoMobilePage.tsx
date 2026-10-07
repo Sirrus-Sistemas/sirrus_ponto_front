@@ -239,6 +239,7 @@ export function IntegracaoMobilePage() {
     setSyncAllProgress(null)
     setSyncAllResult(null)
     setSyncAllError(null)
+    setSyncFuncMsg({})
     try {
       const { job_id } = await syncAllFuncionarios(filtroFilialId || undefined)
       syncAllPollAtivo.current = job_id
@@ -257,6 +258,19 @@ export function IntegracaoMobilePage() {
       const status = await fetchSyncJobStatus(jobId)
       if (syncAllPollAtivo.current !== jobId) return
       setSyncAllProgress({ processados: status.processados, total: status.total })
+
+      // Reaproveita a mesma coluna SYNC por linha que o sync individual já
+      // preenche (syncFuncMsg) — assim dá pra ver, durante o "Sincronizar
+      // todos", exatamente qual funcionário falhou e qual foi o erro, em vez
+      // de só um contador agregado sem indicar quem.
+      if (status.sucessos.length > 0 || status.erros.length > 0) {
+        setSyncFuncMsg((m) => {
+          const next = { ...m }
+          for (const s of status.sucessos) next[s.funcionario_id] = `ok:${s.pontomobile_id}`
+          for (const e of status.erros) next[e.funcionario_id] = e.error
+          return next
+        })
+      }
 
       if (status.status === 'em_andamento') {
         setTimeout(() => { void pollSyncAllJob(jobId) }, 2000)

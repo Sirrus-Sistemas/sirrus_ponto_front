@@ -32,3 +32,13 @@ export async function vincularMarcacaoPendente(id: number, funcionarioId: number
     body: JSON.stringify({ funcionario_id: funcionarioId }),
   })
 }
+
+export type ValidarTodosResultado = { total: number; vinculadas: number }
+
+/** Revalida todas as pendentes contra o cadastro atual — resolve o caso de CPF/PIS corrigido depois da importação. */
+export async function validarTodasPendentes(): Promise<ValidarTodosResultado> {
+  const res = await apiRequest<Envelope<ValidarTodosResultado>>('/api/relogios/marcacoes/validar-todos', {
+    method: 'POST',
+  })
+  return res.data
+}

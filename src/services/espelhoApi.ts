@@ -99,6 +99,9 @@ export type ResumoEspelho = {
   total_debito_minutos: number
   /** Débito de ocorrências lançadas com tipo_hora = 'hora_100' — abate da carteira 100%, não da 50%. */
   total_debito_100pct_minutos: number
+  /** "Resumo de Ocorrências": horas DECLARADAS por ocorrência lançada (não o efeito líquido no saldo). */
+  total_ocorrencia_debito_minutos: number
+  total_ocorrencia_credito_minutos: number
   total_minutos_noturno: number
   /** Banco de horas: saldo acumulado ANTES deste mês (carteiras 50%/100% independentes). */
   banco_horas_saldo_anterior_50pct_minutos: number

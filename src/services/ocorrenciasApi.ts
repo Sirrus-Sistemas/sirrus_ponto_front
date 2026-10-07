@@ -78,11 +78,15 @@ export async function fetchOcorrencias(params?: {
   funcionario_id?: number
   ano?: number
   mes?: number
+  data_inicio?: string
+  data_fim?: string
 }, signal?: AbortSignal): Promise<Ocorrencia[]> {
   const qs = new URLSearchParams()
   if (params?.funcionario_id) qs.set('funcionario_id', String(params.funcionario_id))
   if (params?.ano) qs.set('ano', String(params.ano))
   if (params?.mes) qs.set('mes', String(params.mes))
+  if (params?.data_inicio) qs.set('data_inicio', params.data_inicio)
+  if (params?.data_fim) qs.set('data_fim', params.data_fim)
   const suffix = qs.toString() ? `?${qs.toString()}` : ''
   const res = await apiRequest<{ data: Ocorrencia[] }>(`/api/ocorrencias${suffix}`, { signal })
   return res.data
@@ -108,6 +112,27 @@ export async function updateOcorrencia(
 
 export async function deleteOcorrencia(id: number): Promise<void> {
   await apiRequest(`/api/ocorrencias/${id}`, { method: 'DELETE' })
+}
+
+export type ExcluirOcorrenciasMassaResultado = {
+  excluidas: number
+}
+
+export async function deleteOcorrenciasEmMassa(params: {
+  funcionario_id: number
+  data_inicio: string
+  data_fim: string
+}): Promise<ExcluirOcorrenciasMassaResultado> {
+  const qs = new URLSearchParams({
+    funcionario_id: String(params.funcionario_id),
+    data_inicio: params.data_inicio,
+    data_fim: params.data_fim,
+  })
+  const res = await apiRequest<{ data: ExcluirOcorrenciasMassaResultado; message?: string }>(
+    `/api/ocorrencias/massa?${qs.toString()}`,
+    { method: 'DELETE' }
+  )
+  return res.data
 }
 
 // ─── Labels ───────────────────────────────────────────────────────────────────

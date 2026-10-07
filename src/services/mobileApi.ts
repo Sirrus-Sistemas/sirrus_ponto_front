@@ -19,6 +19,7 @@ export type SyncJobStatus = {
   processados: number
   sincronizados: number
   erros: { funcionario_id: number; error: string }[]
+  sucessos: { funcionario_id: number; pontomobile_id: number }[]
   erro_geral: string | null
 }
 

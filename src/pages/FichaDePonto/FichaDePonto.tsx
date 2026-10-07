@@ -6,6 +6,7 @@ import { PunchGrid } from './components/PunchGrid/PunchGrid';
 import { ApuracaoFooter } from './components/ApuracaoFooter/ApuracaoFooter';
 import { BloquearPeriodoModal } from './components/BloquearPeriodoModal/BloquearPeriodoModal';
 import { JustificarPeriodoModal } from './components/JustificarPeriodoModal/JustificarPeriodoModal';
+import { ExcluirOcorrenciasPeriodoModal } from './components/ExcluirOcorrenciasPeriodoModal/ExcluirOcorrenciasPeriodoModal';
 import { fetchLotacoes, type Lotacao } from '../../services/lotacoesApi';
 import styles from './FichaDePonto.module.css';
 
@@ -21,8 +22,9 @@ export function FichaDePonto() {
 
   const [showBloquearModal, setShowBloquearModal] = useState(false);
   const [showJustificarModal, setShowJustificarModal] = useState(false);
+  const [showExcluirOcorrenciasModal, setShowExcluirOcorrenciasModal] = useState(false);
 
-  const { data, loading, error, me, funcionarios, reload, toggleBloqueio, bloquearPeriodo, desbloquearPeriodo, justificarPeriodo } = useFichaDePonto({
+  const { data, loading, error, me, funcionarios, reload, toggleBloqueio, bloquearPeriodo, desbloquearPeriodo, justificarPeriodo, excluirOcorrenciasPeriodo } = useFichaDePonto({
     employeeId: selectedFuncId,
     startMonth,
     startYear,
@@ -124,6 +126,7 @@ export function FichaDePonto() {
         onPrint={dataComLotacao ? handlePrint : undefined}
         onBloquearPeriodo={canSelectFunc ? () => setShowBloquearModal(true) : undefined}
         onJustificarPeriodo={canSelectFunc && dataComLotacao ? () => setShowJustificarModal(true) : undefined}
+        onExcluirOcorrenciasPeriodo={canSelectFunc && dataComLotacao ? () => setShowExcluirOcorrenciasModal(true) : undefined}
       />
 
       {dataComLotacao && (
@@ -196,6 +199,20 @@ export function FichaDePonto() {
           })()}
           onClose={() => setShowJustificarModal(false)}
           onJustificar={justificarPeriodo}
+        />
+      )}
+
+      {showExcluirOcorrenciasModal && dataComLotacao && (
+        <ExcluirOcorrenciasPeriodoModal
+          funcionarioId={dataComLotacao.funcionarioId}
+          funcionarioNome={dataComLotacao.employee.fullName}
+          defaultDataInicio={`${startYear}-${String(startMonth).padStart(2, '0')}-01`}
+          defaultDataFim={(() => {
+            const ultimo = new Date(endYear, endMonth, 0).getDate();
+            return `${endYear}-${String(endMonth).padStart(2, '0')}-${String(ultimo).padStart(2, '0')}`;
+          })()}
+          onClose={() => setShowExcluirOcorrenciasModal(false)}
+          onExcluir={excluirOcorrenciasPeriodo}
         />
       )}
     </div>

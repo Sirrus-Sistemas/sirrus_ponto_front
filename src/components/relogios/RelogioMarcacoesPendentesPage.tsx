@@ -6,6 +6,7 @@ import { fetchRelogios, type Relogio } from '../../services/relogiosApi'
 import {
   fetchMarcacoesPendentes,
   vincularMarcacaoPendente,
+  validarTodasPendentes,
   type MarcacaoPendente,
 } from '../../services/relogioMarcacoesPendentesApi'
 import { fetchFuncionarios, type FuncionarioListItem } from '../../services/funcionariosApi'
@@ -33,6 +34,7 @@ export function RelogioMarcacoesPendentesPage() {
   const [search, setSearch] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [validando, setValidando] = useState(false)
 
   // Modal de vínculo manual
   const [vincularAlvo, setVincularAlvo] = useState<MarcacaoPendente | null>(null)
@@ -66,6 +68,25 @@ export function RelogioMarcacoesPendentesPage() {
 
   useEffect(() => { void loadRelogios() }, [loadRelogios])
   useEffect(() => { void loadPendentes() }, [loadPendentes])
+
+  async function handleValidarTodos() {
+    setValidando(true)
+    setError(null)
+    setSuccess(null)
+    try {
+      const r = await validarTodasPendentes()
+      setSuccess(
+        r.vinculadas > 0
+          ? `${r.vinculadas} marcação(ões) vinculada(s) automaticamente — cadastro já estava correto.`
+          : 'Nenhuma marcação pendente bateu com o cadastro atual.',
+      )
+      await loadPendentes(true)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Erro ao validar marcações pendentes.')
+    } finally {
+      setValidando(false)
+    }
+  }
 
   function abrirVincular(item: MarcacaoPendente) {
     setVincularAlvo(item)
@@ -124,10 +145,19 @@ export function RelogioMarcacoesPendentesPage() {
           <h1 className={styles.title}>Marcações Pendentes de Vínculo</h1>
           <p className={styles.subtitle}>
             Marcações recebidas de um relógio de ponto cujo CPF/PIS ainda não corresponde a
-            nenhum funcionário cadastrado. Vincule manualmente aqui, ou cadastre o funcionário
-            com o mesmo CPF/PIS — o vínculo acontece sozinho nesse caso.
+            nenhum funcionário cadastrado. Vincule manualmente aqui, ou cadastre/corrija o
+            funcionário com o mesmo CPF/PIS e clique em "Validar todos" — o vínculo é refeito
+            automaticamente, sem precisar vincular uma por uma.
           </p>
         </div>
+        <button
+          type="button"
+          className={`${styles.btnAction} ${styles.btnPrimary}`}
+          onClick={() => void handleValidarTodos()}
+          disabled={validando}
+        >
+          {validando ? 'Validando…' : 'Validar todos'}
+        </button>
       </div>
 
       <div className={styles.panelCard}>
