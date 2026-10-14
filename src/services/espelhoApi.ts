@@ -103,12 +103,10 @@ export type ResumoEspelho = {
   total_ocorrencia_debito_minutos: number
   total_ocorrencia_credito_minutos: number
   total_minutos_noturno: number
-  /** Banco de horas: saldo acumulado ANTES deste mês (carteiras 50%/100% independentes). */
-  banco_horas_saldo_anterior_50pct_minutos: number
-  /** Saldo anterior + líquido deste mês (mesmo valor que "Fechar mês" gravaria). */
-  banco_horas_saldo_atual_50pct_minutos: number
-  banco_horas_saldo_anterior_100pct_minutos: number
-  banco_horas_saldo_atual_100pct_minutos: number
+  /** Banco de horas: saldo transportado de meses anteriores — consolidado (50%+100% somados, sem separação por percentual, padrão Ponto Velox). */
+  banco_horas_saldo_anterior_minutos: number
+  /** Saldo anterior + líquido deste mês (50% e 100% somados). As horas GERADAS neste mês continuam detalhadas por percentual em total_extras_50pct_minutos/total_extras_100pct_minutos. */
+  banco_horas_saldo_atual_minutos: number
 }
 
 export type EspelhoMeta = {
