@@ -1,10 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ApiError, getStoredToken, tokenExigeTrocaSenha, TROCAR_SENHA_PATH } from '../../lib/api'
-import { loginRequest } from '../../services/authApi'
+import { loginRequest, pickSuporteToken } from '../../services/authApi'
 import { LoginCard } from './LoginCard'
 import { OutlinedInput } from './OutlinedInput'
 import { PrimaryButton } from './PrimaryButton'
+import { SelecionarEmpresaSuporte } from './SelecionarEmpresaSuporte'
 import { digitsOnlyCpf, formatCpf } from './cpf'
 import styles from './LoginPage.module.css'
 
@@ -20,6 +21,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [suporteToken, setSuporteToken] = useState<string | null>(null)
 
   function handleCpfChange(e: React.ChangeEvent<HTMLInputElement>) {
     setCpf(formatCpf(e.target.value))
@@ -40,7 +42,13 @@ export function LoginPage() {
     setError(null)
     setLoading(true)
     try {
-      await loginRequest(cpfDigits, pwd)
+      const data = await loginRequest(cpfDigits, pwd)
+      const suporte = pickSuporteToken(data)
+      if (suporte) {
+        // Login de suporte Sirrus: abre a escolha de empresa.
+        setSuporteToken(suporte)
+        return
+      }
       navigate(tokenExigeTrocaSenha() ? TROCAR_SENHA_PATH : '/dashboard', { replace: true })
     } catch (err) {
       let message =
@@ -63,6 +71,13 @@ export function LoginPage() {
 
   return (
     <div className={styles.page}>
+      {suporteToken ? (
+        <SelecionarEmpresaSuporte
+          suporteToken={suporteToken}
+          onEntrou={() => navigate('/dashboard', { replace: true })}
+          onCancelar={() => { setSuporteToken(null); setPassword('') }}
+        />
+      ) : null}
       <LoginCard>
         <header className={styles.header}>
           <h1 className={styles.title}>Sirrus Ponto</h1>

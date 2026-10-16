@@ -57,6 +57,10 @@ export async function loginRequest(cpfDigits: string, password: string): Promise
     method: 'POST',
     body: JSON.stringify({ cpf: cpfDigits, password }),
   })
+  // Suporte Sirrus (senha diária): ainda sem token de acesso — a tela mostra a
+  // escolha de empresa com o suporte_token devolvido aqui.
+  const inner = (data.data ?? {}) as Record<string, unknown>
+  if (inner.suporte === true) return data
   const token = pickToken(data)
   if (!token) {
     throw new ApiError(
@@ -85,6 +89,47 @@ export async function forgotPasswordRequest(cpfDigits: string): Promise<void> {
 export async function logoutRequest(): Promise<void> {
   stopSession()
   await apiRequest(LOGOUT_PATH, { method: 'POST', body: '{}' })
+}
+
+// ── Suporte Sirrus: escolher a empresa após o login por senha diária ──────────
+
+export type EmpresaSuporte = {
+  id: number
+  razao_social: string
+  nome_fantasia: string | null
+  cnpj: string | null
+  ativa: number
+}
+
+/** Lê o suporte_token (devolvido no login por senha diária) da resposta. */
+export function pickSuporteToken(data: LoginResponse): string | undefined {
+  const inner = (data.data ?? {}) as Record<string, unknown>
+  const t = inner.suporte_token
+  return typeof t === 'string' ? t : undefined
+}
+
+/** Empresas disponíveis para o técnico (busca por nome ou CNPJ). */
+export async function suporteBuscarEmpresas(suporteToken: string, busca: string): Promise<EmpresaSuporte[]> {
+  const qs = busca ? `?busca=${encodeURIComponent(busca)}` : ''
+  const res = await apiRequest<{ data: EmpresaSuporte[] }>(`/api/auth/suporte/empresas${qs}`, {
+    headers: { Authorization: `Bearer ${suporteToken}` },
+  })
+  return res.data
+}
+
+/** Entra na empresa escolhida: emite o token normal e inicia a sessão. */
+export async function suporteEntrarEmpresa(suporteToken: string, empresaId: number): Promise<void> {
+  const data = await apiRequest<LoginResponse>('/api/auth/suporte/entrar', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${suporteToken}` },
+    body: JSON.stringify({ empresa_id: empresaId }),
+  })
+  const token = pickToken(data)
+  if (!token) throw new ApiError('A API não retornou um token de acesso.', 200, data)
+  setStoredToken(token)
+  const refresh = pickRefreshToken(data)
+  if (refresh) setStoredRefreshToken(refresh)
+  startSession()
 }
 
 /**
