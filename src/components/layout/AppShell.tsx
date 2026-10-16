@@ -185,6 +185,16 @@ export function AppShell() {
                 Relatórios
               </NavLink>
             ) : null}
+            {podeRelatorios ? (
+              <NavLink
+                to="/arquivos-mte"
+                className={({ isActive }) => navClass(isActive)}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <span className={styles.navIcon} aria-hidden><IconRelatorio /></span>
+                Arquivos MTE
+              </NavLink>
+            ) : null}
 
             {/* ── Cadastro ──────────────────────────────────────── */}
             {podeCadastrarFuncionario ? (

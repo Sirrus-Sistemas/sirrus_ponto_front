@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/layout/AppShell'
 import { TrocarSenhaPage } from './components/login/TrocarSenhaPage'
+import { ArquivosMtePage } from './components/mte/ArquivosMtePage'
 import { DashboardPage } from './components/dashboard/DashboardPage'
 import { EspelhoPontoPage } from './components/dashboard/EspelhoPontoPage'
 import { CadastroFuncionarioPage } from './components/funcionarios/CadastroFuncionarioPage'
@@ -59,6 +60,7 @@ function App() {
             <Route path="/escalas/ajustar" element={<AjustarEscalaPage />} />
             <Route path="/relatorios" element={<RelatoriosPage />} />
             <Route path="/relatorios/espelho" element={<RelatorioEspelhoPage />} />
+            <Route path="/arquivos-mte" element={<ArquivosMtePage />} />
             <Route path="/filiais" element={<CadastroFiliaisPage />} />
             <Route path="/ocorrencias/tipos" element={<CadastroTiposOcorrenciaPage />} />
             <Route path="/mobile/integracao" element={<IntegracaoMobilePage />} />

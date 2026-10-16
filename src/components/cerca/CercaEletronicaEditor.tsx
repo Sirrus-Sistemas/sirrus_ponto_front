@@ -81,15 +81,19 @@ export function CercaEletronicaEditor({ escopo, id }: { escopo: EscopoCerca; id:
     return () => { m.remove(); mapa.current = null }
   }, [])
 
-  // Clique no mapa: move o local selecionado ou cria um novo ali.
-  cliqueRef.current = (lat, lng) => {
-    if (selecionado !== null && locais[selecionado]) {
-      setLocais((ls) => ls.map((l, i) => (i === selecionado ? { ...l, latitude: arred(lat), longitude: arred(lng) } : l)))
-    } else {
-      setLocais((ls) => [...ls, { descricao: `Local ${ls.length + 1}`, latitude: arred(lat), longitude: arred(lng), raio_metros: RAIO_PADRAO }])
-      setSelecionado(locais.length)
+  // Clique no mapa: move o local selecionado ou cria um novo ali. A ref é
+  // atualizada em efeito (não durante o render) para o handler do mapa ver o
+  // estado atual.
+  useEffect(() => {
+    cliqueRef.current = (lat, lng) => {
+      if (selecionado !== null && locais[selecionado]) {
+        setLocais((ls) => ls.map((l, i) => (i === selecionado ? { ...l, latitude: arred(lat), longitude: arred(lng) } : l)))
+      } else {
+        setLocais((ls) => [...ls, { descricao: `Local ${ls.length + 1}`, latitude: arred(lat), longitude: arred(lng), raio_metros: RAIO_PADRAO }])
+        setSelecionado(locais.length)
+      }
     }
-  }
+  }, [selecionado, locais])
 
   // Redesenha os círculos quando os locais mudam.
   useEffect(() => {
