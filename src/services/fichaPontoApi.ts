@@ -73,6 +73,17 @@ export async function editarBatida(
   })
 }
 
+/** Tira do cálculo uma batida do relógio/app sem apagá-la (original é mantida). */
+export async function desconsiderarBatida(id: number): Promise<void> {
+  await apiRequest<SimpleResponse>(`/api/marcacoes/${id}/desconsiderar`, { method: 'POST' })
+}
+
+/** Devolve ao cálculo uma batida desconsiderada. */
+export async function reconsiderarBatida(id: number): Promise<void> {
+  await apiRequest<SimpleResponse>(`/api/marcacoes/${id}/reconsiderar`, { method: 'POST' })
+}
+
+/** Só funciona para batida lançada manualmente — relógio/app é desconsiderada. */
 export async function excluirBatida(id: number): Promise<void> {
   await apiRequest<SimpleResponse>(`/api/marcacoes/${id}`, { method: 'DELETE' })
 }

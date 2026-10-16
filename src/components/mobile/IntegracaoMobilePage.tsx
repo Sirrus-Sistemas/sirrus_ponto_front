@@ -15,6 +15,7 @@ import {
   syncFilial,
   syncFuncionario,
   syncAllFuncionarios,
+  importarCercasDoMobile,
   fetchSyncJobStatus,
   pullMarcacoes,
   type FilialMobileItem,
@@ -207,6 +208,9 @@ export function IntegracaoMobilePage() {
   }, [pullFilialId, pullLotacaoId])
 
   async function handleSyncFilial(id: number) {
+    const filial = filiais.find((f) => f.id === id)
+    const acao = filial?.pontomobile_id ? 'Re-sincronizar' : 'Sincronizar'
+    if (!confirm(`${acao} a filial "${filial?.nome ?? id}" com o Ponto Mobile? Os dados da filial no Ponto Mobile serão sobrescritos pelos daqui.`)) return
     setSyncFilialLoading(id)
     setSyncFilialMsg((m) => ({ ...m, [id]: '' }))
     try {
@@ -234,14 +238,48 @@ export function IntegracaoMobilePage() {
 
   const syncAllPollAtivo = useRef<string | null>(null)
 
+  const [importandoCercas, setImportandoCercas] = useState(false)
+  const [importacaoCercasMsg, setImportacaoCercasMsg] = useState<string | null>(null)
+
+  // Uma vez, antes de gerenciar cercas por aqui: a partir daí toda sincronização
+  // envia a cerca deste sistema e substitui a do app.
+  async function handleImportarCercas() {
+    if (!confirm('Importar as cercas eletrônicas que já existem no Ponto Mobile? Funcionários que já têm cerca configurada aqui não são alterados.')) return
+    setImportandoCercas(true)
+    setImportacaoCercasMsg(null)
+    try {
+      const { resultado, message } = await importarCercasDoMobile()
+      setImportacaoCercasMsg(
+        (message ?? `${resultado.importados} cerca(s) importada(s).`)
+        + (resultado.erros.length ? ` Falha em ${resultado.erros.length} filial(is): ${resultado.erros.map((e) => e.error).join('; ')}` : ''),
+      )
+    } catch (e) {
+      setImportacaoCercasMsg(errMsg(e, 'Erro ao importar as cercas.'))
+    } finally {
+      setImportandoCercas(false)
+    }
+  }
+
   async function handleSyncAll() {
+    // Mesmos filtros (filial/lotação) da lista abaixo — a contagem bate com o
+    // que o servidor vai sincronizar.
+    const filialNome = filiais.find((f) => f.id === filtroFilialId)?.nome
+    const lotacaoNome = lotacoes.find((l) => l.id === filtroLotacaoId)?.nome
+    const escopo = [
+      filialNome ? `da filial "${filialNome}"` : 'de TODAS as filiais',
+      lotacaoNome ? `na lotação "${lotacaoNome}"` : null,
+    ].filter(Boolean).join(' ')
+    if (!confirm(`Sincronizar ${funcionarios.length} funcionário(s) ativo(s) ${escopo} com o Ponto Mobile? Os cadastros no Ponto Mobile serão sobrescritos pelos daqui.`)) return
     setSyncAllLoading(true)
     setSyncAllProgress(null)
     setSyncAllResult(null)
     setSyncAllError(null)
     setSyncFuncMsg({})
     try {
-      const { job_id } = await syncAllFuncionarios(filtroFilialId || undefined)
+      const { job_id } = await syncAllFuncionarios({
+        filialId: filtroFilialId || undefined,
+        lotacaoId: filtroLotacaoId || undefined,
+      })
       syncAllPollAtivo.current = job_id
       void pollSyncAllJob(job_id)
     } catch (e) {
@@ -622,6 +660,29 @@ export function IntegracaoMobilePage() {
               >›</button>
             </div>
           )}
+        </div>
+
+        {/* Cerca eletrônica */}
+        <div className={styles.card}>
+          <div className={styles.cardHeaderRow}>
+            <div className={styles.cardIcon}><IconBuilding /></div>
+            <div>
+              <h2 className={styles.cardTitle}>Cerca eletrônica</h2>
+              <p className={styles.cardDesc}>
+                As cercas agora são configuradas aqui (Filiais, Lotações e Funcionários) e enviadas ao app em cada
+                sincronização. Antes da primeira sincronização, importe as que já existem no Ponto Mobile para não perdê-las.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            className={styles.btnPrimary}
+            onClick={() => void handleImportarCercas()}
+            disabled={importandoCercas || !configurado}
+          >
+            {importandoCercas ? 'Importando…' : 'Importar cercas do Ponto Mobile'}
+          </button>
+          {importacaoCercasMsg && <p className={styles.cardDesc} role="status" style={{ marginTop: '0.5rem' }}>{importacaoCercasMsg}</p>}
         </div>
 
         {/* Filiais */}

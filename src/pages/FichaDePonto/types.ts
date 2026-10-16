@@ -32,6 +32,10 @@ export interface DayRow {
   ocorrenciaId?: number;
   /** Todas as ocorrências do dia — um dia pode ter mais de uma quando são de períodos diferentes (ex.: 1º e 2º período). */
   ocorrenciaIds: number[];
+  /** Batidas do relógio/app desconsideradas (fora do cálculo) — dá para reconsiderar. */
+  desconsideradas?: { id: number; time: string; source: PunchSource }[];
+  /** Ocorrências do dia com nome do tipo e período, para o menu/confirmação de exclusão. */
+  ocorrencias?: { id: number; nome: string; dataInicio?: string; dataFim?: string }[];
   note?: string;
   isToday?: boolean;
   holidayName?: string;
@@ -53,7 +57,7 @@ export interface Employee {
   id: string;
   fullName: string;
   matricula: string;
-  nsr: string;
+  pis: string;
   initials: string;
   lotacao: string;
   company: string;

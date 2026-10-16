@@ -36,7 +36,7 @@ export function EmployeeStrip({ employee, folhaStatus, onPrev, onNext, currentIn
         <div className={styles.nameBlock}>
           <span className={styles.fullName}>{employee.fullName}</span>
           <span className={styles.subLine}>
-            matrícula {employee.matricula} · NSR {employee.nsr}
+            matrícula {employee.matricula} · PIS {employee.pis}
           </span>
           {showNav && totalCount !== undefined && (
             <span className={styles.navCounter}>{(currentIndex ?? 0) + 1} / {totalCount}</span>

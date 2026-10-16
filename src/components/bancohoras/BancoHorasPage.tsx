@@ -83,7 +83,7 @@ export function BancoHorasPage() {
   const [excluirErro, setExcluirErro] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchFuncionarios({ limit: 1000, ativo: 1 })
+    fetchFuncionarios({ limit: 1000, ativo: 1, controla_ponto: 1 })
       .then((r) => setFuncionarios(r.data))
       .catch(() => {})
   }, [])

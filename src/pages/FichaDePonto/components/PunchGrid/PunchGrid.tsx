@@ -5,10 +5,11 @@ import { DayActionMenu, type DayActionMenuContext } from './DayActionMenu';
 import { OcorrenciaModal } from './OcorrenciaModal';
 import { JustificativaManualModal } from './JustificativaManualModal';
 import { SidePanel } from './SidePanel';
-import { excluirBatida, editarBatida } from '../../../../services/fichaPontoApi';
+import { excluirBatida, editarBatida, desconsiderarBatida, reconsiderarBatida } from '../../../../services/fichaPontoApi';
 import { lancarBatida } from '../../../../services/fichaPontoApi';
 import { deleteOcorrencia } from '../../../../services/ocorrenciasApi';
 import styles from './PunchGrid.module.css';
+import { minutosDaJornada, montarBatida, previstosSemBatida } from '../../batidaDataHora';
 
 interface PunchGridProps {
   days: DayRow[];
@@ -269,19 +270,44 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOff
 
   // ── Existing action handlers ───────────────────────────────────────────────
 
-  async function handleAbonar(ctx: DayActionMenuContext) {
+  // Batida lançada manualmente é excluída. Do relógio ou do aplicativo é o
+  // registro original: nunca é apagada, só desconsiderada (sai do cálculo e
+  // continua no espelho em "Marcações REP"; dá para reconsiderar).
+  async function handleDesconsiderar(ctx: DayActionMenuContext) {
     const slotIndex = SLOT_LABELS.indexOf(ctx.slotLabel);
     const punchId = ctx.row.punchIds[slotIndex];
-    if (punchId == null) {
-      showMsg('error', `Célula ${ctx.slotLabel} de ${ctx.dayLabel} não possui marcação para abonar.`);
+    const punch = ctx.row.punches[slotIndex];
+    if (punchId == null || !punch) {
+      showMsg('error', `Célula ${ctx.slotLabel} de ${ctx.dayLabel} não possui marcação.`);
       return;
     }
+    const manual = punch.source === 'manual';
+    const pergunta = manual
+      ? `Excluir a batida lançada manualmente ${punch.time} (${ctx.slotLabel}) de ${ctx.dayLabel}?`
+      : `Desconsiderar a batida ${punch.time} (${ctx.slotLabel}) de ${ctx.dayLabel}? Ela sai do cálculo, mas continua registrada e pode ser reconsiderada.`;
+    if (!confirm(pergunta)) return;
     try {
-      await excluirBatida(punchId);
-      showMsg('ok', `Marcação ${ctx.slotLabel} de ${ctx.dayLabel} abonada com sucesso.`);
+      if (manual) await excluirBatida(punchId);
+      else await desconsiderarBatida(punchId);
+      showMsg('ok', manual
+        ? `Batida ${punch.time} de ${ctx.dayLabel} excluída.`
+        : `Batida ${punch.time} de ${ctx.dayLabel} desconsiderada.`);
+      onReload();
+    } catch (err) {
+      showMsg('error', err instanceof Error ? err.message : 'Não foi possível desconsiderar a batida.');
+    }
+  }
+
+  async function handleReconsiderar(ctx: DayActionMenuContext) {
+    const desc = ctx.row.desconsideradas ?? [];
+    if (desc.length === 0) return;
+    if (!confirm(`Reconsiderar ${desc.map((d) => d.time).join(', ')} de ${ctx.dayLabel}? Volta(m) para o cálculo do dia.`)) return;
+    try {
+      await Promise.all(desc.map((d) => reconsiderarBatida(d.id)));
+      showMsg('ok', `${desc.length} batida(s) de ${ctx.dayLabel} reconsiderada(s).`);
       onReload();
     } catch {
-      showMsg('error', 'Não foi possível abonar a marcação.');
+      showMsg('error', 'Não foi possível reconsiderar as batidas.');
     }
   }
 
@@ -301,48 +327,33 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOff
       return;
     }
 
-    // Só lança batidas nos slots que ainda estão vazios
-    // Verifica se o horário previsto já tem um punch com esse horário
-    const existingTimes = new Set(row.punches.filter((p): p is Punch => p != null).map(p => p.time));
-    const timesToFill = times.filter((t: string) => !existingTimes.has(t));
+    // Casa cada batida real com o horário previsto mais próximo (em ordem) e
+    // lança só os previstos que sobram. Antes comparava o minuto exato: uma
+    // entrada às 07:58 não era reconhecida como a das 08:00 e a jornada
+    // inteira era lançada por cima das batidas reais.
+    const minutosPrevistos = minutosDaJornada(times);
+    const minutosReais = minutosDaJornada(row.punches.filter((p): p is Punch => p != null).map((p) => p.time));
+    const indicesFaltantes = previstosSemBatida(minutosPrevistos, minutosReais);
+    const timesToFill = indicesFaltantes.map((i) => times[i]);
 
     if (timesToFill.length === 0) {
       showMsg('error', 'Todos os horários previstos já estão preenchidos.');
       return;
     }
 
+    // Dia de cada horário previsto conforme a sequência completa da jornada
+    // (não só os que faltam preencher): 22:00 → 02:00 cruza a meia-noite.
+    let batidas: { dataHoraUtc: string; diaRef: string }[];
     try {
-      const pad = (n: number) => String(n).padStart(2, '0');
-      const offset = tzOffset ?? '-03:00';
+      batidas = indicesFaltantes.map((i) => montarBatida(row, times[i], Math.floor(minutosPrevistos[i] / 1440), tzOffset));
+    } catch (err) {
+      showMsg('error', (err as Error).message); // fuso do funcionário ausente
+      return;
+    }
 
-      const toUtc = (localTime: string): { dataHoraUtc: string; diaRef: string } => {
-        const [hh] = localTime.split(':').map(Number);
-        const full = localTime.length === 5 ? localTime + ':00' : localTime;
-
-        // Detectar madrugada: hora < 6 pertence ao dia anterior
-        let refYear = row.year;
-        let refMonth = row.month;
-        let refDay = row.day;
-
-        if (hh < 6) {
-          // Madrugada: dia anterior
-          const d = new Date(row.year, row.month - 1, row.day - 1);
-          refYear = d.getFullYear();
-          refMonth = d.getMonth() + 1;
-          refDay = d.getDate();
-        }
-
-        const datePrefix = `${refYear}-${pad(refMonth)}-${pad(refDay)}`;
-        const d = new Date(`${datePrefix}T${full}${offset}`);
-        const dataHoraUtc = d.toISOString().replace('T', ' ').slice(0, 19);
-        const diaRef = `${row.year}-${pad(row.month)}-${pad(row.day)}`;
-
-        return { dataHoraUtc, diaRef };
-      };
-
+    try {
       await Promise.all(
-        timesToFill.map((t: string) => {
-          const { dataHoraUtc, diaRef } = toUtc(t);
+        batidas.map(({ dataHoraUtc, diaRef }) => {
           return lancarBatida({
             funcionario_id: funcId,
             data_hora: dataHoraUtc,
@@ -376,7 +387,17 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOff
     }
     // Um dia pode ter mais de uma ocorrência (períodos diferentes, ex.: 1º e 2º
     // período) — este menu é por dia, não por período, então exclui todas.
-    if (ids.length > 1 && !confirm(`${ctx.dayLabel} tem ${ids.length} ocorrências lançadas (períodos diferentes). Excluir todas?`)) {
+    // A ocorrência é um registro único do período inteiro: excluir aqui apaga
+    // todos os dias dela (ex.: férias de 15 dias), por isso a confirmação
+    // mostra nome e período.
+    const fmt = (iso?: string) => (iso ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}` : '');
+    const descricoes = (row.ocorrencias ?? []).map((o) =>
+      o.dataInicio && o.dataFim && o.dataInicio !== o.dataFim
+        ? `"${o.nome}" (${fmt(o.dataInicio)} a ${fmt(o.dataFim)} — todos os dias do período)`
+        : `"${o.nome}"`,
+    );
+    const alvo = descricoes.length > 0 ? descricoes.join(', ') : `${ids.length} ocorrência(s)`;
+    if (!confirm(`Excluir abono/ocorrência ${alvo} de ${ctx.dayLabel}?`)) {
       return;
     }
     try {
@@ -539,7 +560,8 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOff
         <DayActionMenu
           ctx={menuCtx}
           onClose={handleMenuClose}
-          onAbonar={(ctx) => void handleAbonar(ctx)}
+          onDesconsiderar={(ctx) => void handleDesconsiderar(ctx)}
+          onReconsiderar={(ctx) => void handleReconsiderar(ctx)}
           onLancarOcorrencia={handleLancarOcorrencia}
           onJustificativaAutomatica={(ctx) => void handleJustificativaAutomatica(ctx)}
           onJustificativaManual={handleJustificativaManual}

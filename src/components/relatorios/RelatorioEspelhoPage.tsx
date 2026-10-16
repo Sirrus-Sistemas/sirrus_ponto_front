@@ -45,7 +45,7 @@ export function RelatorioEspelhoPage() {
 
   useEffect(() => {
     fetchLotacoes().then(setLotacoes).catch(() => {})
-    fetchFuncionarios({ limit: 500, ativo: 1 })
+    fetchFuncionarios({ limit: 500, ativo: 1, controla_ponto: 1 })
       .then((r) => setFuncionarios(r.data))
       .catch(() => {})
   }, [])

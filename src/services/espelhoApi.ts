@@ -37,6 +37,9 @@ export type FeriadoDia = {
 export type OcorrenciaDia = {
   id: number
   tipo: string
+  /** Período inteiro da ocorrência (YYYY-MM-DD) — pode ir além do dia. */
+  data_inicio?: string
+  data_fim?: string
   descricao: string | null
   tipo_ocorrencia_descricao: string | null
   tipo_lancamento: 'credito' | 'debito' | null
@@ -58,6 +61,8 @@ export type DiaEspelho = {
   /** Todas as ocorrências do dia — pode ter mais de uma quando são de períodos diferentes (ex.: 1º e 2º período), cada uma afetando só o par de batidas do seu período. */
   ocorrencias: OcorrenciaDia[]
   marcacoes: MarcacaoEspelho[]
+  /** Batidas do relógio/app desconsideradas: fora do cálculo, mas mantidas (originais). */
+  marcacoes_desconsideradas?: Pick<MarcacaoEspelho, 'id' | 'data_hora' | 'data_hora_local' | 'tipo' | 'tipo_label'>[]
   /** Soma dos intervalos entre pares de batidas (1ª–2ª, 3ª–4ª, …). */
   minutos_trabalhados: number
   /** minutos_trabalhados ajustado por ocorrência de crédito/débito no dia (igual ao anterior quando não há ocorrência). Use este pra exibir o "Total" do dia. */

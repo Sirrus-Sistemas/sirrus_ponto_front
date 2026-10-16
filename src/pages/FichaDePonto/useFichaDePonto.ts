@@ -39,7 +39,7 @@ function buildEmployee(payload: EspelhoPayload): Employee {
     id: String(m.funcionario_id),
     fullName: m.funcionario_nome ?? '—',
     matricula: m.funcionario_matricula ?? '—',
-    nsr: m.funcionario_pis ?? '—',
+    pis: m.funcionario_pis ?? '—',
     initials: initials(m.funcionario_nome ?? '?'),
     lotacao: '—',
     company: m.empresa_razao_social ?? '—',
@@ -146,6 +146,17 @@ function buildDays(payload: EspelhoPayload, bloqueadoMap: Record<string, boolean
       bloqueado: bloqueadoMap[dia.data] ?? dia.bloqueado ?? false,
       ocorrenciaId: dia.ocorrencia?.id,
       ocorrenciaIds: (dia.ocorrencias ?? []).map((o) => o.id),
+      desconsideradas: (dia.marcacoes_desconsideradas ?? []).map((m) => ({
+        id: m.id,
+        time: (m.data_hora_local ?? m.data_hora).slice(11, 16),
+        source: mapTipo(m.tipo),
+      })),
+      ocorrencias: (dia.ocorrencias ?? []).map((o) => ({
+        id: o.id,
+        nome: o.tipo_ocorrencia_descricao ?? o.tipo,
+        dataInicio: o.data_inicio,
+        dataFim: o.data_fim,
+      })),
       holidayName: dia.feriado?.descricao,
     };
   });
@@ -228,7 +239,7 @@ export function useFichaDePonto(params: Params): UseFichaDePontoResult {
       .then((m) => {
         setMe(m);
         if (m.role === 'admin' || m.role === 'gestor') {
-          return fetchFuncionarios({ limit: 500, ativo: 1 });
+          return fetchFuncionarios({ limit: 500, ativo: 1, controla_ponto: 1 });
         }
       })
       .then((res) => { if (res) setFuncionarios(res.data); })

@@ -23,7 +23,7 @@ const EMPLOYEE: Employee = {
   id: '80',
   fullName: 'Albertina Hatsue Souza Saraiva',
   matricula: '80',
-  nsr: '1.247.881',
+  pis: '1.247.881',
   initials: 'AS',
   lotacao: 'TI · Matriz',
   company: 'Ativa Cons. Org. Ltda',

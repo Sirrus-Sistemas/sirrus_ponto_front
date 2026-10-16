@@ -84,6 +84,10 @@ export function AjustarEscalaPage() {
   const [deleting, setDeleting] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  // Só depois da 1ª resposta dá pra afirmar que "não há escala" — antes disso
+  // a lista vazia é só o estado inicial.
+  const [funcsCarregados, setFuncsCarregados] = useState(false)
+  const [escalaCarregada, setEscalaCarregada] = useState(false)
 
   // Load employees
   useEffect(() => {
@@ -94,6 +98,7 @@ export function AjustarEscalaPage() {
         setFuncIdx(idx >= 0 ? idx : 0)
       })
       .catch(() => setFuncionarios([]))
+      .finally(() => setFuncsCarregados(true))
   }, [funcParam])
 
   // Set initial calendar month from period start
@@ -114,7 +119,7 @@ export function AjustarEscalaPage() {
     fetchEscala(currentFunc.id, inicioParam, fimParam)
       .then((dias) => setEscala(dias))
       .catch(() => setEscala([]))
-      .finally(() => setLoadingEscala(false))
+      .finally(() => { setLoadingEscala(false); setEscalaCarregada(true) })
   }, [currentFunc?.id, inicioParam, fimParam])
 
   const escalaMap = useMemo(() => {
@@ -218,6 +223,24 @@ export function AjustarEscalaPage() {
     )
   }
 
+  // Aberta sem período (link direto, F5 sem a query, voltar do navegador): não
+  // há escala para mostrar — antes a tela exibia "Escala salva" e deixava
+  // Excluir/Concluir ativos sobre um calendário vazio.
+  if (!inicioParam || !fimParam) {
+    return (
+      <div className={styles.denied}>
+        <h2>Nenhuma escala selecionada</h2>
+        <p>Gere ou abra uma escala em Gerar Escala para ajustá-la aqui.</p>
+        <p style={{ marginTop: '0.75rem' }}><Link to="/escalas/gerar">Ir para Gerar Escala</Link></p>
+      </div>
+    )
+  }
+
+  // Período informado, mas nada gravado para o funcionário (ou nenhum
+  // funcionário com escala): sem selo de "salva" e sem ações sobre a escala.
+  const semEscala = (funcsCarregados && funcionarios.length === 0)
+    || (escalaCarregada && !loadingEscala && escala.length === 0)
+
   const periodoLabel = inicioParam
     ? `${mesAno(inicioParam)}${inicioParam.slice(0, 7) !== fimParam.slice(0, 7) ? ` – ${mesAno(fimParam)}` : ''}`
     : '—'
@@ -245,12 +268,20 @@ export function AjustarEscalaPage() {
       <div className={styles.pageHeader}>
         <div className={styles.titleRow}>
           <h1 className={styles.title}>Ajustar escala</h1>
-          <span className={styles.badgeSalva}><Check size={11} strokeWidth={3} /> Escala salva</span>
+          {!semEscala && (
+            <span className={styles.badgeSalva}><Check size={11} strokeWidth={3} /> Escala salva</span>
+          )}
         </div>
         <p className={styles.subtitle}>
           {currentFunc?.filial_nome ?? 'Filial'} · {periodoLabel}
           {ajustesCount > 0 && ` · ${ajustesCount} ajuste${ajustesCount !== 1 ? 's' : ''} desde então`}
         </p>
+        {semEscala && (
+          <p className={styles.subtitle} role="status">
+            Nenhuma escala salva {funcionarios.length === 0 ? 'neste período' : `para ${currentFunc?.nome ?? 'este funcionário'} neste período`}.{' '}
+            <Link to="/escalas/gerar">Gerar escala</Link>
+          </p>
+        )}
       </div>
 
       {/* ── CTA bar ── */}
@@ -258,7 +289,7 @@ export function AjustarEscalaPage() {
         <button type="button" className={styles.btnGhost} onClick={() => setHistoryOpen((o) => !o)}>
           <History size={14} /> Histórico completo
         </button>
-        <button type="button" className={styles.btnGhost}>
+        <button type="button" className={styles.btnGhost} disabled={semEscala}>
           <FileText size={14} /> Exportar PDF
         </button>
         {!confirmDelete ? (
@@ -266,7 +297,7 @@ export function AjustarEscalaPage() {
             type="button"
             className={styles.btnDelete}
             onClick={() => setConfirmDelete(true)}
-            disabled={deleting}
+            disabled={deleting || semEscala || !currentFunc}
           >
             Excluir escala
           </button>
@@ -295,6 +326,7 @@ export function AjustarEscalaPage() {
           type="button"
           className={styles.btnConcluir}
           onClick={() => navigate('/escalas/gerar')}
+          disabled={semEscala}
         >
           <Check size={14} /> Concluir ajustes
         </button>

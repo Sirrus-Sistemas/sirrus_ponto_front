@@ -8,6 +8,8 @@ export type UsuarioAcesso = {
   funcionario_ativo: number
   cpf: string | null
   usuario_ativo: number | null
+  /** 1 = senha definida pelo admin/import, troca obrigatória no próximo login. */
+  trocar_senha?: number | null
   tem_acesso: number
 }
 
@@ -44,3 +46,7 @@ export async function revogarAcesso(funcionarioId: number): Promise<void> {
     method: 'DELETE',
   })
 }
+
+/** Mesma mensagem do backend — inativar a própria conta tranca o usuário fora do sistema. */
+export const MSG_INATIVAR_PROPRIO_USUARIO =
+  'Não é possível inativar o usuário que está logado. Solicite a outro administrador que realize essa alteração.'

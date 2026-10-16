@@ -105,7 +105,15 @@ export function PunchRow({ row, onCellOpen, dragHandlers, draggingKey, dragOverK
       })}
 
       <td className={styles.tdStatus}>
-        <DayStatusBadge status={row.status} modifiers={row.modifiers} />
+        <DayStatusBadge status={row.status} modifiers={row.modifiers} ocorrencias={row.ocorrencias?.map((o) => o.nome)} />
+        {(row.desconsideradas?.length ?? 0) > 0 && (
+          <span
+            className={styles.desconsideradas}
+            title={`Fora do cálculo (registro original mantido): ${row.desconsideradas!.map((d) => d.time).join(', ')}`}
+          >
+            {row.desconsideradas!.length} desconsiderada{row.desconsideradas!.length > 1 ? 's' : ''}
+          </span>
+        )}
       </td>
 
       <td className={styles.tdActions}>

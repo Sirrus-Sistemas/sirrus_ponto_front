@@ -8,6 +8,7 @@ import {
   atualizarAcesso,
   revogarAcesso,
   type UsuarioAcesso,
+  MSG_INATIVAR_PROPRIO_USUARIO,
 } from '../../services/usuariosApi'
 import styles from './GerenciarUsuariosPage.module.css'
 
@@ -69,7 +70,7 @@ export function GerenciarUsuariosPage() {
       if (filtroRole && (!u.tem_acesso || u.role !== filtroRole)) return false
       if (filtroSituacao) {
         if (!u.tem_acesso) return false
-        const ativo = Number(u.usuario_ativo) === 1
+        const ativo = Number(u.usuario_ativo) === 1 && Number(u.funcionario_ativo) === 1
         if (filtroSituacao === 'ativo' && !ativo) return false
         if (filtroSituacao === 'bloqueado' && ativo) return false
       }
@@ -153,6 +154,7 @@ export function GerenciarUsuariosPage() {
     const payload: Parameters<typeof atualizarAcesso>[1] = {}
     payload.role = editForm.role
     payload.ativo = editForm.ativo === '0' ? 0 : 1
+    if (payload.ativo === 0 && alvo?.id === me?.id) { setError(MSG_INATIVAR_PROPRIO_USUARIO); return }
 
     if (editForm.nova_senha) {
       if (editForm.nova_senha.length < 6) { setError('A nova senha deve ter no mínimo 6 caracteres.'); return }
@@ -180,6 +182,7 @@ export function GerenciarUsuariosPage() {
   }
 
   async function handleRevogar(u: UsuarioAcesso) {
+    if (u.id === me?.id) { setError(MSG_INATIVAR_PROPRIO_USUARIO); return }
     if (!confirm(`Bloquear acesso de ${u.nome}? O funcionário não conseguirá mais fazer login até ser desbloqueado.`)) return
     try {
       await revogarAcesso(u.id)
@@ -270,7 +273,7 @@ export function GerenciarUsuariosPage() {
                       autoComplete="new-password"
                       required
                     />
-                    <p className={styles.hint}>Mínimo 6 caracteres.</p>
+                    <p className={styles.hint}>Mínimo 6 caracteres, sem usar o CPF. É uma senha provisória: o usuário troca no primeiro acesso.</p>
                   </div>
                   <div className={styles.field}>
                     <label htmlFor="ua-conf">Confirmar senha</label>
@@ -336,7 +339,7 @@ export function GerenciarUsuariosPage() {
                       onChange={updateEdit('nova_senha')}
                       autoComplete="new-password"
                     />
-                    <p className={styles.hint}>Mínimo 6 caracteres, se preenchida.</p>
+                    <p className={styles.hint}>Mínimo 6 caracteres, sem usar o CPF, se preenchida. O usuário troca no próximo acesso.</p>
                   </div>
                   <div className={styles.field}>
                     <label htmlFor="ue-conf">Confirmar nova senha</label>
@@ -456,12 +459,17 @@ export function GerenciarUsuariosPage() {
                         {u.cpf ?? '—'}
                       </td>
                       <td>
-                        {u.tem_acesso
-                          ? u.usuario_ativo
-                            ? <span className={`${styles.badge} ${styles.badgeGreen}`}>Ativo</span>
-                            : <span className={`${styles.badge} ${styles.badgeRed}`}>Bloqueado</span>
-                          : <span className={styles.badge}>—</span>
+                        {!u.tem_acesso
+                          ? <span className={styles.badge}>—</span>
+                          : Number(u.funcionario_ativo) !== 1
+                            ? <span className={`${styles.badge} ${styles.badgeRed}`} title="O login é bloqueado enquanto o funcionário estiver inativo.">Funcionário inativo</span>
+                            : Number(u.usuario_ativo) === 1
+                              ? <span className={`${styles.badge} ${styles.badgeGreen}`}>Ativo</span>
+                              : <span className={`${styles.badge} ${styles.badgeRed}`}>Bloqueado</span>
                         }
+                        {u.tem_acesso && Number(u.trocar_senha) === 1 && Number(u.usuario_ativo) === 1 && (
+                          <span className={styles.badge} title="Precisa trocar a senha no próximo login." style={{ marginLeft: 4 }}>Troca de senha pendente</span>
+                        )}
                       </td>
                       <td>
                         <div className={styles.tdActions}>

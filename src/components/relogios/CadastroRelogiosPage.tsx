@@ -30,6 +30,8 @@ type FormState = {
   porta: string
   usuario: string
   senha: string
+  tem_senha: boolean
+  limpar_senha: boolean
   usa_afd: boolean
   filial_id: string
   ativo: boolean
@@ -48,6 +50,8 @@ const emptyForm = (): FormState => ({
   porta: '80',
   usuario: '',
   senha: '',
+  tem_senha: false,
+  limpar_senha: false,
   usa_afd: false,
   filial_id: '',
   ativo: true,
@@ -117,7 +121,9 @@ export function CadastroRelogiosPage() {
       ip: r.ip ?? '',
       porta: r.porta != null ? String(r.porta) : '80',
       usuario: r.usuario ?? '',
-      senha: r.senha ?? '',
+      senha: '',
+      tem_senha: Boolean(Number(r.tem_senha)),
+      limpar_senha: false,
       usa_afd: r.usa_afd,
       filial_id: r.filial_id != null ? String(r.filial_id) : '',
       ativo: r.ativo,
@@ -126,6 +132,20 @@ export function CadastroRelogiosPage() {
     setError(null)
     setSuccess(null)
   }
+
+  // A senha salva nunca volta da API; na edição o campo fica vazio e só
+  // é regravada se o usuário digitar outra (ou pedir para remover).
+  const senhaSalvaHint = editingId !== null && form.tem_senha ? (
+    <label className={styles.hint} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+      <input
+        type="checkbox"
+        checked={form.limpar_senha}
+        disabled={form.senha.trim() !== ''}
+        onChange={(e) => setForm((f) => ({ ...f, limpar_senha: e.target.checked }))}
+      />
+      Remover a senha salva
+    </label>
+  ) : null
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -155,7 +175,11 @@ export function CadastroRelogiosPage() {
       }
 
       if (editingId !== null) {
-        await updateRelogio(editingId, { ...payload, ativo: form.ativo })
+        await updateRelogio(editingId, {
+          ...payload,
+          ativo: form.ativo,
+          limpar_senha: form.limpar_senha && !payload.senha,
+        })
         setSuccess('Relógio atualizado com sucesso.')
       } else {
         await createRelogio(payload)
@@ -465,11 +489,12 @@ export function CadastroRelogiosPage() {
                         <label>SENHA</label>
                         <input
                           type="password"
-                          placeholder="Senha do equipamento"
+                          placeholder={form.tem_senha && !form.limpar_senha ? 'Senha salva — em branco mantém' : "Senha do equipamento"}
                           value={form.senha}
                           onChange={update('senha')}
                           autoComplete="new-password"
                         />
+                        {senhaSalvaHint}
                       </div>
                     </div>
                   </div>
@@ -495,11 +520,12 @@ export function CadastroRelogiosPage() {
                         <label>SENHA DO EQUIPAMENTO</label>
                         <input
                           type="password"
-                          placeholder="Opcional"
+                          placeholder={form.tem_senha && !form.limpar_senha ? 'Senha salva — em branco mantém' : "Opcional"}
                           value={form.senha}
                           onChange={update('senha')}
                           autoComplete="new-password"
                         />
+                        {senhaSalvaHint}
                       </div>
                     </div>
                   </div>

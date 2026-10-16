@@ -25,7 +25,9 @@ export function formatMinutosPtAbs(m: number): string {
 export function formatSaldoMesPt(minutos: number | null): string {
   if (minutos == null) return '—'
   if (minutos === 0) return '0h 00m'
-  const sign = minutos > 0 ? '+' : ''
+  // Mesmo sinal do Espelho (+ / −). Antes o negativo saía sem sinal — o valor
+  // ia por formatMinutosPtAbs e só o "+" era acrescentado.
+  const sign = minutos > 0 ? '+' : '−'
   return `${sign}${formatMinutosPtAbs(minutos)}`
 }
 

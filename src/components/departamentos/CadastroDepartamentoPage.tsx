@@ -31,17 +31,18 @@ export function CadastroDepartamentoPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [mostrarInativos, setMostrarInativos] = useState(false)
 
   const loadLista = useCallback((opts?: { silent?: boolean }) => {
     const silent = opts?.silent === true
     if (!silent) setLoadingLista(true)
-    return fetchDepartamentos()
+    return fetchDepartamentos({ incluirInativos: mostrarInativos })
       .then(setLista)
       .catch(() => setLista([]))
       .finally(() => {
         if (!silent) setLoadingLista(false)
       })
-  }, [])
+  }, [mostrarInativos])
 
   useEffect(() => {
     void loadLista()
@@ -84,6 +85,14 @@ export function CadastroDepartamentoPage() {
     setSubmitting(true)
     try {
       if (editingId != null) {
+        const atual = lista.find((d) => d.id === editingId)
+        if (form.ativo === '0' && atual?.ativo !== 0) {
+          const total = Number(atual?.total_funcionarios ?? 0)
+          const vinculados = total > 0
+            ? ` ${total} funcionário(s) ativo(s) estão vinculados a ele e continuarão vinculados, mas o departamento deixará de aparecer nos cadastros.`
+            : ''
+          if (!confirm(`Desativar o departamento "${nome}"?${vinculados}`)) return
+        }
         const payload: UpdateDepartamentoPayload = {
           nome,
           descricao: form.descricao.trim() || null,
@@ -223,9 +232,17 @@ export function CadastroDepartamentoPage() {
         ) : (
           <>
             <p className={styles.hint} style={{ marginBottom: '0.75rem' }}>
-              A lista mostra apenas departamentos <strong>ativos</strong> (o servidor filtra os inativos). Ao desativar
-              um departamento, ele deixa de aparecer aqui e nos selects de cadastro de funcionário.
+              Departamentos inativos não aparecem no cadastro de funcionário. Para reativar um, marque
+              "Mostrar inativos", clique em Editar e mude a Situação para Ativo.
             </p>
+            <label className={styles.hint} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: '0.75rem', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={mostrarInativos}
+                onChange={(e) => setMostrarInativos(e.target.checked)}
+              />
+              Mostrar inativos
+            </label>
             <div className={styles.tableWrap}>
               <table className={styles.table}>
                 <thead>

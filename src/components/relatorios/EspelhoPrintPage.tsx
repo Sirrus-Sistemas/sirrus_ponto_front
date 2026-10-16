@@ -46,7 +46,7 @@ export function EspelhoPrintPage() {
           ids = [Number(funcIdParam)]
         } else {
           const lotId = lotacaoIdParam ? Number(lotacaoIdParam) : undefined
-          const res = await fetchFuncionarios({ limit: 500, ativo: 1, lotacao_id: lotId })
+          const res = await fetchFuncionarios({ limit: 500, ativo: 1, controla_ponto: 1, lotacao_id: lotId })
           ids = res.data.map((f) => f.id)
         }
       } catch {

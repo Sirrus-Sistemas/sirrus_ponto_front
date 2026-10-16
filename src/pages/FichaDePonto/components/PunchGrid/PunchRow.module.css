@@ -100,3 +100,12 @@
   opacity: 1 !important;
 }
 .lockBtn:disabled { cursor: not-allowed; opacity: 0.4 !important; }
+
+/* Batida do relógio/app desconsiderada — fora do cálculo, mas mantida. */
+.desconsideradas {
+  display: block;
+  margin-top: 2px;
+  font-size: 10.5px;
+  color: #94A3B8;
+  white-space: nowrap;
+}

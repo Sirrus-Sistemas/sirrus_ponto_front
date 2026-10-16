@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/layout/AppShell'
+import { TrocarSenhaPage } from './components/login/TrocarSenhaPage'
 import { DashboardPage } from './components/dashboard/DashboardPage'
 import { EspelhoPontoPage } from './components/dashboard/EspelhoPontoPage'
 import { CadastroFuncionarioPage } from './components/funcionarios/CadastroFuncionarioPage'
@@ -44,6 +45,7 @@ function App() {
         <Route path="/recuperar-senha" element={<PasswordRecoveryPage />} />
 
         <Route element={<RequireAuth />}>
+          <Route path="/trocar-senha" element={<TrocarSenhaPage />} />
           <Route path="/relatorios/espelho/print" element={<EspelhoPrintPage />} />
           <Route element={<AppShell />}>
             <Route path="/dashboard" element={<DashboardPage />} />

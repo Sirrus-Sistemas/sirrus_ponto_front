@@ -7,7 +7,9 @@ export type CreateFuncionarioPayload = {
   email: string
   /** 11 dígitos, sem máscara */
   cpf: string
-  data_admissao: string
+  data_admissao?: string | null
+  data_nascimento?: string | null
+  rg?: string | null
   password: string
   telefone?: string | null
   cargo?: string | null
@@ -21,6 +23,8 @@ export type CreateFuncionarioPayload = {
   role?: 'admin' | 'gestor' | 'funcionario'
   usa_escala?: number
   usa_banco_horas?: number
+  /** 0 = dispensado do controle de ponto (cargo de gestão, art. 62 CLT). */
+  controla_ponto?: number
   usa_mobile?: number
   admin_ponto_mobile?: number
   cep?: string | null
@@ -41,7 +45,9 @@ export type UpdateFuncionarioPayload = {
   cargo?: string | null
   matricula?: string | null
   pis?: string | null
-  data_admissao?: string
+  data_admissao?: string | null
+  data_nascimento?: string | null
+  rg?: string | null
   filial_id?: number | null
   departamento_id?: number | null
   turno_id?: number | null
@@ -50,6 +56,8 @@ export type UpdateFuncionarioPayload = {
   ativo?: number
   usa_escala?: number
   usa_banco_horas?: number
+  /** 0 = dispensado do controle de ponto (cargo de gestão, art. 62 CLT). */
+  controla_ponto?: number
   usa_mobile?: number
   admin_ponto_mobile?: number
   cep?: string | null
@@ -79,7 +87,7 @@ export type FuncionarioListItem = {
   departamento_nome: string | null
   turno_nome: string | null
   lotacao_nome: string | null
-  data_admissao: string
+  data_admissao: string | null
 }
 
 export type FuncionarioDetail = {
@@ -91,7 +99,9 @@ export type FuncionarioDetail = {
   cargo: string | null
   matricula: string | null
   pis: string | null
-  data_admissao: string
+  rg: string | null
+  data_nascimento: string | null
+  data_admissao: string | null
   filial_id: number | null
   departamento_id: number | null
   turno_id: number | null
@@ -101,6 +111,7 @@ export type FuncionarioDetail = {
   ativo: number
   usa_escala: number
   usa_banco_horas: number
+  controla_ponto?: number
   usa_mobile: number
   admin_ponto_mobile: number
   pontomobile_id: number | null
@@ -133,6 +144,8 @@ export async function fetchFuncionarios(params?: {
   ativo?: number
   lotacao_id?: number
   filial_id?: number
+  /** 1 = só quem controla ponto (telas de Ficha/Espelho/relatórios). */
+  controla_ponto?: number
 }, signal?: AbortSignal): Promise<{ data: FuncionarioListItem[]; pagination: FuncionariosPagination }> {
   const qs = new URLSearchParams()
   if (params?.search)                qs.set('search', params.search)
@@ -141,6 +154,7 @@ export async function fetchFuncionarios(params?: {
   if (params?.ativo !== undefined)   qs.set('ativo', String(params.ativo))
   if (params?.lotacao_id != null)    qs.set('lotacao_id', String(params.lotacao_id))
   if (params?.filial_id != null)     qs.set('filial_id', String(params.filial_id))
+  if (params?.controla_ponto !== undefined) qs.set('controla_ponto', String(params.controla_ponto))
   const query = qs.toString() ? `?${qs}` : ''
   return apiRequest<{ data: FuncionarioListItem[]; pagination: FuncionariosPagination }>(
     `/api/funcionarios${query}`, { signal }

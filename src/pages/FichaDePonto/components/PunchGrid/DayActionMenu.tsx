@@ -15,7 +15,8 @@ export interface DayActionMenuContext {
 interface DayActionMenuProps {
   ctx: DayActionMenuContext;
   onClose: () => void;
-  onAbonar: (ctx: DayActionMenuContext) => void;
+  onDesconsiderar: (ctx: DayActionMenuContext) => void;
+  onReconsiderar: (ctx: DayActionMenuContext) => void;
   onLancarOcorrencia: (ctx: DayActionMenuContext) => void;
   onJustificativaAutomatica: (ctx: DayActionMenuContext) => void;
   onJustificativaManual: (ctx: DayActionMenuContext) => void;
@@ -24,7 +25,7 @@ interface DayActionMenuProps {
   onExcluirJustificativaManual: (ctx: DayActionMenuContext) => void;
 }
 
-export function DayActionMenu({ ctx, onClose, onAbonar, onLancarOcorrencia, onJustificativaAutomatica, onJustificativaManual, onExcluirOcorrencia, onExcluirJustificativaAutomatica, onExcluirJustificativaManual }: DayActionMenuProps) {
+export function DayActionMenu({ ctx, onClose, onDesconsiderar, onReconsiderar, onLancarOcorrencia, onJustificativaAutomatica, onJustificativaManual, onExcluirOcorrencia, onExcluirJustificativaAutomatica, onExcluirJustificativaManual }: DayActionMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -65,10 +66,24 @@ export function DayActionMenu({ ctx, onClose, onAbonar, onLancarOcorrencia, onJu
         <button
           type="button"
           className={styles.item}
-          onClick={() => { onClose(); onAbonar(ctx); }}
+          onClick={() => { onClose(); onDesconsiderar(ctx); }}
         >
-          <span className={styles.itemLabel}>Abonar</span>
+          {/* Antes "Abonar" — que apagava a batida, inclusive a do relógio.
+              Manual é excluída; relógio/app só sai do cálculo. */}
+          <span className={styles.itemLabel}>Desconsiderar batida</span>
         </button>
+
+        {(ctx.row.desconsideradas?.length ?? 0) > 0 && (
+          <button
+            type="button"
+            className={styles.item}
+            onClick={() => { onClose(); onReconsiderar(ctx); }}
+          >
+            <span className={styles.itemLabel}>
+              Reconsiderar batidas ({ctx.row.desconsideradas!.map((d) => d.time).join(', ')})
+            </span>
+          </button>
+        )}
 
         <button
           type="button"
@@ -99,7 +114,13 @@ export function DayActionMenu({ ctx, onClose, onAbonar, onLancarOcorrencia, onJu
           className={`${styles.item} ${styles.itemDanger}`}
           onClick={() => { onClose(); onExcluirOcorrencia(ctx); }}
         >
-          <span className={styles.itemLabel}>Excluir Ocorrência</span>
+          {/* O dia com ocorrência aparece como "Abonado" na grade — o nome
+              do item precisa bater com isso, senão ninguém acha como desfazer. */}
+          <span className={styles.itemLabel}>
+            {ctx.row.ocorrencias?.length
+              ? `Excluir Abono / Ocorrência (${ctx.row.ocorrencias.map((o) => o.nome).join(', ')})`
+              : 'Excluir Abono / Ocorrência'}
+          </span>
         </button>
 
         <button

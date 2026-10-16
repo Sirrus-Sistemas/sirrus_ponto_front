@@ -11,6 +11,7 @@ import {
   type UpdateFilialPayload,
 } from '../../services/filiaisApi'
 import styles from './CadastroFiliaisPage.module.css'
+import { CercaEletronicaEditor } from '../cerca/CercaEletronicaEditor'
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -397,6 +398,15 @@ export function CadastroFiliaisPage() {
                   </button>
                 </div>
               </form>
+
+              {/* Fora do <form>: Enter nos campos da cerca não envia o cadastro. */}
+              {!isNew && selectedId != null && (
+                <section className={styles.cercaSection}>
+                  <h3 className={styles.cercaTitulo}>Cerca eletrônica — Ponto Mobile</h3>
+                  <p className={styles.cercaHint}>Locais onde os funcionários desta filial podem bater ponto pelo aplicativo. Valem para todos da filial, somados aos locais da lotação e do próprio funcionário.</p>
+                  <CercaEletronicaEditor key={selectedId} escopo="filial" id={selectedId} />
+                </section>
+              )}
             </div>
           )}
         </div>

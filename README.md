@@ -71,3 +71,17 @@ export default defineConfig([
   },
 ])
 ```
+
+Tudo foi commitado em "Melhorias e correções" (6cd6725). Aqui está o estado atual:
+
+1. Fix de duplicidade do pontomobile_id (3 camadas) — código implementado, migration pendente de aplicar
+Está tudo commitado no backend: guard em syncFuncionario (bloqueia nova duplicidade), _buscarEMapear hardened (exclui colisões da importação em vez de misturar batidas), endpoint GET /mobile/conflitos-pontomobile-id + banner de alerta no front (IntegracaoMobilePage). A migration 041_funcionarios_pontomobile_id_unico.sql existe no repo mas ainda não foi aplicada — no banco local o índice ainda é o antigo não-único (idx_func_pontomobile), e os 3 pares de duplicidade ainda estão lá (6031: 658/660, 6048: 587/591, 6674: 509/511). Ou seja: a correção de dados que passei (os 3 UPDATE ... SET pontomobile_id = NULL) ainda não foi executada em produção — sem isso, rodar a migration 041 vai falhar de propósito.
+
+2. Ocorrência HH:MM (OcorrenciaModal.tsx) — concluído e já em produção
+Essa correção (campo de quantidade de horas em HH:MM em vez de decimal) e a lógica de crédito/débito somado às horas trabalhadas no dia estão commitadas e deployadas (aparecem em commits como "Correção ocorrência com horas trabalhadas", "Ocorrência em turnos" etc. — inclusive houve trabalho adicional depois, "Banco de Horas", "Correção horas debito", que não acompanhei em detalhe nesta sessão).
+
+3. Próximo passo pendente é seu
+Falta rodar em produção os 3 UPDATE que te passei (zerar pontomobile_id de id 660, 587 e 509) e, no próximo deploy, a migration 041 trava o campo como único definitivamente. Quer que eu confira de novo os dados de produção antes, já que um mês se passou desde a análise original?
+
+o fonte do backend esta neste local:
+/home/adelson/Documentos/Projetos/NodeJS/sirrus-ponto-backend

@@ -1,0 +1,177 @@
+.wrap {
+  --c-primary: #14918b;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.topo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--sp-text-2);
+  max-width: 420px;
+}
+
+.campo select {
+  border: 1px solid var(--sp-border);
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+  font: inherit;
+  font-weight: 400;
+  font-size: 0.875rem;
+  background: var(--sp-bg-card);
+  color: var(--sp-text);
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--sp-text-3);
+  line-height: 1.4;
+}
+
+.aviso {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--sp-status-ocorrencia-text);
+  background: var(--sp-status-ocorrencia-bg);
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+}
+
+.mapaBarra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.acoes {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.mapa {
+  height: 340px;
+  border-radius: 12px;
+  border: 1px solid var(--sp-border);
+  overflow: hidden;
+  /* Leaflet usa z-index alto nos painéis — mantém abaixo de modais/menus da página. */
+  position: relative;
+  z-index: 0;
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.tabela th {
+  text-align: left;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sp-text-3);
+  padding: 0.3rem 0.35rem;
+}
+
+.tabela td {
+  padding: 0.25rem 0.35rem;
+  border-top: 1px solid var(--sp-divider);
+}
+
+.tabela input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--sp-border);
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+  font: inherit;
+  font-size: 0.82rem;
+  box-sizing: border-box;
+}
+
+.tabela input:focus {
+  outline: none;
+  border-color: var(--c-primary);
+}
+
+.linhaSel td {
+  background: var(--sp-accent-soft);
+}
+
+.btn,
+.remover {
+  border: 1px solid var(--sp-border);
+  background: var(--sp-bg-card);
+  border-radius: 8px;
+  padding: 0.35rem 0.65rem;
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--sp-text-2);
+  cursor: pointer;
+}
+
+.btn:hover,
+.remover:hover {
+  border-color: var(--sp-text-3);
+}
+
+.remover {
+  padding: 0.2rem 0.55rem;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.erro {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--sp-status-falta-text);
+}
+
+.ok {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--sp-status-presente-text);
+}
+
+.rodape {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btnSalvar {
+  border: 0;
+  border-radius: 10px;
+  padding: 0.6rem 1.1rem;
+  background: var(--c-primary);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.btnSalvar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 680px) {
+  .mapa { height: 260px; }
+  .tabela th:nth-child(2),
+  .tabela th:nth-child(3) { white-space: nowrap; }
+}

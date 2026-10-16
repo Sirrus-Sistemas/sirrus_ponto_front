@@ -16,8 +16,10 @@ type ListaResponse<T> = {
   data: T
 }
 
-export async function fetchDepartamentos(): Promise<Departamento[]> {
-  const res = await apiRequest<ListaResponse<Departamento[]>>('/api/departamentos')
+/** `incluirInativos`: também os desativados (tela de cadastro, para reativar). */
+export async function fetchDepartamentos(opts?: { incluirInativos?: boolean }): Promise<Departamento[]> {
+  const qs = opts?.incluirInativos ? '?incluir_inativos=1' : ''
+  const res = await apiRequest<ListaResponse<Departamento[]>>(`/api/departamentos${qs}`)
   return Array.isArray(res.data) ? res.data : []
 }
 

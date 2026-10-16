@@ -226,7 +226,7 @@ export function RelogioComunicacaoPage() {
                     </div>
                     <div className={styles.cardRow}>
                       <span className={styles.cardMeta}>{modeloLabel(r.modelo)}</span>
-                      {r.usa_afd && <span className={styles.cardMeta}>AFD</span>}
+                      {r.usa_afd ? <span className={styles.cardMeta}>AFD</span> : null}
                     </div>
                   </li>
                 )
@@ -522,14 +522,17 @@ function SaudeCard({ saude, relogios }: { saude: SistemasSaude; relogios: Relogi
           {saude.relogios.map((r) => (
             <span
               key={r.id}
-              className={styles.saudeRelogioPill}
+              className={`${styles.saudeRelogioPill} ${r.erro ? styles.saudeRelogioPillErro : ''}`}
               style={{ background: r.status === 'ok' ? '#dcfce7' : '#fee2e2',
                        color: r.status === 'ok' ? '#166534' : '#991b1b' }}
-              title={r.erro ?? ''}
             >
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: r.status === 'ok' ? '#22c55e' : '#ef4444', display: 'inline-block', marginRight: 4 }} />
-              {relogioNome(r.id)}
-              {r.erro && ` — ${r.erro}`}
+              <span className={styles.saudeRelogioNome}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: r.status === 'ok' ? '#22c55e' : '#ef4444', display: 'inline-block', marginRight: 4 }} />
+                {relogioNome(r.id)}
+              </span>
+              {/* Erro em linha própria e quebrando — numa linha só a mensagem
+                  (com URL/IP) passava da largura do card e era cortada. */}
+              {r.erro && <span className={styles.saudeRelogioErro}>{r.erro}</span>}
             </span>
           ))}
         </div>

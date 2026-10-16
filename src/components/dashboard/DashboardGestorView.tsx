@@ -118,7 +118,7 @@ export function DashboardGestorView({ me, switcherNode }: { me: FuncionarioMe; s
       setTeamError(null)
       try {
         const [{ data: funcionarios }, esp, ocorrs, lots] = await Promise.all([
-          fetchFuncionarios({ ativo: 1, limit: 1000 }, signal),
+          fetchFuncionarios({ ativo: 1, controla_ponto: 1, limit: 1000 }, signal),
           fetchEspelho(ano, mes, undefined, signal),
           fetchOcorrencias({ ano, mes }, signal),
           fetchLotacoes(signal),

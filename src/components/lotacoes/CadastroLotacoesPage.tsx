@@ -17,6 +17,7 @@ import {
   type UpdateLotacaoPayload,
 } from '../../services/lotacoesApi'
 import styles from './CadastroLotacoesPage.module.css'
+import { CercaEletronicaEditor } from '../cerca/CercaEletronicaEditor'
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -602,6 +603,15 @@ export function CadastroLotacoesPage() {
                   </button>
                 </div>
               </form>
+
+              {/* Fora do <form>: Enter nos campos da cerca não envia o cadastro. */}
+              {!isNew && selectedId != null && (
+                <section className={styles.cercaSection}>
+                  <h3 className={styles.cercaTitulo}>Cerca eletrônica — Ponto Mobile</h3>
+                  <p className={styles.cercaHint}>Locais desta lotação, somados aos da filial e do funcionário. "Herdar" usa a regra da filial.</p>
+                  <CercaEletronicaEditor key={selectedId} escopo="lotacao" id={selectedId} />
+                </section>
+              )}
             </div>
           )}
         </div>

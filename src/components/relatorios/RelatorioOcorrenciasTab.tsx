@@ -30,7 +30,7 @@ export function RelatorioOcorrenciasTab() {
   const abortRef = useRef(false)
 
   useEffect(() => {
-    fetchFuncionarios({ limit: 1000, ativo: 1 })
+    fetchFuncionarios({ limit: 1000, ativo: 1, controla_ponto: 1 })
       .then((r) => setTodos(r.data))
       .catch(() => {})
   }, [])

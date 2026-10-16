@@ -126,7 +126,7 @@ export function FichaPontoPage() {
         setMe(m)
         if (m.role === 'admin' || m.role === 'gestor') {
           return Promise.all([
-            fetchFuncionarios({ limit: 500, ativo: 1 }),
+            fetchFuncionarios({ limit: 500, ativo: 1, controla_ponto: 1 }),
             fetchLotacoes(),
           ])
         }

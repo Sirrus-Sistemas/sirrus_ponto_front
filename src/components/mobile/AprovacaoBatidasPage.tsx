@@ -71,7 +71,7 @@ export function AprovacaoBatidasPage() {
   useEffect(() => {
     setFuncionarioId('')
     if (!filialId) { setFuncionarios([]); return }
-    fetchFuncionarios({ limit: 1000, ativo: 1, filial_id: filialId, lotacao_id: lotacaoId || undefined })
+    fetchFuncionarios({ limit: 1000, ativo: 1, controla_ponto: 1, filial_id: filialId, lotacao_id: lotacaoId || undefined })
       .then((r) => setFuncionarios(r.data))
       .catch(() => {})
   }, [filialId, lotacaoId])

@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ApiError, getStoredToken } from '../../lib/api'
+import { ApiError, getStoredToken, tokenExigeTrocaSenha, TROCAR_SENHA_PATH } from '../../lib/api'
 import { loginRequest } from '../../services/authApi'
 import { LoginCard } from './LoginCard'
 import { OutlinedInput } from './OutlinedInput'
@@ -41,7 +41,7 @@ export function LoginPage() {
     setLoading(true)
     try {
       await loginRequest(cpfDigits, pwd)
-      navigate('/dashboard', { replace: true })
+      navigate(tokenExigeTrocaSenha() ? TROCAR_SENHA_PATH : '/dashboard', { replace: true })
     } catch (err) {
       let message =
         err instanceof ApiError

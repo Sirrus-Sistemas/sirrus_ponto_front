@@ -158,6 +158,7 @@ export function CadastroTiposOcorrenciaPage() {
   }
 
   async function toggleAtivo(t: TipoOcorrencia) {
+    if (t.ativo === 1 && !confirm(`Desativar o tipo de ocorrência "${t.descricao}"? Ele deixa de aparecer para novos lançamentos; os lançamentos já feitos continuam.`)) return
     try {
       await updateTipoOcorrencia(t.id, { ativo: t.ativo === 1 ? 0 : 1 })
       await loadLista(true)

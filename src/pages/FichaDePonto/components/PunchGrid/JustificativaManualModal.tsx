@@ -4,6 +4,7 @@ import { ApiError } from '../../../../lib/api';
 import { lancarBatida, editarBatida } from '../../../../services/fichaPontoApi';
 import type { DayActionMenuContext } from './DayActionMenu';
 import styles from './OcorrenciaModal.module.css';
+import { diasAposReferencia, montarBatida } from '../../batidaDataHora';
 
 const SLOT_LABELS = ['E1', 'S1', 'E2', 'S2', 'E3', 'S3', 'E4', 'S4'];
 
@@ -56,27 +57,13 @@ export function JustificativaManualModal({
       setSubmitting(true);
       try {
         const [hh, mm] = horario.split(':').map(Number);
-        const offset = tzOffset ?? '-03:00';
-
-        // Detectar madrugada: hora < 6 pertence ao dia anterior (em UTC)
-        let refYear = ctx.row.year;
-        let refMonth = ctx.row.month;
-        let refDay = ctx.row.day;
-
-        if (hh < 6) {
-          // Madrugada: a data UTC é do dia anterior
-          const d = new Date(ctx.row.year, ctx.row.month - 1, ctx.row.day - 1);
-          refYear = d.getFullYear();
-          refMonth = d.getMonth() + 1;
-          refDay = d.getDate();
-        }
-
-        // Construir data em hora local e converter para UTC
-        const datePrefix = `${refYear}-${pad(refMonth)}-${pad(refDay)}`;
-        const localDateStr = `${datePrefix}T${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:00${offset}`;
-        const d = new Date(localDateStr);
-        const dataHora = d.toISOString().replace('T', ' ').slice(0, 19);
-        const diaRef = `${ctx.row.year}-${pad(ctx.row.month)}-${pad(ctx.row.day)}`;
+        const hhmm = `${pad(hh)}:${pad(mm)}`;
+        // Dia de referência da linha; +1 só se a jornada já passou da
+        // meia-noite em relação às batidas dos slots anteriores.
+        const anteriores = ctx.row.punches.slice(0, slotIndex).map((p) => p?.time);
+        const { dataHoraUtc: dataHora, diaRef } = montarBatida(
+          ctx.row, hhmm, diasAposReferencia(anteriores, hhmm), tzOffset,
+        );
 
         const payload = {
           funcionario_id: ctx.funcionarioId,
@@ -89,7 +76,7 @@ export function JustificativaManualModal({
         await lancarBatida(payload);
         onSuccess();
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : 'Não foi possível lançar a batida.');
+        setError(err instanceof Error ? err.message : 'Não foi possível lançar a batida.');
       } finally {
         setSubmitting(false);
       }

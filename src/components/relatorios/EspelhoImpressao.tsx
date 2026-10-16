@@ -1,4 +1,4 @@
-import type { EspelhoPayload, MarcacaoEspelho } from '../../services/espelhoApi'
+import type { DiaEspelho, EspelhoPayload, MarcacaoEspelho } from '../../services/espelhoApi'
 import styles from './EspelhoImpressao.module.css'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -89,7 +89,10 @@ function applySlotOverride(sorted: MarcacaoEspelho[]): (MarcacaoEspelho | null)[
   return slots
 }
 
-function buildSlots(marcacoes: MarcacaoEspelho[]) {
+function buildSlots(
+  marcacoes: MarcacaoEspelho[],
+  desconsideradas: NonNullable<DiaEspelho['marcacoes_desconsideradas']> = [],
+) {
   // Deduplica por HH:MM usando data_hora_local (já no fuso correto) — igual a useFichaDePonto.ts
   function deduplicateByHHMM(items: MarcacaoEspelho[]): MarcacaoEspelho[] {
     const seenTimes = new Set<string>()
@@ -102,8 +105,13 @@ function buildSlots(marcacoes: MarcacaoEspelho[]) {
     })
   }
 
-  // REP-only punches — coluna "Marcações REP" sempre em ordem cronológica (batidas originais)
-  const repPunchesSorted = marcacoes
+  // REP-only punches — coluna "Marcações REP" sempre em ordem cronológica (batidas originais).
+  // Inclui as desconsideradas: saem do tratamento/cálculo, mas o registro
+  // original do relógio continua aparecendo aqui.
+  const originaisDesconsideradas = desconsideradas.map((d) => ({
+    ...d, motivo_edicao: null, original: 1, slot_override: null,
+  }) as MarcacaoEspelho)
+  const repPunchesSorted = [...marcacoes, ...originaisDesconsideradas]
     .filter((m) => m.tipo === 'rep')
     .sort((a, b) => new Date(a.data_hora).getTime() - new Date(b.data_hora).getTime())
 
@@ -125,7 +133,13 @@ function buildSlots(marcacoes: MarcacaoEspelho[]) {
     .filter((all) => all.tipo !== 'rep')
     .map((all) => (all.tipo === 'manual' && all.motivo_edicao) ? all.motivo_edicao : all.tipo_label)
 
-  const motivoStr = motivoParts.join(' / ')
+  // Cada batida lançada traz o próprio motivo — justificar o dia inteiro
+  // repetia "Justificativa automática / Justificativa automática / …" uma vez
+  // por batida. Mostra cada motivo distinto uma vez, na ordem em que aparece.
+  for (const d of desconsideradas) {
+    motivoParts.push(`Desconsiderada ${(d.data_hora_local ?? d.data_hora).slice(11, 16)}`)
+  }
+  const motivoStr = [...new Set(motivoParts)].join(' / ')
 
   return { repSlots, allSlots, motivoStr }
 }
@@ -202,10 +216,15 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
                 Funcionário:&nbsp;{meta.funcionario_matricula ?? ''}&nbsp;&nbsp;
                 {meta.funcionario_nome ?? ''}&nbsp;&nbsp;
                 PIS:&nbsp;{meta.funcionario_pis ?? ''}&nbsp;&nbsp;
-                Matrícula:&nbsp;{meta.funcionario_matricula ?? ''}&nbsp;&nbsp;
-                Cód. Siape:
+                Matrícula:&nbsp;{meta.funcionario_matricula ?? ''}
               </td>
-              <td className={styles.phRight}>{meta.empresa_cnpj ?? ''}</td>
+              {/* "Cód. Siape" saiu: o sistema não tem esse dado, o rótulo ficava
+                  sempre vazio e o CNPJ ao lado parecia ser o valor dele. */}
+              <td className={styles.phRight}>
+                {meta.empresa_cnpj
+                  ? `${fmtDocumentoEmpresa(meta.empresa_cnpj).label}: ${fmtDocumentoEmpresa(meta.empresa_cnpj).valor}`
+                  : ''}
+              </td>
             </tr>
             <tr>
               <td className={styles.phLeft}>
@@ -268,7 +287,7 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
             <th>Dia</th>
             <th>Ent 1</th><th>Sai 1</th><th>Ent 2</th><th>Sai 2</th><th>Ent 3</th><th>Sai 3</th><th>Ent 4</th><th>Sai 4</th>
             <th>Ent. 1</th><th>Sai. 1</th><th>Ent. 2</th><th>Sai. 2</th><th>Ent. 3</th><th>Sai. 3</th><th>Ent. 4</th><th>Sai. 4</th>
-            <th>CH</th><th>Horário</th><th>Ocor.</th>
+            <th title="Código do Horário (tabela de horários)">CH</th><th>Horário</th><th>Ocor.</th>
             <th>Motivo</th>
             <th>Total</th><th>Extras</th><th>100%</th><th>Débito</th>
             <th>ADN</th><th>N.OC.</th><th>Total</th>
@@ -346,7 +365,7 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
               : dia.ocorrencia?.tipo_ocorrencia_descricao ||
                 dia.ocorrencia?.descricao ||
                 'OCORRÊNCIA'
-            const { repSlots, allSlots, motivoStr: motivoMarcacao } = buildSlots(dia.marcacoes)
+            const { repSlots, allSlots, motivoStr: motivoMarcacao } = buildSlots(dia.marcacoes, dia.marcacoes_desconsideradas)
             const motivoStr = isOcorrencia
               ? [ocorrenciaLabel, motivoMarcacao].filter(Boolean).join(' — ')
               : motivoMarcacao
@@ -367,7 +386,7 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
                     {p ? horaMin(p) : '-'}
                   </td>
                 ))}
-                <td className={styles.tdCh}>{meta.turno_id ?? '-'}</td>
+                <td className={styles.tdCh} title="Código da tabela de horários">{meta.turno_id ?? '-'}</td>
                 <td className={styles.tdTime}>
                   {totalExibicao != null ? minToHHMM(totalExibicao) : '-'}
                 </td>

@@ -19,6 +19,8 @@ function cpfMask(s: string | null | undefined) {
   return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`
 }
 
+const POR_PAGINA = 50
+
 function formatDate(iso: string) {
   const d = new Date(iso)
   return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
@@ -35,6 +37,9 @@ export function RelogioMarcacoesPendentesPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [validando, setValidando] = useState(false)
+  const [pagina, setPagina] = useState(1)
+  const [total, setTotal] = useState(0)
+  const [totalPaginas, setTotalPaginas] = useState(1)
 
   // Modal de vínculo manual
   const [vincularAlvo, setVincularAlvo] = useState<MarcacaoPendente | null>(null)
@@ -54,17 +59,23 @@ export function RelogioMarcacoesPendentesPage() {
   const loadPendentes = useCallback(async (silent = false) => {
     if (!silent) setLoading(true)
     try {
-      const data = await fetchMarcacoesPendentes({
+      const res = await fetchMarcacoesPendentes({
         relogioId: relogioFiltro || undefined,
         search: search || undefined,
+        page: pagina,
+        limit: POR_PAGINA,
       })
-      setPendentes(data)
+      // Vincular os últimos itens da última página a deixa vazia — volta uma.
+      if (res.data.length === 0 && pagina > 1) { setPagina((p) => p - 1); return }
+      setPendentes(res.data)
+      setTotal(res.pagination.total)
+      setTotalPaginas(Math.max(1, res.pagination.totalPages))
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Erro ao carregar marcações pendentes.')
     } finally {
       if (!silent) setLoading(false)
     }
-  }, [relogioFiltro, search])
+  }, [relogioFiltro, search, pagina])
 
   useEffect(() => { void loadRelogios() }, [loadRelogios])
   useEffect(() => { void loadPendentes() }, [loadPendentes])
@@ -165,7 +176,7 @@ export function RelogioMarcacoesPendentesPage() {
           <div className={styles.filterGroup}>
             <select
               value={relogioFiltro}
-              onChange={(e) => setRelogioFiltro(e.target.value ? Number(e.target.value) : '')}
+              onChange={(e) => { setRelogioFiltro(e.target.value ? Number(e.target.value) : ''); setPagina(1) }}
               style={{ padding: '0.5rem 0.75rem', borderRadius: 8, border: '1px solid var(--sp-border)' }}
             >
               <option value="">Todos os relógios</option>
@@ -183,7 +194,7 @@ export function RelogioMarcacoesPendentesPage() {
               type="search"
               placeholder="Buscar por CPF ou PIS…"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); setPagina(1) }}
             />
           </div>
         </div>
@@ -232,6 +243,22 @@ export function RelogioMarcacoesPendentesPage() {
             </table>
           )}
         </div>
+
+        {total > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', padding: '0.75rem 0 0', flexWrap: 'wrap' }}>
+            <span className={styles.tdMeta}>
+              {total.toLocaleString('pt-BR')} marcação(ões) pendente(s) · página {pagina} de {totalPaginas}
+            </span>
+            <span style={{ display: 'flex', gap: '0.5rem' }}>
+              <button type="button" className={styles.btnAction} disabled={pagina <= 1 || loading} onClick={() => setPagina((p) => p - 1)}>
+                ← Anterior
+              </button>
+              <button type="button" className={styles.btnAction} disabled={pagina >= totalPaginas || loading} onClick={() => setPagina((p) => p + 1)}>
+                Próxima →
+              </button>
+            </span>
+          </div>
+        )}
       </div>
 
       {/* ── Modal de vínculo manual ── */}

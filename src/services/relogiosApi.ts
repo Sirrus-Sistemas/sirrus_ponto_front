@@ -25,7 +25,8 @@ export type Relogio = {
   ip: string | null
   porta: number | null
   usuario: string | null
-  senha: string | null
+  /** A API nunca devolve a senha do equipamento — só se há uma salva. */
+  tem_senha: boolean | number
   usa_afd: boolean
   // Marcações anteriores a esta data são descartadas pelo sistema de
   // coleta local — evita importar anos de histórico de ex-funcionários de
@@ -49,7 +50,8 @@ export type CreateRelogioPayload = {
   sincronizar_desde: string
 }
 
-export type UpdateRelogioPayload = CreateRelogioPayload & { ativo: boolean }
+/** Na edição, `senha` vazia mantém a senha salva; `limpar_senha` apaga. */
+export type UpdateRelogioPayload = CreateRelogioPayload & { ativo: boolean; limpar_senha?: boolean }
 
 type ApiEnvelope<T> = { success: boolean; data: T; message?: string }
 

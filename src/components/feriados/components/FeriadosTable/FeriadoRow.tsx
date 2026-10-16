@@ -57,7 +57,10 @@ export function FeriadoRow({ feriado: f, onRemove }: FeriadoRowProps) {
           type="button"
           className={styles.btnTrash}
           aria-label={`Remover feriado ${f.nome}`}
-          onClick={() => onRemove(f.id)}
+          onClick={() => {
+            if (!confirm(`Excluir o feriado "${f.nome}" (${formatData(f)})? Os espelhos de ponto deixam de considerar esse dia como feriado.`)) return
+            onRemove(f.id)
+          }}
         >
           <TrashIcon />
         </button>

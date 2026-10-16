@@ -101,7 +101,7 @@
   transition: background 0.15s, border-color 0.15s;
 }
 
-.btnGhost:hover {
+.btnGhost:hover:not(:disabled) {
   background: var(--sp-bg-card-soft);
   border-color: var(--sp-text-3);
 }
@@ -185,7 +185,13 @@
   transition: background 0.15s;
 }
 
-.btnConcluir:hover { background: #0a5a45; }
+.btnConcluir:hover:not(:disabled) { background: #0a5a45; }
+
+.btnConcluir:disabled,
+.btnGhost:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 
 /* ── Two-column layout ─────────────────────────────────────────────────────── */
 

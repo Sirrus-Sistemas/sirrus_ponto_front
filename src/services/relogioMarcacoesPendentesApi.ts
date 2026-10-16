@@ -13,17 +13,20 @@ export type MarcacaoPendente = {
 
 type Envelope<T> = { success: boolean; data: T; message?: string }
 
+export type PendentesPagina = {
+  data: MarcacaoPendente[]
+  pagination: { page: number; limit: number; total: number; totalPages: number }
+}
+
 export async function fetchMarcacoesPendentes(
-  opts: { relogioId?: number; search?: string } = {},
-): Promise<MarcacaoPendente[]> {
+  opts: { relogioId?: number; search?: string; page?: number; limit?: number } = {},
+): Promise<PendentesPagina> {
   const params = new URLSearchParams()
   if (opts.relogioId) params.set('relogio_id', String(opts.relogioId))
   if (opts.search) params.set('search', opts.search)
-  const qs = params.toString()
-  const res = await apiRequest<Envelope<MarcacaoPendente[]>>(
-    `/api/relogios/marcacoes/pendentes${qs ? `?${qs}` : ''}`,
-  )
-  return res.data
+  params.set('page', String(opts.page ?? 1))
+  params.set('limit', String(opts.limit ?? 50))
+  return apiRequest<PendentesPagina>(`/api/relogios/marcacoes/pendentes?${params.toString()}`)
 }
 
 export async function vincularMarcacaoPendente(id: number, funcionarioId: number): Promise<void> {

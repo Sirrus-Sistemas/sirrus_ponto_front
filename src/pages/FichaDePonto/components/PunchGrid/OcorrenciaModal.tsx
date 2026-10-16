@@ -204,7 +204,12 @@ export function OcorrenciaModal({
               checked={form.informativa}
               onChange={(e) => setField('informativa', e.target.checked)}
             />
-            <label htmlFor="om-informativa">Informativa (não soma nem subtrai horas)</label>
+            <label
+              htmlFor="om-informativa"
+              title="Crédito no dia inteiro sem batidas (férias, atestado…) abona o dia mesmo marcado como informativa."
+            >
+              Informativa (não soma nem subtrai horas)
+            </label>
           </div>
 
           <div className={styles.field}>

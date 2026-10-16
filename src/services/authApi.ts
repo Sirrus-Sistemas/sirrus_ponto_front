@@ -11,6 +11,7 @@ import { startSession, stopSession } from '../lib/session'
 const LOGIN_PATH = '/api/auth/login'
 const LOGOUT_PATH = '/api/auth/logout'
 const FORGOT_PASSWORD_PATH = '/api/auth/forgot-password'
+const CHANGE_PASSWORD_PATH = '/api/auth/change-password'
 
 export type LoginResponse = Record<string, unknown>
 
@@ -84,4 +85,20 @@ export async function forgotPasswordRequest(cpfDigits: string): Promise<void> {
 export async function logoutRequest(): Promise<void> {
   stopSession()
   await apiRequest(LOGOUT_PATH, { method: 'POST', body: '{}' })
+}
+
+/**
+ * Troca a senha do usuário logado. O backend revoga as outras sessões e
+ * devolve tokens novos para esta (já sem a trava de troca obrigatória).
+ */
+export async function changePasswordRequest(currentPassword: string, newPassword: string): Promise<void> {
+  const data = await apiRequest<LoginResponse>(CHANGE_PASSWORD_PATH, {
+    method: 'PUT',
+    body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+  })
+  const token = pickToken(data)
+  if (token) setStoredToken(token)
+  const refresh = pickRefreshToken(data)
+  if (refresh) setStoredRefreshToken(refresh)
+  startSession()
 }

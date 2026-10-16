@@ -44,6 +44,24 @@ export function clearStoredToken() {
   sessionStorage.removeItem(REFRESH_KEY)
 }
 
+/**
+ * Senha provisória (definida pelo admin, import ou padrão do CPF): o backend
+ * marca o JWT com `trocar_senha` e só libera trocar a senha até lá. Lido sem
+ * verificar a assinatura — só decide a navegação; quem barra é o servidor.
+ */
+export function tokenExigeTrocaSenha(token = getStoredToken()): boolean {
+  if (!token) return false
+  try {
+    const b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    const payload = JSON.parse(atob(b64)) as Record<string, unknown>
+    return payload.trocar_senha === true
+  } catch {
+    return false
+  }
+}
+
+export const TROCAR_SENHA_PATH = '/trocar-senha'
+
 // ─── Callback injetado por session.ts para reagendar o próximo refresh ────────
 let onTokenRefreshedCallback: (() => void) | null = null
 
@@ -154,6 +172,13 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}, _re
       clearStoredToken()
       window.location.assign('/')
       throw new ApiError('Sessão expirada. Redirecionando…', 401)
+    }
+    if (
+      res.status === 403 &&
+      (data as { code?: unknown } | null)?.code === 'TROCAR_SENHA' &&
+      window.location.pathname !== TROCAR_SENHA_PATH
+    ) {
+      window.location.assign(TROCAR_SENHA_PATH)
     }
     const msg = messageFromBody(data, res.statusText || 'Erro na requisição')
     throw new ApiError(msg, res.status, data)

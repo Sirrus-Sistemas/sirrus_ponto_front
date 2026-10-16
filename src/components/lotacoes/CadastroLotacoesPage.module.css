@@ -681,3 +681,24 @@
 }
 .btnSave:hover:not(:disabled) { background: var(--sp-primary-dark); }
 .btnSave:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+
+/* Cerca eletrônica (Ponto Mobile) — abaixo do formulário. */
+.cercaSection {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--sp-border);
+}
+
+.cercaTitulo {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--sp-text);
+}
+
+.cercaHint {
+  margin: 0 0 0.85rem;
+  font-size: 0.78rem;
+  color: var(--sp-text-3);
+  line-height: 1.45;
+}

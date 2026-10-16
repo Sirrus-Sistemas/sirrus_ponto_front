@@ -17,6 +17,10 @@ import { digitsOnlyCpf, formatCpf } from '../login/cpf'
 import { fetchMunicipios, type Municipio } from '../../services/municipiosApi'
 import styles from './CadastroFuncionarioPage.module.css'
 import { DatePicker } from '../ui/DatePicker'
+import { cpfValido, motivoSenhaFraca, pisValido } from '../../lib/documentos'
+import { MSG_INATIVAR_PROPRIO_USUARIO } from '../../services/usuariosApi'
+import { redefinirSenhaMobile } from '../../services/mobileApi'
+import { CercaEletronicaEditor } from '../cerca/CercaEletronicaEditor'
 
 type View = 'list' | 'form'
 
@@ -82,6 +86,7 @@ type FormState = {
   role: 'admin' | 'gestor' | 'funcionario'
   usa_escala: boolean
   usa_banco_horas: boolean
+  controla_ponto: boolean
   usa_mobile: boolean
   admin_ponto_mobile: boolean
   pontomobile_id: string
@@ -116,6 +121,7 @@ const emptyForm = (): FormState => ({
   role: 'funcionario',
   usa_escala: false,
   usa_banco_horas: false,
+  controla_ponto: true,
   usa_mobile: false,
   admin_ponto_mobile: false,
   pontomobile_id: '',
@@ -161,6 +167,8 @@ export function CadastroFuncionarioPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [senhaMobile, setSenhaMobile] = useState('')
+  const [salvandoSenhaMobile, setSalvandoSenhaMobile] = useState(false)
 
   // ── municipio combobox
   const [municipioQuery, setMunicipioQuery] = useState('')
@@ -277,8 +285,8 @@ export function CadastroFuncionarioPage() {
         cargo: func.cargo ?? '',
         matricula: func.matricula ?? '',
         pis: func.pis ?? '',
-        rg: '',
-        data_nascimento: '',
+        rg: func.rg ?? '',
+        data_nascimento: func.data_nascimento ? String(func.data_nascimento).split('T')[0] : '',
         data_admissao: admissao,
         password: '',
         password2: '',
@@ -289,6 +297,7 @@ export function CadastroFuncionarioPage() {
         role: func.role ?? 'funcionario',
         usa_escala: !!func.usa_escala,
         usa_banco_horas: !!func.usa_banco_horas,
+        controla_ponto: func.controla_ponto !== 0,
         usa_mobile: !!func.usa_mobile,
         admin_ponto_mobile: !!func.admin_ponto_mobile,
         pontomobile_id: String(func.pontomobile_id ?? ''),
@@ -303,6 +312,7 @@ export function CadastroFuncionarioPage() {
         municipio_id: func.municipio_id != null ? String(func.municipio_id) : '',
       }
       setForm(loaded)
+      setSenhaMobile('')
       originalFormRef.current = { ...loaded }
       if (func.cidade) {
         setMunicipioQuery(func.estado ? `${func.cidade} — ${func.estado}` : func.cidade)
@@ -324,6 +334,58 @@ export function CadastroFuncionarioPage() {
     originalFormRef.current = null
   }, [])
 
+  /**
+   * Regras comuns a criar/editar (o backend repete todas). Na edição, CPF e
+   * PIS só são checados se mudaram — há cadastros antigos com documento
+   * inválido que não podem travar a edição de outros campos.
+   */
+  function validarComum(cpfDigits: string): string | null {
+    const orig = originalFormRef.current
+    if (cpfDigits.length !== 11) return 'Informe um CPF válido com 11 dígitos.'
+    if ((!orig || digitsOnlyCpf(orig.cpf) !== cpfDigits) && !cpfValido(cpfDigits)) {
+      return 'CPF inválido. Confira os dígitos.'
+    }
+    const pis = form.pis.trim()
+    if (pis && (!orig || orig.pis.trim() !== pis) && !pisValido(pis, cpfDigits)) {
+      return 'PIS inválido. Informe um PIS/PASEP válido ou o CPF do funcionário.'
+    }
+    if (form.data_nascimento) {
+      const hoje = new Date().toISOString().slice(0, 10)
+      if (form.data_nascimento >= hoje) return 'A data de nascimento precisa estar no passado.'
+      if (form.data_nascimento < '1900-01-01') return 'Data de nascimento inválida.'
+    }
+    if (!form.filial_id) return 'Selecione a filial do funcionário.'
+    // Sem turno (e sem escala) o espelho conta falta em todo dia útil — exceto
+    // quem não controla ponto (gerente, art. 62 CLT), que não tem jornada.
+    if (form.controla_ponto && !form.turno_id && !form.usa_escala) return 'Selecione o turno do funcionário (ou marque que ele usa escala).'
+    if (!form.municipio_id) return 'Selecione a cidade/município (define o fuso horário do colaborador).'
+    return null
+  }
+
+  // Senha do app Ponto Mobile — a sincronização não mexe mais nela (o
+  // funcionário pode trocar no próprio app); aqui o admin redefine para quem
+  // esqueceu. Independe do "Salvar" do formulário.
+  async function handleRedefinirSenhaMobile() {
+    if (editingId === null) return
+    setError(null)
+    setSuccess(null)
+    const motivo = motivoSenhaFraca(senhaMobile, digitsOnlyCpf(form.cpf))
+    if (motivo) { setError(motivo); return }
+    if (!confirm(`Redefinir a senha do Ponto Mobile de ${form.nome}? A senha atual do aplicativo deixa de valer.`)) return
+    setSalvandoSenhaMobile(true)
+    try {
+      const r = await redefinirSenhaMobile(editingId, senhaMobile)
+      setSuccess(r.aplicada
+        ? 'Senha do Ponto Mobile redefinida. Informe a nova senha ao funcionário.'
+        : 'Senha salva — será usada quando o funcionário for sincronizado com o Ponto Mobile.')
+      setSenhaMobile('')
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Não foi possível redefinir a senha do Ponto Mobile.')
+    } finally {
+      setSalvandoSenhaMobile(false)
+    }
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
@@ -334,10 +396,8 @@ export function CadastroFuncionarioPage() {
       if (!form.nome.trim() || form.nome.trim().length < 3) { setError('Informe o nome completo (mínimo 3 caracteres).'); return }
       if (!form.email.trim()) { setError('Informe o e-mail do funcionário.'); return }
       const cpfDigits = digitsOnlyCpf(form.cpf)
-      if (cpfDigits.length !== 11) { setError('Informe um CPF válido com 11 dígitos.'); return }
-      if (!form.data_admissao) { setError('Informe a data de admissão.'); return }
-      if (!form.municipio_id) { setError('Selecione a cidade/município (define o fuso horário do colaborador).'); return }
-      if (!form.password || form.password.length < 6) { setError('A senha deve ter pelo menos 6 caracteres.'); return }
+      const erro = validarComum(cpfDigits) ?? motivoSenhaFraca(form.password, cpfDigits)
+      if (erro) { setError(erro); return }
       if (form.password !== form.password2) { setError('As senhas não coincidem.'); return }
 
       setSubmitting(true)
@@ -346,11 +406,12 @@ export function CadastroFuncionarioPage() {
           nome: form.nome.trim(),
           email: form.email.trim(),
           cpf: cpfDigits,
-          data_admissao: form.data_admissao,
+          data_admissao: form.data_admissao || null,
           password: form.password,
           role: form.role,
           usa_escala: form.usa_escala ? 1 : 0,
           usa_banco_horas: form.usa_banco_horas ? 1 : 0,
+          controla_ponto: form.controla_ponto ? 1 : 0,
           usa_mobile: form.usa_mobile ? 1 : 0,
           admin_ponto_mobile: form.admin_ponto_mobile ? 1 : 0,
         } as Parameters<typeof createFuncionario>[0]
@@ -359,6 +420,8 @@ export function CadastroFuncionarioPage() {
         if (form.cargo.trim()) payload.cargo = form.cargo.trim()
         if (form.matricula.trim()) payload.matricula = form.matricula.trim()
         if (form.pis.trim()) payload.pis = form.pis.trim()
+        if (form.rg.trim()) payload.rg = form.rg.trim()
+        if (form.data_nascimento) payload.data_nascimento = form.data_nascimento
         if (form.filial_id) payload.filial_id = Number(form.filial_id)
         if (form.departamento_id) payload.departamento_id = Number(form.departamento_id)
         if (form.turno_id) payload.turno_id = Number(form.turno_id)
@@ -384,10 +447,10 @@ export function CadastroFuncionarioPage() {
     } else {
       // ── Update
       if (!form.nome.trim() || form.nome.trim().length < 3) { setError('Informe o nome completo (mínimo 3 caracteres).'); return }
-      if (!form.data_admissao) { setError('Informe a data de admissão.'); return }
-      if (!form.municipio_id) { setError('Selecione a cidade/município (define o fuso horário do colaborador).'); return }
+      if (!form.ativo && editingId === me?.id) { setError(MSG_INATIVAR_PROPRIO_USUARIO); return }
       const cpfDigitsUpdate = digitsOnlyCpf(form.cpf)
-      if (cpfDigitsUpdate.length !== 11) { setError('Informe um CPF válido com 11 dígitos.'); return }
+      const erro = validarComum(cpfDigitsUpdate)
+      if (erro) { setError(erro); return }
 
       setSubmitting(true)
       try {
@@ -395,17 +458,20 @@ export function CadastroFuncionarioPage() {
           nome: form.nome.trim(),
           email: form.email.trim(),
           cpf: cpfDigitsUpdate,
-          data_admissao: form.data_admissao,
+          data_admissao: form.data_admissao || null,
           role: form.role,
           ativo: form.ativo ? 1 : 0,
           usa_escala: form.usa_escala ? 1 : 0,
           usa_banco_horas: form.usa_banco_horas ? 1 : 0,
+          controla_ponto: form.controla_ponto ? 1 : 0,
           usa_mobile: form.usa_mobile ? 1 : 0,
           admin_ponto_mobile: form.admin_ponto_mobile ? 1 : 0,
           telefone: form.telefone.trim() || null,
           cargo: form.cargo.trim() || null,
           matricula: form.matricula.trim() || null,
           pis: form.pis.trim() || null,
+          rg: form.rg.trim() || null,
+          data_nascimento: form.data_nascimento || null,
           filial_id: form.filial_id ? Number(form.filial_id) : null,
           departamento_id: form.departamento_id ? Number(form.departamento_id) : null,
           turno_id: form.turno_id ? Number(form.turno_id) : null,
@@ -509,6 +575,7 @@ export function CadastroFuncionarioPage() {
                       <td>
                         <span className={styles.empNome}>{emp.nome}</span>
                         {emp.matricula && <span className={styles.empMat}> · {emp.matricula}</span>}
+                        <span className={styles.empCpfMobile}>{cpfDisplay(emp.cpf)}</span>
                       </td>
                       <td className={styles.monoCell}>{cpfDisplay(emp.cpf)}</td>
                       <td>{emp.cargo ?? '—'}</td>
@@ -713,6 +780,7 @@ export function CadastroFuncionarioPage() {
                 <label htmlFor="cf-nasc">Data de nascimento</label>
                 <DatePicker
                   id="cf-nasc"
+                  max={new Date(Date.now() - 86400000).toISOString().slice(0, 10)}
                   value={form.data_nascimento}
                   onChange={update('data_nascimento')}
                 />
@@ -722,11 +790,11 @@ export function CadastroFuncionarioPage() {
             <div className={styles.fieldRow}>
               <div className={styles.field} style={{ flex: 1 }}>
                 <label htmlFor="cf-rg">RG</label>
-                <input id="cf-rg" placeholder="0000000 SSP/UF" value={form.rg} onChange={update('rg')} />
+                <input id="cf-rg" placeholder="0000000 SSP/UF" maxLength={30} value={form.rg} onChange={update('rg')} />
               </div>
               <div className={styles.field} style={{ flex: 1 }}>
-                <label htmlFor="cf-pis">PIS / PASEP <span className={styles.req}>*</span></label>
-                <input id="cf-pis" value={form.pis} onChange={update('pis')} />
+                <label htmlFor="cf-pis">PIS / PASEP</label>
+                <input id="cf-pis" value={form.pis} onChange={update('pis')} placeholder="PIS ou CPF" />
               </div>
             </div>
 
@@ -744,8 +812,8 @@ export function CadastroFuncionarioPage() {
                 <input id="cf-tel" value={form.telefone} onChange={update('telefone')} />
               </div>
               <div className={styles.field} style={{ flex: 1 }}>
-                <label htmlFor="cf-adm">Data de admissão <span className={styles.req}>*</span></label>
-                <DatePicker id="cf-adm" required value={form.data_admissao} onChange={update('data_admissao')} />
+                <label htmlFor="cf-adm">Data de admissão</label>
+                <DatePicker id="cf-adm" value={form.data_admissao} onChange={update('data_admissao')} />
               </div>
             </div>
 
@@ -773,7 +841,7 @@ export function CadastroFuncionarioPage() {
 
             <div className={styles.fieldRow}>
               <div className={styles.field} style={{ flex: 1 }}>
-                <label htmlFor="cf-cargo">Cargo <span className={styles.req}>*</span></label>
+                <label htmlFor="cf-cargo">Cargo</label>
                 <input id="cf-cargo" value={form.cargo} onChange={update('cargo')} />
               </div>
               <div className={styles.field} style={{ flex: '0 0 140px' }}>
@@ -809,7 +877,7 @@ export function CadastroFuncionarioPage() {
 
             <div className={styles.fieldRow}>
               <div className={styles.field} style={{ flex: 1 }}>
-                <label htmlFor="cf-dept">Departamento <span className={styles.req}>*</span></label>
+                <label htmlFor="cf-dept">Departamento</label>
                 <select id="cf-dept" value={form.departamento_id} onChange={update('departamento_id')} disabled={loadingRefs}>
                   <option value="">— Nenhum —</option>
                   {departamentos.map((d) => (
@@ -829,7 +897,7 @@ export function CadastroFuncionarioPage() {
             </div>
 
             <div className={styles.field}>
-              <label htmlFor="cf-turno">Turno <span className={styles.req}>*</span></label>
+              <label htmlFor="cf-turno">Turno {form.controla_ponto && <span className={styles.req}>*</span>}</label>
               <select id="cf-turno" value={form.turno_id} onChange={update('turno_id')} disabled={loadingRefs}>
                 <option value="">— Nenhum —</option>
                 {turnos.map((t) => (
@@ -890,6 +958,26 @@ export function CadastroFuncionarioPage() {
               </button>
             </div>
 
+            {/* Dispensado do controle de ponto (art. 62 CLT) */}
+            <div className={styles.toggleRow}>
+              <div className={styles.toggleLabel}>
+                <p className={styles.toggleTitle}>Não controla ponto</p>
+                <p className={styles.toggleDesc}>
+                  Cargo de gestão dispensado do controle de jornada (art. 62, II da CLT). Continua acessando
+                  o sistema, mas não aparece na Ficha, no Espelho nem nos relatórios de ponto.
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={!form.controla_ponto}
+                className={`${styles.toggle} ${!form.controla_ponto ? styles.toggleOn : ''}`}
+                onClick={() => setForm((f) => ({ ...f, controla_ponto: !f.controla_ponto }))}
+              >
+                <span className={styles.toggleThumb} />
+              </button>
+            </div>
+
             {/* Ponto Mobile */}
             <div className={styles.toggleRow}>
               <div className={styles.toggleLabel}>
@@ -942,6 +1030,34 @@ export function CadastroFuncionarioPage() {
                 />
               </div>
             </div>
+
+            {isEdit && (
+              <div className={styles.field} style={{ marginTop: '0.5rem' }}>
+                <label htmlFor="cf-senha-mobile">Senha do Ponto Mobile</label>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <input
+                    id="cf-senha-mobile"
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="Nova senha do aplicativo"
+                    value={senhaMobile}
+                    onChange={(e) => setSenhaMobile(e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  <button
+                    type="button"
+                    className={styles.btnGhost}
+                    disabled={senhaMobile.length < 6 || salvandoSenhaMobile}
+                    onClick={() => void handleRedefinirSenhaMobile()}
+                  >
+                    {salvandoSenhaMobile ? 'Salvando…' : 'Redefinir'}
+                  </button>
+                </div>
+                <p className={styles.hint}>
+                  Para quem esqueceu a senha do app. A sincronização não altera a senha — o funcionário pode trocá-la no próprio aplicativo.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Panel 3: Endereço */}
@@ -1038,6 +1154,22 @@ export function CadastroFuncionarioPage() {
 
         </div>
       </form>
+
+      {/* Cerca eletrônica — fora do <form> (Enter nos campos não envia o
+          cadastro) e só na edição: precisa do funcionário já salvo. */}
+      {isEdit && editingId !== null && (
+        <div className={styles.panel} style={{ marginTop: '1rem' }}>
+          <div className={styles.panelHeader}>
+            <span className={styles.panelDot} style={{ background: '#14918b' }} />
+            <span className={styles.panelTitle}>CERCA ELETRÔNICA — PONTO MOBILE</span>
+          </div>
+          <p className={styles.hint} style={{ marginBottom: '0.5rem' }}>
+            O funcionário pode bater ponto pelo aplicativo em qualquer local da filial, da lotação ou cadastrado aqui.
+            "Herdar" usa a regra da lotação (ou da filial).
+          </p>
+          <CercaEletronicaEditor key={editingId} escopo="funcionario" id={editingId} />
+        </div>
+      )}
     </div>
   )
 }

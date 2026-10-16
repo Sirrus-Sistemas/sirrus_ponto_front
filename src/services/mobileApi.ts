@@ -67,10 +67,13 @@ export async function syncFuncionario(id: number): Promise<{ funcionario_id: num
   return r.data
 }
 
-export async function syncAllFuncionarios(filialId?: number): Promise<{ job_id: string }> {
+export async function syncAllFuncionarios(filtro: { filialId?: number; lotacaoId?: number } = {}): Promise<{ job_id: string }> {
   const r = await apiRequest<{ data: { job_id: string } }>('/api/mobile/sync/funcionarios', {
     method: 'POST',
-    body: JSON.stringify(filialId ? { filial_id: filialId } : {}),
+    body: JSON.stringify({
+      ...(filtro.filialId ? { filial_id: filtro.filialId } : {}),
+      ...(filtro.lotacaoId ? { lotacao_id: filtro.lotacaoId } : {}),
+    }),
   })
   return r.data
 }
@@ -98,4 +101,31 @@ export async function pullMarcacoes(
     }),
   })
   return r.data
+}
+
+/**
+ * Redefine a senha do funcionário no app Ponto Mobile. `aplicada` = já foi
+ * enviada ao app; false = funcionário ainda não sincronizado (a senha vai na
+ * criação, na próxima sincronização).
+ */
+export async function redefinirSenhaMobile(funcionarioId: number, senha: string): Promise<{ aplicada: boolean; message?: string }> {
+  const r = await apiRequest<{ data: { aplicada: boolean }; message?: string }>(
+    `/api/mobile/funcionarios/${funcionarioId}/senha`,
+    { method: 'POST', body: JSON.stringify({ senha }) },
+  )
+  return { aplicada: r.data.aplicada, message: r.message }
+}
+
+export type ImportacaoCercas = {
+  importados: number
+  ja_configurados: number
+  sem_cerca: number
+  nao_encontrados: number
+  erros: { filial_id: number; error: string }[]
+}
+
+/** Traz as cercas eletrônicas que já existem no app para os funcionários daqui (sem sobrescrever). */
+export async function importarCercasDoMobile(): Promise<{ resultado: ImportacaoCercas; message?: string }> {
+  const r = await apiRequest<{ data: ImportacaoCercas; message?: string }>('/api/mobile/cercas/importar', { method: 'POST' })
+  return { resultado: r.data, message: r.message }
 }
