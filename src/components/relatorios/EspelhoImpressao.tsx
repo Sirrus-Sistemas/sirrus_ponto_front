@@ -438,7 +438,7 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
             <td>Total Extras:&nbsp;50%:&nbsp;<strong>{minToHHMM(totalExtras50pctMin)}</strong></td>
             <td className={styles.footerOcor}>CRÉDITOS (+)</td>
             <td>Acréscimo:&nbsp;{totalAcrescimoMin ? minToHHMM(totalAcrescimoMin) : '00:00'}</td>
-            <td>{mostrarBancoHoras ? <>50% Horas do Mês:&nbsp;{fmtSaldo(saldoMin)}</> : null}</td>
+            <td>{mostrarBancoHoras ? <>50% Horas do Mês:&nbsp;{fmtSaldo(totalExtras50pctMin - totalDebitoMin)}</> : null}</td>
           </tr>
           <tr>
             <td>Total Feriados:&nbsp;<strong>{meta.dias_feriado_calendario}</strong></td>

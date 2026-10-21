@@ -55,6 +55,7 @@ const emptyForm = () => ({
   nao_gerar_debitos_meia_falta: false,
   banco_horas_somente_dom_feriado: false,
   dividir_extras_50_100: false,
+  dobrar_100pct_trabalhado: false,
   calcular_60pct_sabados: false,
   sabado_somente_extras: false,
   juntar_100pct_sabado_normal: false,
@@ -85,6 +86,7 @@ function lotacaoParaForm(l: Lotacao): ReturnType<typeof emptyForm> {
     nao_gerar_debitos_meia_falta: l.nao_gerar_debitos_meia_falta === 1,
     banco_horas_somente_dom_feriado: l.banco_horas_somente_dom_feriado === 1,
     dividir_extras_50_100: l.dividir_extras_50_100 === 1,
+    dobrar_100pct_trabalhado: l.dobrar_100pct_trabalhado === 1,
     calcular_60pct_sabados: l.calcular_60pct_sabados === 1,
     sabado_somente_extras: l.sabado_somente_extras === 1,
     juntar_100pct_sabado_normal: l.juntar_100pct_sabado_normal === 1,
@@ -116,6 +118,7 @@ function formParaPayload(f: ReturnType<typeof emptyForm>): LotacaoPayload {
     nao_gerar_debitos_meia_falta: f.nao_gerar_debitos_meia_falta ? 1 : 0,
     banco_horas_somente_dom_feriado: f.banco_horas_somente_dom_feriado ? 1 : 0,
     dividir_extras_50_100: f.dividir_extras_50_100 ? 1 : 0,
+    dobrar_100pct_trabalhado: f.dobrar_100pct_trabalhado ? 1 : 0,
     calcular_60pct_sabados: f.calcular_60pct_sabados ? 1 : 0,
     sabado_somente_extras: f.sabado_somente_extras ? 1 : 0,
     juntar_100pct_sabado_normal: f.juntar_100pct_sabado_normal ? 1 : 0,
@@ -435,6 +438,7 @@ export function CadastroLotacoesPage() {
             <div className={styles.paramGroupTitle}><ClockIcon /> Horas extras</div>
             <ToggleRow checked={form.somar_esq_horas_trabalhadas} onChange={toggle('somar_esq_horas_trabalhadas')} label="Somar BSQ às horas trabalhadas" />
             <ToggleRow checked={form.dividir_extras_50_100}       onChange={toggle('dividir_extras_50_100')}       label="Dividir horas extras em 50% e 100%" />
+            <ToggleRow checked={form.dobrar_100pct_trabalhado}    onChange={toggle('dobrar_100pct_trabalhado')}    label="Dobrar horas de 100% trabalhadas" desc="Feriado, domingo e dia não previsto trabalhados contam em dobro no total de 100% e no banco de horas. A hora real continua na coluna do dia e nos arquivos MTE." />
             <ToggleRow checked={form.calcular_60pct_sabados}      onChange={toggle('calcular_60pct_sabados')}      label="Calcular horas de 60% aos sábados" />
             {form.calcular_60pct_sabados && (
               <ToggleRow checked={form.sabado_somente_extras}     onChange={toggle('sabado_somente_extras')}       label="Somente extras (sábado 60%)" indent />

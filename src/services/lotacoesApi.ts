@@ -26,6 +26,7 @@ export type Lotacao = {
   nao_gerar_debitos_meia_falta: number
   banco_horas_somente_dom_feriado: number
   dividir_extras_50_100: number
+  dobrar_100pct_trabalhado: number
   calcular_60pct_sabados: number
   sabado_somente_extras: number
   juntar_100pct_sabado_normal: number
