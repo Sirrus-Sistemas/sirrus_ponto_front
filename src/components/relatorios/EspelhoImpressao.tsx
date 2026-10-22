@@ -129,8 +129,16 @@ function buildSlots(
   const repSlots: (MarcacaoEspelho | null)[] = Array.from({ length: NUM_SLOTS }, (_, i) => repPunches[i] ?? null)
   const allSlots = applySlotOverride(allDeduped)
 
+  // Convenção do time: justificativa manual começando com "desconsiderad..."
+  // (ex.: "Desconsiderada 10:56") marca a batida como descartada/ignorada —
+  // some da lista de observações em vez de poluir a coluna com uma linha por
+  // batida desconsiderada. A batida em si não muda (continua contando nas
+  // horas); só este texto deixa de aparecer.
+  const DESCONSIDERADA_RE = /^desconsiderad/i
+
   const motivoParts: string[] = allDeduped
     .filter((all) => all.tipo !== 'rep')
+    .filter((all) => !(all.tipo === 'manual' && all.motivo_edicao && DESCONSIDERADA_RE.test(all.motivo_edicao.trim())))
     .map((all) => (all.tipo === 'manual' && all.motivo_edicao) ? all.motivo_edicao : all.tipo_label)
 
   // Cada batida lançada traz o próprio motivo — justificar o dia inteiro
