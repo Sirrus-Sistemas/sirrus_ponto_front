@@ -41,6 +41,17 @@ export async function excluirMarcacaoPendente(id: number): Promise<void> {
   await apiRequest(`/api/relogios/marcacoes/${id}`, { method: 'DELETE' })
 }
 
+export type ExcluirLoteResultado = { excluidas: number }
+
+/** Mesma regra de excluirMarcacaoPendente, para várias de uma vez. */
+export async function excluirMarcacoesPendentesEmLote(ids: number[]): Promise<ExcluirLoteResultado> {
+  const res = await apiRequest<Envelope<ExcluirLoteResultado>>('/api/relogios/marcacoes/excluir-lote', {
+    method: 'POST',
+    body: JSON.stringify({ ids }),
+  })
+  return res.data
+}
+
 export type ValidarTodosResultado = { total: number; vinculadas: number }
 
 /** Revalida todas as pendentes contra o cadastro atual — resolve o caso de CPF/PIS corrigido depois da importação. */

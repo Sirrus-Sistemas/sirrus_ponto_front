@@ -7,6 +7,7 @@ import {
   fetchMarcacoesPendentes,
   vincularMarcacaoPendente,
   excluirMarcacaoPendente,
+  excluirMarcacoesPendentesEmLote,
   validarTodasPendentes,
   type MarcacaoPendente,
 } from '../../services/relogioMarcacoesPendentesApi'
@@ -39,6 +40,8 @@ export function RelogioMarcacoesPendentesPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const [validando, setValidando] = useState(false)
   const [excluindoId, setExcluindoId] = useState<number | null>(null)
+  const [selecionados, setSelecionados] = useState<Set<number>>(new Set())
+  const [excluindoLote, setExcluindoLote] = useState(false)
   const [pagina, setPagina] = useState(1)
   const [total, setTotal] = useState(0)
   const [totalPaginas, setTotalPaginas] = useState(1)
@@ -81,6 +84,9 @@ export function RelogioMarcacoesPendentesPage() {
 
   useEffect(() => { void loadRelogios() }, [loadRelogios])
   useEffect(() => { void loadPendentes() }, [loadPendentes])
+  // Troca de filtro/busca muda o conjunto de resultados — mantém a seleção só
+  // ao trocar de página, que é o caso de "ir marcando ao longo de várias páginas".
+  useEffect(() => { setSelecionados(new Set()) }, [relogioFiltro, search])
 
   async function handleValidarTodos() {
     setValidando(true)
@@ -117,6 +123,47 @@ export function RelogioMarcacoesPendentesPage() {
       setError(err instanceof ApiError ? err.message : 'Erro ao excluir marcação pendente.')
     } finally {
       setExcluindoId(null)
+    }
+  }
+
+  function toggleSelecionado(id: number) {
+    setSelecionados((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
+  }
+
+  function toggleSelecionarPagina() {
+    const idsPagina = pendentes.map((p) => p.id)
+    const todosSelecionados = idsPagina.length > 0 && idsPagina.every((id) => selecionados.has(id))
+    setSelecionados((prev) => {
+      const next = new Set(prev)
+      if (todosSelecionados) idsPagina.forEach((id) => next.delete(id))
+      else idsPagina.forEach((id) => next.add(id))
+      return next
+    })
+  }
+
+  async function handleExcluirSelecionados() {
+    const ids = [...selecionados]
+    if (ids.length === 0) return
+    if (!confirm(
+      `Excluir definitivamente ${ids.length} marcação(ões) pendente(s) selecionada(s)?\n\n` +
+      'Use para batidas de teste (ex.: funcionário fantasma cadastrado só pra testar o relógio) que nunca vão ter um cadastro correspondente.',
+    )) return
+    setExcluindoLote(true)
+    setError(null)
+    setSuccess(null)
+    try {
+      const r = await excluirMarcacoesPendentesEmLote(ids)
+      setSuccess(`${r.excluidas} marcação(ões) pendente(s) excluída(s).`)
+      setSelecionados(new Set())
+      await loadPendentes(true)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Erro ao excluir marcações selecionadas.')
+    } finally {
+      setExcluindoLote(false)
     }
   }
 
@@ -225,6 +272,23 @@ export function RelogioMarcacoesPendentesPage() {
         {error && <p className={`${styles.feedback} ${styles.feedbackError}`}>{error}</p>}
         {success && <p className={`${styles.feedback} ${styles.feedbackOk}`}>{success}</p>}
 
+        {isSuporte && selecionados.size > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0 0.75rem', flexWrap: 'wrap' }}>
+            <span className={styles.tdMeta}>{selecionados.size} selecionada(s)</span>
+            <button
+              type="button"
+              className={styles.btnAction}
+              onClick={() => void handleExcluirSelecionados()}
+              disabled={excluindoLote}
+            >
+              {excluindoLote ? 'Excluindo…' : `Excluir selecionados (${selecionados.size})`}
+            </button>
+            <button type="button" className={styles.btnAction} onClick={() => setSelecionados(new Set())} disabled={excluindoLote}>
+              Limpar seleção
+            </button>
+          </div>
+        )}
+
         <div className={styles.tableWrap}>
           {loading ? (
             <p className={styles.emptyTable}>Carregando…</p>
@@ -234,6 +298,15 @@ export function RelogioMarcacoesPendentesPage() {
             <table className={styles.table}>
               <thead>
                 <tr>
+                  {isSuporte && (
+                    <th>
+                      <input
+                        type="checkbox"
+                        checked={pendentes.length > 0 && pendentes.every((p) => selecionados.has(p.id))}
+                        onChange={toggleSelecionarPagina}
+                      />
+                    </th>
+                  )}
                   <th>Relógio</th>
                   <th>CPF / PIS</th>
                   <th>Data/Hora da marcação</th>
@@ -244,6 +317,16 @@ export function RelogioMarcacoesPendentesPage() {
               <tbody>
                 {pendentes.map((item) => (
                   <tr key={item.id}>
+                    {isSuporte && (
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={selecionados.has(item.id)}
+                          onChange={() => toggleSelecionado(item.id)}
+                          disabled={excluindoLote}
+                        />
+                      </td>
+                    )}
                     <td className={styles.tdMeta}>{item.relogio_descricao}</td>
                     <td>
                       <div className={styles.tdCode}>{cpfMask(item.cpf)}</div>
@@ -256,7 +339,7 @@ export function RelogioMarcacoesPendentesPage() {
                         type="button"
                         className={`${styles.btnAction} ${styles.btnPrimary}`}
                         onClick={() => abrirVincular(item)}
-                        disabled={excluindoId === item.id}
+                        disabled={excluindoId === item.id || excluindoLote}
                       >
                         Vincular
                       </button>
@@ -265,7 +348,7 @@ export function RelogioMarcacoesPendentesPage() {
                           type="button"
                           className={styles.btnAction}
                           onClick={() => void handleExcluir(item)}
-                          disabled={excluindoId === item.id}
+                          disabled={excluindoId === item.id || excluindoLote}
                         >
                           {excluindoId === item.id ? 'Excluindo…' : 'Excluir'}
                         </button>
