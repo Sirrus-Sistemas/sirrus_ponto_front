@@ -30,6 +30,30 @@
   padding: 2rem 0;
 }
 
+/* ── Abas (Pendentes / Histórico) ── */
+
+.tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--sp-border);
+}
+
+.tabBtn {
+  padding: 0.6rem 1rem;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--sp-text-2);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.tabBtn:hover { color: var(--sp-text); }
+.tabBtnActive { color: #14918b; border-bottom-color: #14918b; }
+
 /* ── Filtros (card escuro, mesmo padrão do Importar marcações) ── */
 
 .filterCard {
@@ -223,6 +247,10 @@
 }
 .tipoEntrada { background: #D1FAE5; color: #065F46; }
 .tipoSaida   { background: #FEF3C7; color: #92400E; }
+
+.statusPendente { background: #FEF3C7; color: #92400E; }
+.statusAprovada { background: #D1FAE5; color: #065F46; }
+.statusNegada   { background: #FEE2E2; color: #991B1B; }
 
 .rowActions {
   display: flex;

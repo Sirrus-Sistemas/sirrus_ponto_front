@@ -14,8 +14,10 @@ import { fetchFuncionarios, type FuncionarioListItem } from '../../services/func
 import { fetchLotacoes, type Lotacao } from '../../services/lotacoesApi'
 import {
   fetchPendentesAprovacao,
+  fetchHistoricoAprovacao,
   decidirMarcacoesMobile,
   type MarcacaoPendente,
+  type MarcacaoHistorico,
   type DecidirResult,
 } from '../../services/aprovacaoMobileApi'
 import styles from './AprovacaoBatidasPage.module.css'
@@ -33,6 +35,8 @@ function formatDataHora(utcStr: string): string {
   return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
+const STATUS_LABEL: Record<'A' | 'C' | 'N', string> = { A: 'Pendente', C: 'Aprovada', N: 'Negada' }
+
 export function AprovacaoBatidasPage() {
   const { me, meReady } = useOutletContext<AppShellOutletContext>()
 
@@ -46,7 +50,9 @@ export function AprovacaoBatidasPage() {
   const [dataInicio, setDataInicio] = useState<Dayjs | null>(() => dayjs().subtract(7, 'day'))
   const [dataFim, setDataFim] = useState<Dayjs | null>(() => dayjs())
 
+  const [aba, setAba] = useState<'pendentes' | 'historico'>('pendentes')
   const [pendentes, setPendentes] = useState<MarcacaoPendente[]>([])
+  const [historico, setHistorico] = useState<MarcacaoHistorico[]>([])
   const [selecionados, setSelecionados] = useState<Set<number>>(new Set())
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -81,22 +87,37 @@ export function AprovacaoBatidasPage() {
     setLoading(true)
     setError(null)
     setResultado(null)
+    const params = {
+      filialId,
+      dataInicio: dataInicio?.format('YYYY-MM-DD') ?? '',
+      dataFim: dataFim?.format('YYYY-MM-DD') ?? '',
+      lotacaoId: lotacaoId || undefined,
+      funcionarioId: funcionarioId || undefined,
+    }
     try {
-      const r = await fetchPendentesAprovacao({
-        filialId,
-        dataInicio: dataInicio?.format('YYYY-MM-DD') ?? '',
-        dataFim: dataFim?.format('YYYY-MM-DD') ?? '',
-        lotacaoId: lotacaoId || undefined,
-        funcionarioId: funcionarioId || undefined,
-      })
-      setPendentes(r)
-      setSelecionados(new Set(r.map((i) => i.mobile_id))) // tudo selecionado por padrão
+      if (aba === 'historico') {
+        const r = await fetchHistoricoAprovacao(params)
+        setHistorico(r)
+      } else {
+        const r = await fetchPendentesAprovacao(params)
+        setPendentes(r)
+        setSelecionados(new Set(r.map((i) => i.mobile_id))) // tudo selecionado por padrão
+      }
     } catch (e) {
-      setError(errMsg(e, 'Erro ao buscar batidas pendentes.'))
-      setPendentes([])
+      setError(errMsg(e, aba === 'historico' ? 'Erro ao buscar histórico.' : 'Erro ao buscar batidas pendentes.'))
+      if (aba === 'historico') setHistorico([]); else setPendentes([])
     } finally {
       setLoading(false)
     }
+  }
+
+  function trocarAba(novaAba: 'pendentes' | 'historico') {
+    setAba(novaAba)
+    setError(null)
+    setResultado(null)
+    setPendentes([])
+    setHistorico([])
+    setSelecionados(new Set())
   }
 
   function toggleSelecionado(mobileId: number) {
@@ -166,6 +187,23 @@ export function AprovacaoBatidasPage() {
         </div>
       </div>
 
+      <div className={styles.tabs}>
+        <button
+          type="button"
+          className={`${styles.tabBtn} ${aba === 'pendentes' ? styles.tabBtnActive : ''}`}
+          onClick={() => trocarAba('pendentes')}
+        >
+          Pendentes
+        </button>
+        <button
+          type="button"
+          className={`${styles.tabBtn} ${aba === 'historico' ? styles.tabBtnActive : ''}`}
+          onClick={() => trocarAba('historico')}
+        >
+          Histórico
+        </button>
+      </div>
+
       <div className={styles.filterCard}>
         <div className={styles.fieldDark}>
           <label>FILIAL</label>
@@ -222,7 +260,7 @@ export function AprovacaoBatidasPage() {
         </div>
       ) : null}
 
-      {pendentes.length > 0 && (
+      {aba === 'pendentes' && pendentes.length > 0 && (
         <div className={styles.bulkBar}>
           <span className={styles.bulkCount}>{selecionados.size} de {pendentes.length} selecionada(s)</span>
           <button type="button" className={styles.btnAprovar} onClick={() => void handleDecidir(selecionadosItens, 'C')} disabled={decidindo || selecionadosItens.length === 0}>
@@ -234,6 +272,74 @@ export function AprovacaoBatidasPage() {
         </div>
       )}
 
+      {aba === 'historico' ? (
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Funcionário</th>
+                <th>Data / Hora</th>
+                <th>Turno</th>
+                <th>Tipo</th>
+                <th>Status</th>
+                <th>Observação</th>
+                <th>Foto</th>
+                <th>Localização</th>
+              </tr>
+            </thead>
+            <tbody>
+              {historico.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className={styles.emptyRow}>
+                    {loading ? 'Buscando…' : 'Nenhuma batida encontrada para o filtro selecionado.'}
+                  </td>
+                </tr>
+              ) : (
+                historico.map((item) => (
+                  <tr key={item.mobile_id}>
+                    <td>{item.funcionario_nome}</td>
+                    <td>{formatDataHora(item.data_hora_utc)}</td>
+                    <td>{item.turno ?? '—'}</td>
+                    <td>
+                      <span className={`${styles.tipoBadge} ${item.tipo === 'E' ? styles.tipoEntrada : styles.tipoSaida}`}>
+                        {item.tipo === 'E' ? 'Entrada' : 'Saída'}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`${styles.tipoBadge} ${
+                        item.status === 'C' ? styles.statusAprovada
+                        : item.status === 'N' ? styles.statusNegada
+                        : styles.statusPendente}`}>
+                        {STATUS_LABEL[item.status]}
+                      </span>
+                    </td>
+                    <td>{item.observacao ?? '—'}</td>
+                    <td>
+                      {item.foto_url ? (
+                        <a href={item.foto_url} target="_blank" rel="noreferrer">
+                          <img src={item.foto_url} alt="Foto da batida" className={styles.thumb} />
+                        </a>
+                      ) : '—'}
+                    </td>
+                    <td>
+                      {item.latitude != null && item.longitude != null ? (
+                        <a
+                          className={styles.mapLink}
+                          href={`https://www.google.com/maps?q=${item.latitude},${item.longitude}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Ver no mapa
+                        </a>
+                      ) : '—'}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      ) : (
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead>
@@ -314,6 +420,7 @@ export function AprovacaoBatidasPage() {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   )
 }

@@ -462,8 +462,9 @@
   overflow-x: auto;
 }
 
-/* CPF embaixo do nome — só aparece no celular, quando a coluna CPF some. */
-.empCpfMobile {
+/* CPF/PIS embaixo do nome — só aparecem no celular, quando as colunas somem. */
+.empCpfMobile,
+.empPisMobile {
   display: none;
 }
 
@@ -999,11 +1000,11 @@
   }
 }
 
-/* Celular: 8 colunas não cabem; fica Nome (+ CPF), Status e Editar. O resto
-   continua acessível no Editar. */
+/* Celular: 9 colunas não cabem; fica Nome (+ CPF/PIS), Status e Editar. O
+   resto continua acessível no Editar. */
 @media (max-width: 680px) {
-  .table th:nth-child(n + 2):nth-child(-n + 6),
-  .table td:nth-child(n + 2):nth-child(-n + 6) {
+  .table th:nth-child(n + 2):nth-child(-n + 7),
+  .table td:nth-child(n + 2):nth-child(-n + 7) {
     display: none;
   }
 
@@ -1013,7 +1014,8 @@
     padding-right: 0.75rem;
   }
 
-  .empCpfMobile {
+  .empCpfMobile,
+  .empPisMobile {
     display: block;
     margin-top: 2px;
     font-family: var(--sp-font-mono);

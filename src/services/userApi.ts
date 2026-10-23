@@ -18,6 +18,8 @@ export type FuncionarioMe = {
   turno_retorno_intervalo?: string | null
   /** Par 2–24; vem do turno (tabela de horários). */
   turno_batidas_esperadas_dia?: number | null
+  /** 1 quando é o login do técnico de suporte Sirrus (ver SUPORTE_CPFS no backend) — libera ações restritas só a ele. */
+  suporte_sirrus?: number
 }
 
 type MeResponse = {

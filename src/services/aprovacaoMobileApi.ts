@@ -13,6 +13,10 @@ export type MarcacaoPendente = {
   data_hora_utc: string
 }
 
+export type MarcacaoHistorico = MarcacaoPendente & {
+  status: 'A' | 'C' | 'N'
+}
+
 export type DecidirResult = {
   processados: number
   erros: { mobile_id: number; error: string }[]
@@ -33,6 +37,24 @@ export async function fetchPendentesAprovacao(params: {
   if (params.lotacaoId) qs.set('lotacao_id', String(params.lotacaoId))
   if (params.funcionarioId) qs.set('funcionario_id', String(params.funcionarioId))
   const r = await apiRequest<{ data: MarcacaoPendente[] }>(`/api/mobile/aprovacao/pendentes?${qs.toString()}`)
+  return r.data
+}
+
+export async function fetchHistoricoAprovacao(params: {
+  filialId: number
+  dataInicio: string
+  dataFim: string
+  lotacaoId?: number
+  funcionarioId?: number
+}): Promise<MarcacaoHistorico[]> {
+  const qs = new URLSearchParams({
+    filial_id: String(params.filialId),
+    data_inicio: params.dataInicio,
+    data_fim: params.dataFim,
+  })
+  if (params.lotacaoId) qs.set('lotacao_id', String(params.lotacaoId))
+  if (params.funcionarioId) qs.set('funcionario_id', String(params.funcionarioId))
+  const r = await apiRequest<{ data: MarcacaoHistorico[] }>(`/api/mobile/aprovacao/historico?${qs.toString()}`)
   return r.data
 }
 

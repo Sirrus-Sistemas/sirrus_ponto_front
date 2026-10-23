@@ -36,6 +36,11 @@ export async function vincularMarcacaoPendente(id: number, funcionarioId: number
   })
 }
 
+/** Descarta uma marcação pendente sem vincular (ex.: batida de teste de funcionário fantasma). */
+export async function excluirMarcacaoPendente(id: number): Promise<void> {
+  await apiRequest(`/api/relogios/marcacoes/${id}`, { method: 'DELETE' })
+}
+
 export type ValidarTodosResultado = { total: number; vinculadas: number }
 
 /** Revalida todas as pendentes contra o cadastro atual — resolve o caso de CPF/PIS corrigido depois da importação. */

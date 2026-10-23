@@ -6,6 +6,7 @@ import { fetchRelogios, type Relogio } from '../../services/relogiosApi'
 import {
   fetchMarcacoesPendentes,
   vincularMarcacaoPendente,
+  excluirMarcacaoPendente,
   validarTodasPendentes,
   type MarcacaoPendente,
 } from '../../services/relogioMarcacoesPendentesApi'
@@ -37,6 +38,7 @@ export function RelogioMarcacoesPendentesPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [validando, setValidando] = useState(false)
+  const [excluindoId, setExcluindoId] = useState<number | null>(null)
   const [pagina, setPagina] = useState(1)
   const [total, setTotal] = useState(0)
   const [totalPaginas, setTotalPaginas] = useState(1)
@@ -99,6 +101,25 @@ export function RelogioMarcacoesPendentesPage() {
     }
   }
 
+  async function handleExcluir(item: MarcacaoPendente) {
+    if (!confirm(
+      `Excluir definitivamente esta marcação pendente (${cpfMask(item.cpf)}${item.pis ? ` · PIS ${item.pis}` : ''} em ${formatDate(item.data_hora)})?\n\n` +
+      'Use para batidas de teste (ex.: funcionário fantasma cadastrado só pra testar o relógio) que nunca vão ter um cadastro correspondente.',
+    )) return
+    setExcluindoId(item.id)
+    setError(null)
+    setSuccess(null)
+    try {
+      await excluirMarcacaoPendente(item.id)
+      setSuccess('Marcação pendente excluída.')
+      await loadPendentes(true)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Erro ao excluir marcação pendente.')
+    } finally {
+      setExcluindoId(null)
+    }
+  }
+
   function abrirVincular(item: MarcacaoPendente) {
     setVincularAlvo(item)
     setModalSearch('')
@@ -139,6 +160,8 @@ export function RelogioMarcacoesPendentesPage() {
   }, [modalFuncs, modalSearch])
 
   if (!meReady) return <p className={styles.loading}>Carregando…</p>
+
+  const isSuporte = me?.suporte_sirrus === 1
 
   if (!me || me.role !== 'admin') {
     return (
@@ -228,14 +251,25 @@ export function RelogioMarcacoesPendentesPage() {
                     </td>
                     <td className={styles.tdMeta}>{formatDate(item.data_hora)}</td>
                     <td className={styles.tdMeta}>{formatDate(item.criado_em)}</td>
-                    <td>
+                    <td style={{ display: 'flex', gap: '0.4rem' }}>
                       <button
                         type="button"
                         className={`${styles.btnAction} ${styles.btnPrimary}`}
                         onClick={() => abrirVincular(item)}
+                        disabled={excluindoId === item.id}
                       >
                         Vincular
                       </button>
+                      {isSuporte && (
+                        <button
+                          type="button"
+                          className={styles.btnAction}
+                          onClick={() => void handleExcluir(item)}
+                          disabled={excluindoId === item.id}
+                        >
+                          {excluindoId === item.id ? 'Excluindo…' : 'Excluir'}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

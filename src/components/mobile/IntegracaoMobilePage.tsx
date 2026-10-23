@@ -167,7 +167,7 @@ export function IntegracaoMobilePage() {
       const [status, fils, funcs, lots, conflitos] = await Promise.all([
         fetchMobileStatus(),
         fetchMobileFiliais(),
-        fetchFuncionarios({ limit: 1000, ativo: 1 }),
+        fetchFuncionarios({ limit: 1000, ativo: 1, controla_ponto: 1 }),
         fetchLotacoes(),
         fetchConflitosPontomobileId().catch(() => []),
       ])
@@ -187,6 +187,7 @@ export function IntegracaoMobilePage() {
     fetchFuncionarios({
       limit: 1000,
       ativo: 1,
+      controla_ponto: 1,
       filial_id: filtroFilialId || undefined,
       lotacao_id: filtroLotacaoId || undefined,
     })
@@ -200,6 +201,7 @@ export function IntegracaoMobilePage() {
     fetchFuncionarios({
       limit: 1000,
       ativo: 1,
+      controla_ponto: 1,
       filial_id: pullFilialId,
       lotacao_id: pullLotacaoId || undefined,
     })

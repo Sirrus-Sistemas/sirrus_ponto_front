@@ -491,6 +491,7 @@ export function CadastroFuncionarioPage() {
         fetchFuncionarios({ search: searchTerm.trim(), page: listPage, limit: LIST_LIMIT })
           .then((res) => { setEmployees(res.data); setListTotal(res.pagination.total); setListPages(res.pagination.totalPages) })
           .catch(() => {})
+        setView('list')
       } catch (err) {
         setError(err instanceof ApiError ? err.message : 'Não foi possível atualizar.')
       } finally {
@@ -539,6 +540,13 @@ export function CadastroFuncionarioPage() {
           </button>
         </div>
 
+        {error && (
+          <p className={`${styles.feedback} ${styles.feedbackError}`} role="alert">{error}</p>
+        )}
+        {success && (
+          <p className={`${styles.feedback} ${styles.feedbackOk}`} role="status">{success}</p>
+        )}
+
         <div className={styles.searchBar}>
           <input
             type="search"
@@ -561,6 +569,7 @@ export function CadastroFuncionarioPage() {
                   <tr>
                     <th>Nome</th>
                     <th>CPF</th>
+                    <th>PIS</th>
                     <th>Cargo</th>
                     <th>Filial / Departamento</th>
                     <th>Turno</th>
@@ -576,8 +585,10 @@ export function CadastroFuncionarioPage() {
                         <span className={styles.empNome}>{emp.nome}</span>
                         {emp.matricula && <span className={styles.empMat}> · {emp.matricula}</span>}
                         <span className={styles.empCpfMobile}>{cpfDisplay(emp.cpf)}</span>
+                        {emp.pis && <span className={styles.empPisMobile}>PIS {emp.pis}</span>}
                       </td>
                       <td className={styles.monoCell}>{cpfDisplay(emp.cpf)}</td>
+                      <td className={styles.monoCell}>{emp.pis || '—'}</td>
                       <td>{emp.cargo ?? '—'}</td>
                       <td>
                         {emp.filial_nome && <span className={styles.chip}>{emp.filial_nome}</span>}
