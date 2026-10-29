@@ -9,10 +9,12 @@ import {
   lancarBancoHoras,
   excluirBancoHoras,
   fecharMesBancoHoras,
+  fecharMesTodosBancoHoras,
   type SaldoBancoHoras,
   type TipoHora,
   type TipoLancamento,
   type OrigemLancamento,
+  type FecharMesTodosResultado,
 } from '../../services/bancoHorasApi'
 import styles from './BancoHorasPage.module.css'
 
@@ -81,6 +83,12 @@ export function BancoHorasPage() {
 
   const [excluindoId, setExcluindoId] = useState<number | null>(null)
   const [excluirErro, setExcluirErro] = useState<string | null>(null)
+
+  // Fechamento mensal — todos os colaboradores de uma vez
+  const [fecharTodosMesAno, setFecharTodosMesAno] = useState(mesAnoAtual())
+  const [fechandoTodos, setFechandoTodos] = useState(false)
+  const [fecharTodosError, setFecharTodosError] = useState<string | null>(null)
+  const [fecharTodosResultado, setFecharTodosResultado] = useState<FecharMesTodosResultado | null>(null)
 
   useEffect(() => {
     fetchFuncionarios({ limit: 1000, ativo: 1, controla_ponto: 1 })
@@ -159,6 +167,28 @@ export function BancoHorasPage() {
     }
   }
 
+  async function handleFecharMesTodos() {
+    setFecharTodosError(null)
+    setFecharTodosResultado(null)
+    if (!/^\d{4}-\d{2}$/.test(fecharTodosMesAno)) { setFecharTodosError('Selecione o mês/ano a fechar.'); return }
+    const [anoStr, mesStr] = fecharTodosMesAno.split('-')
+    if (!confirm(
+      `Fechar o mês ${fecharTodosMesAno} para TODOS os colaboradores com banco de horas ativo?\n\n` +
+      'Calcula e grava o crédito/débito da ficha de ponto de cada um. Quem já tiver esse mês fechado, ou não puder ser calculado, é pulado e informado no resultado — não precisa fechar de novo depois.',
+    )) return
+
+    setFechandoTodos(true)
+    try {
+      const r = await fecharMesTodosBancoHoras(Number(anoStr), Number(mesStr))
+      setFecharTodosResultado(r)
+      if (funcionarioId) carregarSaldo(funcionarioId)
+    } catch (e) {
+      setFecharTodosError(errMsg(e, 'Não foi possível fechar o mês de todos os colaboradores.'))
+    } finally {
+      setFechandoTodos(false)
+    }
+  }
+
   async function handleExcluir(id: number, descricao: string | null, origem: OrigemLancamento, mesReferencia: string, tipoHora: TipoHora) {
     if (!funcionarioId) return
     const mensagem = origem === 'fechamento_mensal'
@@ -197,6 +227,66 @@ export function BancoHorasPage() {
         Saldo acumulado de horas extras (50% e 100%) por funcionário — lance ajustes manuais ou feche
         o saldo líquido da ficha de ponto do mês.
       </p>
+
+      <div className={styles.card}>
+        <p className={styles.cardTitle}>Fechar mês de todos os colaboradores</p>
+        <p className={styles.hint}>
+          Calcula e fecha a ficha de ponto da competência escolhida pra todos os colaboradores com
+          banco de horas ativo, de uma vez — sem precisar selecionar um por um. Quem já tiver esse mês
+          fechado, ou não puder ser calculado, é pulado e informado no resultado.
+        </p>
+
+        {fecharTodosError && <p className={styles.error} role="alert">{fecharTodosError}</p>}
+
+        <div className={styles.fieldRow}>
+          <div className={styles.field}>
+            <label htmlFor="bh-fechar-todos-mesano">Mês/Ano a fechar</label>
+            <input
+              id="bh-fechar-todos-mesano"
+              type="month"
+              value={fecharTodosMesAno}
+              onChange={(e) => setFecharTodosMesAno(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className={styles.actions}>
+          <button type="button" className={styles.btnPrimary} onClick={() => void handleFecharMesTodos()} disabled={fechandoTodos}>
+            {fechandoTodos ? 'Calculando todos…' : 'Calcular todos os colaboradores'}
+          </button>
+        </div>
+
+        {fecharTodosResultado && (
+          <div style={{ marginTop: '1rem' }}>
+            <p className={styles.ok}>
+              Mês {fecharTodosResultado.mes_referencia}: {fecharTodosResultado.fechados} fechado(s),{' '}
+              {fecharTodosResultado.sem_saldo} sem saldo, {fecharTodosResultado.ja_fechado} já fechado(s) antes
+              {fecharTodosResultado.nao_calculados.length > 0 && `, ${fecharTodosResultado.nao_calculados.length} não calculado(s)`}
+              {' '}— de {fecharTodosResultado.total} colaborador(es) no total.
+            </p>
+            {fecharTodosResultado.nao_calculados.length > 0 && (
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Colaborador</th>
+                      <th>Motivo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {fecharTodosResultado.nao_calculados.map((item) => (
+                      <tr key={item.funcionario_id}>
+                        <td>{item.funcionario_nome}</td>
+                        <td className={styles.error}>{item.motivo}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       <div className={styles.card}>
         <div className={styles.field}>
