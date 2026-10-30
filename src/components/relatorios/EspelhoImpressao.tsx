@@ -136,17 +136,16 @@ function buildSlots(
   // horas); só este texto deixa de aparecer.
   const DESCONSIDERADA_RE = /^desconsiderad/i
 
+  // Batida formalmente desconsiderada (ação "Desconsiderar" na Ficha de Ponto,
+  // ver marcacoes_desconsideradas) tampouco entra na lista de observações —
+  // mesma regra da convenção por texto acima, só que pra este outro mecanismo.
+  // Continua aparecendo em "Marcações REP" (registro original do relógio),
+  // só não polui mais a coluna de motivo/observação.
   const motivoParts: string[] = allDeduped
     .filter((all) => all.tipo !== 'rep')
     .filter((all) => !(all.tipo === 'manual' && all.motivo_edicao && DESCONSIDERADA_RE.test(all.motivo_edicao.trim())))
     .map((all) => (all.tipo === 'manual' && all.motivo_edicao) ? all.motivo_edicao : all.tipo_label)
 
-  // Cada batida lançada traz o próprio motivo — justificar o dia inteiro
-  // repetia "Justificativa automática / Justificativa automática / …" uma vez
-  // por batida. Mostra cada motivo distinto uma vez, na ordem em que aparece.
-  for (const d of desconsideradas) {
-    motivoParts.push(`Desconsiderada ${(d.data_hora_local ?? d.data_hora).slice(11, 16)}`)
-  }
   const motivoStr = [...new Set(motivoParts)].join(' / ')
 
   return { repSlots, allSlots, motivoStr }
