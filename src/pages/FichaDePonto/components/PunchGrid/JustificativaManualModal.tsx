@@ -4,7 +4,7 @@ import { ApiError } from '../../../../lib/api';
 import { lancarBatida, editarBatida } from '../../../../services/fichaPontoApi';
 import type { DayActionMenuContext } from './DayActionMenu';
 import styles from './OcorrenciaModal.module.css';
-import { diasAposReferencia, montarBatida } from '../../batidaDataHora';
+import { diasAposReferencia, minutosDaJornada, montarBatida } from '../../batidaDataHora';
 
 const SLOT_LABELS = ['E1', 'S1', 'E2', 'S2', 'E3', 'S3', 'E4', 'S4'];
 
@@ -59,10 +59,21 @@ export function JustificativaManualModal({
         const [hh, mm] = horario.split(':').map(Number);
         const hhmm = `${pad(hh)}:${pad(mm)}`;
         // Dia de referência da linha; +1 só se a jornada já passou da
-        // meia-noite em relação às batidas dos slots anteriores.
-        const anteriores = ctx.row.punches.slice(0, slotIndex).map((p) => p?.time);
+        // meia-noite até esse slot. Usa o horário PREVISTO do próprio slot
+        // (mesmo cálculo cumulativo que a Justificativa Automática já usa)
+        // em vez de deduzir pelas batidas reais anteriores no grid — quando
+        // falta um horário no MEIO do dia (ex.: volta do almoço), as batidas
+        // seguintes "sobem" uma posição na exibição, e deduzir pelas batidas
+        // exibidas antes do slot clicado pegava a batida errada (ex.: a
+        // saída das 18h aparecendo como "anterior" de um horário das 14h),
+        // achando — errado — que a jornada cruzou a meia-noite e gravando a
+        // batida num dia a mais.
+        const previstos = ctx.row.horariosPrevistos;
+        const diasAMais = previstos[slotIndex]
+          ? Math.floor(minutosDaJornada(previstos)[slotIndex] / 1440)
+          : diasAposReferencia(ctx.row.punches.slice(0, slotIndex).map((p) => p?.time), hhmm);
         const { dataHoraUtc: dataHora, diaRef } = montarBatida(
-          ctx.row, hhmm, diasAposReferencia(anteriores, hhmm), tzOffset,
+          ctx.row, hhmm, diasAMais, tzOffset,
         );
 
         const payload = {

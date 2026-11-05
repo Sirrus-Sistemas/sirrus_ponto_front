@@ -783,6 +783,7 @@ export function GerarEscalaPage() {
                 </p>
               </div>
             ) : (
+            <>
             <div className={styles.cicloGrid}>
               {CICLOS.slice(0, 4).map((c) => {
                 const selected = form.tipo_ciclo === c.value
@@ -853,6 +854,7 @@ export function GerarEscalaPage() {
                 <p className={styles.hint}>Início do ciclo: {inicioCicloHint(form.inicio_ciclo)}</p>
               )}
             </div>
+            </>
             )}
           </div>
 

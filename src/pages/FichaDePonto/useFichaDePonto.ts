@@ -5,7 +5,6 @@ import { fetchFuncionarios, type FuncionarioListItem } from '../../services/func
 import { fetchFicha, bloquearDia, desbloquearDia, bloquearPeriodo as bloquearPeriodoApi, desbloquearPeriodo as desbloquearPeriodoApi, justificarPeriodo as justificarPeriodoApi, type HorariosManuais, type JustificarPeriodoResultado } from '../../services/fichaPontoApi';
 import { deleteOcorrenciasEmMassa, type ExcluirOcorrenciasMassaResultado } from '../../services/ocorrenciasApi';
 import { ApiError } from '../../lib/api';
-import { parseDataHoraUtc } from '../../lib/parseDataHora';
 import type { DayRow, DayStatus, Employee, FichaDePontoData, MonthlySummary, Punch, PunchSource } from './types';
 
 function mapStatus(s: StatusDia, modifiers: string[]): DayStatus {
@@ -70,16 +69,25 @@ function buildSlots(marcacoes: MarcacaoItem[]): (MarcacaoItem | null)[] {
     return true;
   });
 
-  // 2. Ordena cronologicamente antes de deduplicar por horário (mantém a mais antiga)
+  // Hora local VERDADEIRA de cada batida. REP grava hora local crua (sem
+  // conversão — migration 035); online/manual/geo gravam UTC verdadeiro. O
+  // campo `data_hora` cru mistura as duas convenções — uma REP às 18:00 e uma
+  // manual às 14:00 (fuso -04:00, portanto 18:00 UTC) ficam com o MESMO valor
+  // cru após virar ISO, fazendo a dedupe abaixo tratar como a mesma batida e
+  // descartar uma das duas (a que gerou a reclamação de batida "sumindo" ao
+  // lançar justificativa). `data_hora_local` já vem corrigido por tipo do
+  // backend — mesmo campo que a linha de exibição abaixo já usa.
+  const localTime = (m: MarcacaoItem) => m.data_hora_local ?? m.data_hora;
+
+  // 2. Ordena cronologicamente (hora local verdadeira) antes de deduplicar por horário
   const sorted = [...dedupById].sort(
-    (a, b) => parseDataHoraUtc(a.data_hora).getTime() - parseDataHoraUtc(b.data_hora).getTime(),
+    (a, b) => localTime(a).localeCompare(localTime(b)),
   );
 
-  // 3. Deduplica por HH:MM — batidas no mesmo minuto exibem apenas uma
+  // 3. Deduplica por HH:MM (hora local verdadeira) — batidas no mesmo minuto exibem apenas uma
   const seenTimes = new Set<string>();
   const deduped = sorted.filter(m => {
-    const d = parseDataHoraUtc(m.data_hora);
-    const key = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    const key = localTime(m).slice(11, 16);
     if (seenTimes.has(key)) return false;
     seenTimes.add(key);
     return true;
