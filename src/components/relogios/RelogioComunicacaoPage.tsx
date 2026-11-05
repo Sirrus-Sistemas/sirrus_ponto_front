@@ -519,22 +519,31 @@ function SaudeCard({ saude, relogios }: { saude: SistemasSaude; relogios: Relogi
       </div>
       {saude.relogios && saude.relogios.length > 0 && (
         <div className={styles.saudeRelogios}>
-          {saude.relogios.map((r) => (
-            <span
-              key={r.id}
-              className={`${styles.saudeRelogioPill} ${r.erro ? styles.saudeRelogioPillErro : ''}`}
-              style={{ background: r.status === 'ok' ? '#dcfce7' : '#fee2e2',
-                       color: r.status === 'ok' ? '#166534' : '#991b1b' }}
-            >
-              <span className={styles.saudeRelogioNome}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: r.status === 'ok' ? '#22c55e' : '#ef4444', display: 'inline-block', marginRight: 4 }} />
-                {relogioNome(r.id)}
+          {saude.relogios.map((r) => {
+            // Cada relógio pode vir de um Sync diferente (um por loja): o
+            // heartbeat geral pode estar em dia enquanto o Sync de uma loja
+            // específica caiu — por isso a checagem é por relógio também.
+            const relogioSemComunicacao = !!r.recebido_em
+              && agora - new Date(r.recebido_em).getTime() > OFFLINE_THRESHOLD_MS
+            const ok = r.status === 'ok' && !relogioSemComunicacao
+            const erro = relogioSemComunicacao ? 'Sem comunicação com o sistema de coleta' : r.erro
+            return (
+              <span
+                key={r.id}
+                className={`${styles.saudeRelogioPill} ${erro ? styles.saudeRelogioPillErro : ''}`}
+                style={{ background: ok ? '#dcfce7' : '#fee2e2',
+                         color: ok ? '#166534' : '#991b1b' }}
+              >
+                <span className={styles.saudeRelogioNome}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: ok ? '#22c55e' : '#ef4444', display: 'inline-block', marginRight: 4 }} />
+                  {relogioNome(r.id)}
+                </span>
+                {/* Erro em linha própria e quebrando — numa linha só a mensagem
+                    (com URL/IP) passava da largura do card e era cortada. */}
+                {erro && <span className={styles.saudeRelogioErro}>{erro}</span>}
               </span>
-              {/* Erro em linha própria e quebrando — numa linha só a mensagem
-                  (com URL/IP) passava da largura do card e era cortada. */}
-              {r.erro && <span className={styles.saudeRelogioErro}>{r.erro}</span>}
-            </span>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

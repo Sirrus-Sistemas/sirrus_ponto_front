@@ -74,6 +74,8 @@ export type RelogioSaudeItem = {
   id: number
   status: 'ok' | 'erro' | string
   erro?: string
+  /** Quando este relógio foi reportado pela última vez (pode haver um Sync por loja). */
+  recebido_em?: string
 }
 
 export type SistemasSaude = {

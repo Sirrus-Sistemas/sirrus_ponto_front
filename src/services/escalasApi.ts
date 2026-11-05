@@ -103,6 +103,30 @@ export async function salvarEscala(payload: EscalaPayload): Promise<number> {
   return res.total
 }
 
+export type EscalaPorTurnoPayload = {
+  funcionario_id: number
+  data_inicio: string
+  data_fim: string
+  turno_id: number
+}
+
+/** Gera os dias do período a partir do padrão semanal de um turno já cadastrado (tabela de horário existente). */
+export async function previewEscalaPorTurno(payload: EscalaPorTurnoPayload): Promise<DiaEscala[]> {
+  const res = await apiRequest<{ success: boolean; data: DiaEscala[] }>('/api/escalas/por-turno/preview', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+  return res.data
+}
+
+export async function salvarEscalaPorTurno(payload: EscalaPorTurnoPayload): Promise<number> {
+  const res = await apiRequest<{ success: boolean; total: number }>('/api/escalas/por-turno', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+  return res.total
+}
+
 export type AjusteDia = {
   data: string
   tipo: 'trabalho' | 'folga' | 'falta'

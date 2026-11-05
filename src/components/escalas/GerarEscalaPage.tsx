@@ -20,14 +20,17 @@ import {
   fetchEscalasGeradas,
   fetchFuncionariosComEscala,
   previewEscala,
+  previewEscalaPorTurno,
   deleteEscala,
   salvarEscala,
+  salvarEscalaPorTurno,
   type DiaEscala,
   type EscalaGerada,
   type FuncionarioEscala,
   type TipoCiclo,
 } from '../../services/escalasApi'
 import { fetchLotacoes, type Lotacao } from '../../services/lotacoesApi'
+import { fetchTurnos, type Turno } from '../../services/turnosApi'
 import { MiniCalendar } from './MiniCalendar'
 import {
   calcTotalHours,
@@ -127,6 +130,18 @@ export function GerarEscalaPage() {
 
   const [funcionarios, setFuncionarios] = useState<FuncionarioEscala[]>([])
   const [loadingFuncs, setLoadingFuncs] = useState(true)
+
+  // ── Modo de geração: ciclo fixo (padrão) ou tabela de horário já cadastrada ──
+  // Pensado pro caso de funcionário que troca de horário no meio do mês (ex.:
+  // trabalhou 17h-23h do dia 1 ao 15 e comercial do dia 16 em diante) — aplica
+  // uma tabela de horário existente num período, sem digitar os horários de novo.
+  const [modo, setModo] = useState<'ciclo' | 'turno'>('ciclo')
+  const [turnos, setTurnos] = useState<Turno[]>([])
+  const [turnoId, setTurnoId] = useState('')
+
+  useEffect(() => {
+    fetchTurnos().then(setTurnos).catch(() => setTurnos([]))
+  }, [])
 
   // ── Localizar escala existente (mês/ano + lotação) ──────────────────────────
   const hoje = new Date()
@@ -254,21 +269,28 @@ export function GerarEscalaPage() {
 
   // Auto-preview: debounced 400ms after any form change
   useEffect(() => {
-    const isValid =
-      form.funcionario_id &&
-      form.data_inicio &&
-      form.data_fim &&
+    const isValidCiclo = modo === 'ciclo' &&
+      form.funcionario_id && form.data_inicio && form.data_fim &&
       form.data_inicio <= form.data_fim &&
-      form.inicio_ciclo &&
-      form.entrada1 &&
-      form.saida1
+      form.inicio_ciclo && form.entrada1 && form.saida1
 
-    if (!isValid) return
+    const isValidTurno = modo === 'turno' &&
+      form.funcionario_id && form.data_inicio && form.data_fim &&
+      form.data_inicio <= form.data_fim && turnoId
+
+    if (!isValidCiclo && !isValidTurno) return
 
     const timer = setTimeout(async () => {
       setLoadingPreview(true)
       try {
-        const dias = await previewEscala(buildPayload(form))
+        const dias = modo === 'turno'
+          ? await previewEscalaPorTurno({
+              funcionario_id: Number(form.funcionario_id),
+              data_inicio: form.data_inicio,
+              data_fim: form.data_fim,
+              turno_id: Number(turnoId),
+            })
+          : await previewEscala(buildPayload(form))
         setPreview(dias)
       } catch {
         // silently ignore auto-preview errors
@@ -280,6 +302,7 @@ export function GerarEscalaPage() {
     return () => clearTimeout(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    modo, turnoId,
     form.funcionario_id, form.data_inicio, form.data_fim, form.tipo_ciclo,
     form.inicio_ciclo, form.entrada1, form.saida1, form.entrada2, form.saida2,
     form.entrada3, form.saida3, form.entrada4, form.saida4, form.fim_noturno,
@@ -332,6 +355,10 @@ export function GerarEscalaPage() {
     if (!form.funcionario_id) return 'Selecione um funcionário.'
     if (!form.data_inicio || !form.data_fim) return 'Informe o período.'
     if (form.data_inicio > form.data_fim) return 'Data de início deve ser anterior à data fim.'
+    if (modo === 'turno') {
+      if (!turnoId) return 'Selecione a tabela de horário.'
+      return null
+    }
     if (!form.inicio_ciclo) return 'Informe a data de início do ciclo.'
     if (!form.entrada1 || !form.saida1) return 'Informe pelo menos Entrada 1 e Saída 1.'
     return null
@@ -379,7 +406,14 @@ export function GerarEscalaPage() {
     setSaveError(null)
     setSaving(true)
     try {
-      const total = await salvarEscala(buildPayload(form))
+      const total = modo === 'turno'
+        ? await salvarEscalaPorTurno({
+            funcionario_id: Number(form.funcionario_id),
+            data_inicio: form.data_inicio,
+            data_fim: form.data_fim,
+            turno_id: Number(turnoId),
+          })
+        : await salvarEscala(buildPayload(form))
       setSuccess(`${total} dias ${isEditing ? 'atualizados' : 'gravados'} com sucesso.`)
       setIsEditing(true)
       const qs = new URLSearchParams({
@@ -409,8 +443,8 @@ export function GerarEscalaPage() {
   )
 
   const step1Done = Boolean(form.funcionario_id && form.data_inicio && form.data_fim)
-  const step2Done = Boolean(form.inicio_ciclo)
-  const step3Done = Boolean(form.entrada1 && form.saida1)
+  const step2Done = modo === 'turno' ? Boolean(turnoId) : Boolean(form.inicio_ciclo)
+  const step3Done = modo === 'turno' ? true : Boolean(form.entrada1 && form.saida1)
   const canSave   = step1Done && step2Done && step3Done &&
                     form.data_inicio <= form.data_fim
 
@@ -610,8 +644,8 @@ export function GerarEscalaPage() {
       <div className={styles.stepper}>
         {([
           { n: 1, label: 'Dados básicos', done: step1Done },
-          { n: 2, label: 'Tipo de ciclo', done: step2Done },
-          { n: 3, label: 'Horários',       done: step3Done },
+          { n: 2, label: modo === 'turno' ? 'Tabela de horário' : 'Tipo de ciclo', done: step2Done },
+          { n: 3, label: 'Horários', done: step3Done },
         ] as const).map(({ n, label, done }, idx) => {
           const active = !step1Done ? n === 1 : !step2Done ? n === 2 : n === 3
           return (
@@ -703,13 +737,52 @@ export function GerarEscalaPage() {
             </div>
           </div>
 
-          {/* Card 2 — Tipo de ciclo */}
+          {/* Card 2 — Tipo de ciclo OU tabela de horário existente */}
           <div className={styles.card}>
             <div className={styles.cardHeader}>
               <Calendar size={14} className={styles.cardIcon} />
-              <span>Tipo de ciclo</span>
+              <span>{modo === 'turno' ? 'Tabela de horário' : 'Tipo de ciclo'}</span>
             </div>
 
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '14px' }}>
+              <button
+                type="button"
+                className={modo === 'ciclo' ? styles.cicloCardActive : styles.cicloCard}
+                style={{ flex: 1, padding: '0.5rem 0.75rem', textAlign: 'center' }}
+                onClick={() => setModo('ciclo')}
+              >
+                Ciclo fixo
+              </button>
+              <button
+                type="button"
+                className={modo === 'turno' ? styles.cicloCardActive : styles.cicloCard}
+                style={{ flex: 1, padding: '0.5rem 0.75rem', textAlign: 'center' }}
+                onClick={() => setModo('turno')}
+              >
+                Tabela de horário existente
+              </button>
+            </div>
+
+            {modo === 'turno' ? (
+              <div className={styles.field}>
+                <label htmlFor="ge-turno" className={styles.label}>Tabela de horário</label>
+                <select
+                  id="ge-turno"
+                  className={styles.select}
+                  value={turnoId}
+                  onChange={(e) => { setTurnoId(e.target.value); setSaveError(null); setSuccess(null) }}
+                >
+                  <option value="">— Selecione —</option>
+                  {turnos.map((t) => (
+                    <option key={t.id} value={t.id}>{t.nome}</option>
+                  ))}
+                </select>
+                <p className={styles.hint}>
+                  Os horários de cada dia da semana vêm da configuração dessa tabela em
+                  Turnos → Tabela de Horários, aplicados só no período acima.
+                </p>
+              </div>
+            ) : (
             <div className={styles.cicloGrid}>
               {CICLOS.slice(0, 4).map((c) => {
                 const selected = form.tipo_ciclo === c.value
@@ -780,9 +853,12 @@ export function GerarEscalaPage() {
                 <p className={styles.hint}>Início do ciclo: {inicioCicloHint(form.inicio_ciclo)}</p>
               )}
             </div>
+            )}
           </div>
 
-          {/* Card 3 — Horários */}
+          {/* Card 3 — Horários (só no modo ciclo fixo; no modo tabela de horário,
+              os horários vêm prontos da tabela selecionada) */}
+          {modo === 'ciclo' && (
           <div className={styles.card}>
             <div className={styles.cardHeader}>
               <Clock size={14} className={styles.cardIcon} />
@@ -896,6 +972,7 @@ export function GerarEscalaPage() {
               />
             </div>
           </div>
+          )}
         </div>
 
         {/* ═══ Right column — Preview panel ═══ */}
