@@ -192,6 +192,12 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
   // continuam detalhadas por percentual (padrão Ponto Velox).
   const bancoSaldoAnterior = resumo.banco_horas_saldo_anterior_minutos ?? 0
   const bancoSaldoAtual    = resumo.banco_horas_saldo_atual_minutos ?? 0
+  // Lançamento manual feito para este mês (ex.: ajuste retroativo do RH) —
+  // já entra no saldo atual acima; soma também aqui pra "Horas do Mês"
+  // refletir o lançamento assim que feito, em vez de só aparecer no mês
+  // seguinte (misturado, sem rastro) via saldo anterior.
+  const bancoAjusteManual50  = resumo.banco_horas_ajuste_manual_50pct_minutos ?? 0
+  const bancoAjusteManual100 = resumo.banco_horas_ajuste_manual_100pct_minutos ?? 0
   const fmtSaldo = (min: number) => (min >= 0 ? `(+) ${minToHHMM(min)}` : `(-) ${minToHHMM(Math.abs(min))}`)
   // CLT art. 73 §1: 52min30s = 1h noturna → acréscimo = round(noturno / 7)
   const totalAcrescimoMin       = Math.round(totalNoturnoMin / 7)
@@ -445,14 +451,14 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
             <td>Total Extras:&nbsp;50%:&nbsp;<strong>{minToHHMM(totalExtras50pctMin)}</strong></td>
             <td className={styles.footerOcor}>CRÉDITOS (+)</td>
             <td>Acréscimo:&nbsp;{totalAcrescimoMin ? minToHHMM(totalAcrescimoMin) : '00:00'}</td>
-            <td>{mostrarBancoHoras ? <>50% Horas do Mês:&nbsp;{fmtSaldo(totalExtras50pctMin - totalDebitoMin)}</> : null}</td>
+            <td>{mostrarBancoHoras ? <>50% Horas do Mês:&nbsp;{fmtSaldo(totalExtras50pctMin - totalDebitoMin + bancoAjusteManual50)}</> : null}</td>
           </tr>
           <tr>
             <td>Total Feriados:&nbsp;<strong>{meta.dias_feriado_calendario}</strong></td>
             <td>Total Débito:&nbsp;50%:&nbsp;<strong>{minToHHMM(totalDebitoMin)}</strong></td>
             <td>Total:&nbsp;<strong>{minToHHMM(totalOcorrenciaDebitoMin)}</strong></td>
             <td>Horas em Adicional:&nbsp;{totalHorasEmAdicionalMin ? minToHHMM(totalHorasEmAdicionalMin) : '00:00'}</td>
-            <td>{mostrarBancoHoras ? <>100% Horas do Mês:&nbsp;{fmtSaldo(totalExtras100pctMin - totalDebito100Min)}</> : null}</td>
+            <td>{mostrarBancoHoras ? <>100% Horas do Mês:&nbsp;{fmtSaldo(totalExtras100pctMin - totalDebito100Min + bancoAjusteManual100)}</> : null}</td>
           </tr>
           <tr>
             <td>Horas Trabalhadas:&nbsp;<strong>{minToHHMM(resumo.minutos_trabalhados_mes)}</strong></td>

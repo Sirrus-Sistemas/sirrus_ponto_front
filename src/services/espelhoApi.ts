@@ -112,6 +112,10 @@ export type ResumoEspelho = {
   banco_horas_saldo_anterior_minutos: number
   /** Saldo anterior + líquido deste mês (50% e 100% somados). As horas GERADAS neste mês continuam detalhadas por percentual em total_extras_50pct_minutos/total_extras_100pct_minutos. */
   banco_horas_saldo_atual_minutos: number
+  /** Lançamento manual (crédito/débito) feito para este mês, carteira 50% — já somado em banco_horas_saldo_atual_minutos. */
+  banco_horas_ajuste_manual_50pct_minutos: number
+  /** Lançamento manual (crédito/débito) feito para este mês, carteira 100% — já somado em banco_horas_saldo_atual_minutos. */
+  banco_horas_ajuste_manual_100pct_minutos: number
 }
 
 export type EspelhoMeta = {
