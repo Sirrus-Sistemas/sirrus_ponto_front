@@ -162,6 +162,18 @@ type Props = {
 export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props) {
   const { meta, resumo, dias } = espelho
 
+  // Pré-calcula os slots de cada dia uma única vez — usado tanto pra saber se
+  // o período inteiro tem alguma batida no 3º/4º período (Ent 3/Sai 3/Ent 4/
+  // Sai 4) quanto pra renderizar as linhas, sem repetir o buildSlots.
+  const diasComSlots = dias.map((dia) => ({ dia, ...buildSlots(dia.marcacoes, dia.marcacoes_desconsideradas) }))
+  // Na grande maioria dos dias só os 2 primeiros períodos (4 colunas) são
+  // usados — mostrar sempre as 8 colunas deixa a impressão apertada à toa.
+  // Só exibe o 3º/4º período se alguma batida do mês realmente cair neles.
+  const temPeriodos3e4 = diasComSlots.some(
+    ({ repSlots, allSlots }) => repSlots.slice(4).some(Boolean) || allSlots.slice(4).some(Boolean),
+  )
+  const numColsTempo = temPeriodos3e4 ? 8 : 4
+
   const now = new Date()
   const emissao = `${pad2(now.getDate())}/${pad2(now.getMonth() + 1)}/${now.getFullYear()} ${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`
 
@@ -262,16 +274,10 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
         <colgroup>
           <col className={styles.cData} />
           <col className={styles.cDia} />
-          {/* REP × 8 */}
-          <col className={styles.cTime} /><col className={styles.cTime} />
-          <col className={styles.cTime} /><col className={styles.cTime} />
-          <col className={styles.cTime} /><col className={styles.cTime} />
-          <col className={styles.cTime} /><col className={styles.cTime} />
-          {/* Jornada × 8 */}
-          <col className={styles.cTime} /><col className={styles.cTime} />
-          <col className={styles.cTime} /><col className={styles.cTime} />
-          <col className={styles.cTime} /><col className={styles.cTime} />
-          <col className={styles.cTime} /><col className={styles.cTime} />
+          {/* REP — 4 colunas fixas, mais 4 do 3º/4º período só quando usadas */}
+          {Array.from({ length: numColsTempo }).map((_, i) => <col key={`crep${i}`} className={styles.cTime} />)}
+          {/* Jornada — mesma regra */}
+          {Array.from({ length: numColsTempo }).map((_, i) => <col key={`cjrn${i}`} className={styles.cTime} />)}
           {/* CH / Horário / Ocor */}
           <col className={styles.cCh} />
           <col className={styles.cHorario} />
@@ -290,16 +296,18 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
         <thead>
           <tr className={styles.thSection}>
             <th colSpan={2}></th>
-            <th colSpan={8} className={styles.thSectionLabel}>MARCAÇÕES REP</th>
-            <th colSpan={11} className={styles.thSectionLabel}>Jornada Realizada</th>
+            <th colSpan={numColsTempo} className={styles.thSectionLabel}>MARCAÇÕES REP</th>
+            <th colSpan={numColsTempo + 3} className={styles.thSectionLabel}>Jornada Realizada</th>
             <th colSpan={1} className={styles.thSectionLabel}>Tratamento Efetuado Sobre os Dados Originais</th>
             <th colSpan={7}></th>
           </tr>
           <tr className={styles.thCols}>
             <th>Data</th>
             <th>Dia</th>
-            <th>Ent 1</th><th>Sai 1</th><th>Ent 2</th><th>Sai 2</th><th>Ent 3</th><th>Sai 3</th><th>Ent 4</th><th>Sai 4</th>
-            <th>Ent. 1</th><th>Sai. 1</th><th>Ent. 2</th><th>Sai. 2</th><th>Ent. 3</th><th>Sai. 3</th><th>Ent. 4</th><th>Sai. 4</th>
+            <th>Ent 1</th><th>Sai 1</th><th>Ent 2</th><th>Sai 2</th>
+            {temPeriodos3e4 && <><th>Ent 3</th><th>Sai 3</th><th>Ent 4</th><th>Sai 4</th></>}
+            <th>Ent. 1</th><th>Sai. 1</th><th>Ent. 2</th><th>Sai. 2</th>
+            {temPeriodos3e4 && <><th>Ent. 3</th><th>Sai. 3</th><th>Ent. 4</th><th>Sai. 4</th></>}
             <th title="Código do Horário (tabela de horários)">CH</th><th>Horário</th><th>Ocor.</th>
             <th>Motivo</th>
             <th>Total</th><th>Extras</th><th>100%</th><th>Débito</th>
@@ -307,7 +315,7 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
           </tr>
         </thead>
         <tbody>
-          {dias.map((dia) => {
+          {diasComSlots.map(({ dia, repSlots, allSlots, motivoStr: motivoMarcacao }) => {
             const isOcorrencia = dia.status === 'ocorrencia'
             const isFeriado = dia.modifiers?.includes('feriado') ?? false
             const isAnomalo = dia.modifiers?.includes('jornada_anomala') ?? false
@@ -346,7 +354,7 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
               return (
                 <tr key={dia.data} className={trClass}>
                   <td>{formatDataPrint(dia.data)}</td>
-                  <td colSpan={28} className={styles.tdDiaLabel}>{diaLabel}</td>
+                  <td colSpan={28 - 2 * (8 - numColsTempo)} className={styles.tdDiaLabel}>{diaLabel}</td>
                 </tr>
               )
             }
@@ -378,7 +386,6 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
               : dia.ocorrencia?.tipo_ocorrencia_descricao ||
                 dia.ocorrencia?.descricao ||
                 'OCORRÊNCIA'
-            const { repSlots, allSlots, motivoStr: motivoMarcacao } = buildSlots(dia.marcacoes, dia.marcacoes_desconsideradas)
             const motivoStr = isOcorrencia
               ? [ocorrenciaLabel, motivoMarcacao].filter(Boolean).join(' — ')
               : motivoMarcacao
@@ -388,13 +395,13 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
                 <td>{formatDataPrint(dia.data)}</td>
                 <td className={styles.tdDiaLabel}>{diaLabel}</td>
                 {/* REP */}
-                {repSlots.map((p, i) => (
+                {repSlots.slice(0, numColsTempo).map((p, i) => (
                   <td key={`rep${i}`} className={styles.tdTime}>
                     {p ? horaMin(p) : '-'}
                   </td>
                 ))}
                 {/* Jornada */}
-                {allSlots.map((p, i) => (
+                {allSlots.slice(0, numColsTempo).map((p, i) => (
                   <td key={`jrn${i}`} className={styles.tdTime}>
                     {p ? horaMin(p) : '-'}
                   </td>
@@ -441,27 +448,20 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
           </tr>
           <tr>
             <td>Total Faltas:&nbsp;<strong>{resumo.dias_falta}</strong></td>
-            <td></td>
+            <td>Total Extras:&nbsp;50%:&nbsp;<strong>{minToHHMM(totalExtras50pctMin)}</strong></td>
             <td className={styles.footerOcor}>DÉBITOS (-)</td>
             <td>Adicional Noturno:&nbsp;{totalNoturnoMin ? minToHHMM(totalNoturnoMin) : '0:00'}</td>
             <td>{mostrarBancoHoras ? <>Saldo Anterior:&nbsp;{fmtSaldo(bancoSaldoAnterior)}</> : null}</td>
           </tr>
           <tr>
             <td>Total 1/2 Faltas:&nbsp;0</td>
-            <td>Total Extras:&nbsp;50%:&nbsp;<strong>{minToHHMM(totalExtras50pctMin)}</strong></td>
-            <td className={styles.footerOcor}>CRÉDITOS (+)</td>
+            <td>Total Débito:&nbsp;50%:&nbsp;<strong>{minToHHMM(totalDebitoMin)}</strong></td>
+            <td>Total de Débito:&nbsp;<strong>{minToHHMM(totalOcorrenciaDebitoMin)}</strong></td>
             <td>Acréscimo:&nbsp;{totalAcrescimoMin ? minToHHMM(totalAcrescimoMin) : '00:00'}</td>
             <td>{mostrarBancoHoras ? <>50% Horas do Mês:&nbsp;{fmtSaldo(totalExtras50pctMin - totalDebitoMin + bancoAjusteManual50)}</> : null}</td>
           </tr>
           <tr>
             <td>Total Feriados:&nbsp;<strong>{meta.dias_feriado_calendario}</strong></td>
-            <td>Total Débito:&nbsp;50%:&nbsp;<strong>{minToHHMM(totalDebitoMin)}</strong></td>
-            <td>Total:&nbsp;<strong>{minToHHMM(totalOcorrenciaDebitoMin)}</strong></td>
-            <td>Horas em Adicional:&nbsp;{totalHorasEmAdicionalMin ? minToHHMM(totalHorasEmAdicionalMin) : '00:00'}</td>
-            <td>{mostrarBancoHoras ? <>100% Horas do Mês:&nbsp;{fmtSaldo(totalExtras100pctMin - totalDebito100Min + bancoAjusteManual100)}</> : null}</td>
-          </tr>
-          <tr>
-            <td>Horas Trabalhadas:&nbsp;<strong>{minToHHMM(resumo.minutos_trabalhados_mes)}</strong></td>
             <td>Total Horas:&nbsp;50%:&nbsp;
               <strong>
                 {saldoMin >= 0
@@ -469,23 +469,16 @@ export function EspelhoImpressao({ espelho, pageNum = 1, inline = false }: Props
                   : `(-) ${minToHHMM(Math.abs(saldoMin))}`}
               </strong>
             </td>
-            <td>Total:&nbsp;<strong>{minToHHMM(totalOcorrenciaCreditoMin)}</strong></td>
+            <td className={styles.footerOcor}>CRÉDITOS (+)</td>
+            <td>Horas em Adicional:&nbsp;{totalHorasEmAdicionalMin ? minToHHMM(totalHorasEmAdicionalMin) : '00:00'}</td>
+            <td>{mostrarBancoHoras ? <>100% Horas do Mês:&nbsp;{fmtSaldo(totalExtras100pctMin - totalDebito100Min + bancoAjusteManual100)}</> : null}</td>
+          </tr>
+          <tr>
+            <td>Horas Trabalhadas:&nbsp;<strong>{minToHHMM(resumo.minutos_trabalhados_mes)}</strong></td>
+            <td>Total Extras 100%:&nbsp;<strong>{totalExtras100pctMin ? `(+) ${minToHHMM(totalExtras100pctMin)}` : '(+) 00:00'}</strong></td>
+            <td>Total de Crédito:&nbsp;<strong>{minToHHMM(totalOcorrenciaCreditoMin)}</strong></td>
             <td></td>
             <td>{mostrarBancoHoras ? <>Saldo Atual:&nbsp;<strong>{fmtSaldo(bancoSaldoAtual)}</strong></> : null}</td>
-          </tr>
-          <tr>
-            <td></td>
-            <td>Total Extras 100%:&nbsp;<strong>{totalExtras100pctMin ? `(+) ${minToHHMM(totalExtras100pctMin)}` : '(+) 00:00'}</strong></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-          <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
           </tr>
         </tbody>
       </table>

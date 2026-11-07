@@ -6,6 +6,7 @@ import { fetchFicha, bloquearDia, desbloquearDia, bloquearPeriodo as bloquearPer
 import { deleteOcorrenciasEmMassa, type ExcluirOcorrenciasMassaResultado } from '../../services/ocorrenciasApi';
 import { ApiError } from '../../lib/api';
 import type { DayRow, DayStatus, Employee, FichaDePontoData, MonthlySummary, Punch, PunchSource } from './types';
+import { minutosDaJornada, previstosSemBatida } from './batidaDataHora';
 
 function mapStatus(s: StatusDia, modifiers: string[]): DayStatus {
   switch (s) {
@@ -58,9 +59,17 @@ type MarcacaoItem = EspelhoPayload['dias'][0]['marcacoes'][0];
  *
  * Regras:
  *  - Marcações com slot_override definido ficam fixas na posição indicada.
- *  - As demais preenchem os slots livres restantes em ordem cronológica.
+ *  - As demais são casadas com o horário previsto mais próximo (mesmo algoritmo
+ *    de distância da Justificativa Automática — ver previstosSemBatida), não
+ *    simplesmente empilhadas na ordem cronológica. Sem isso, faltar uma batida
+ *    do MEIO da jornada (ex.: 14:00) empurrava a última batida real (18:14)
+ *    pra coluna anterior (E2 em vez de S2) — o rótulo da coluna ficava errado
+ *    mesmo a batida estando certa.
+ *  - Batidas sem previsto correspondente (dia sem jornada, ou mais batidas que
+ *    o previsto — hora extra) caem nos slots livres restantes em ordem
+ *    cronológica, igual ao comportamento antigo.
  */
-function buildSlots(marcacoes: MarcacaoItem[]): (MarcacaoItem | null)[] {
+function buildSlots(marcacoes: MarcacaoItem[], previstos: string[] = []): (MarcacaoItem | null)[] {
   // 1. Deduplica por ID — defesa contra o mesmo registro enviado duas vezes
   const seenIds = new Set<number>();
   const dedupById = marcacoes.filter(m => {
@@ -109,10 +118,53 @@ function buildSlots(marcacoes: MarcacaoItem[]): (MarcacaoItem | null)[] {
     if (pos < 8 && slots[pos] === null) slots[pos] = m;
   }
 
-  // 2. Preenche slots livres com as demais, em ordem cronológica
+  // 2. Casa as demais com o horário previsto mais próximo. `previstos[i]` é o
+  // horário esperado da coluna i (E1,S1,E2,S2…, na mesma ordem — ver
+  // `horarios_previstos` no backend), então o índice no array já É o slot.
+  const availableIdx: number[] = [];
+  for (let i = 0; i < previstos.length && i < 8; i++) {
+    if (slots[i] === null) availableIdx.push(i);
+  }
+
+  const matchedGridSlot: (number | null)[] = normal.map(() => null);
+  if (normal.length > 0 && availableIdx.length > 0) {
+    const previstosMinFull = minutosDaJornada(previstos);
+    const availablePrevistosMin = availableIdx.map((i) => previstosMinFull[i]);
+    const normalMin = minutosDaJornada(normal.map((m) => localTime(m).slice(11, 16)));
+
+    if (normal.length <= availableIdx.length) {
+      // Menos batidas reais que previstos disponíveis (o caso do bug relatado:
+      // falta uma batida do meio) — acha quais previstos NÃO têm batida; o
+      // resto, em ordem, casa 1:1 com `normal` (também em ordem cronológica).
+      const faltantes = new Set(previstosSemBatida(availablePrevistosMin, normalMin));
+      let k = 0;
+      for (let p = 0; p < availableIdx.length && k < normal.length; p++) {
+        if (!faltantes.has(p)) matchedGridSlot[k++] = availableIdx[p];
+      }
+    } else {
+      // Mais batidas reais que previstos disponíveis (hora extra) — inverte os
+      // papéis: acha quais batidas reais SÃO extras (sem previsto correspondente);
+      // o resto, em ordem, casa 1:1 com os previstos disponíveis.
+      const extras = new Set(previstosSemBatida(normalMin, availablePrevistosMin));
+      let p = 0;
+      for (let k = 0; k < normal.length; k++) {
+        if (!extras.has(k)) matchedGridSlot[k] = availableIdx[p++];
+      }
+    }
+  }
+
+  const leftover: MarcacaoItem[] = [];
+  normal.forEach((m, k) => {
+    const pos = matchedGridSlot[k];
+    if (pos != null && slots[pos] === null) slots[pos] = m;
+    else leftover.push(m);
+  });
+
+  // 3. Sobras (sem previsto pra casar, ou dia sem jornada configurada) —
+  // preenche os slots livres restantes em ordem cronológica, como antes.
   let ni = 0;
-  for (let i = 0; i < 8 && ni < normal.length; i++) {
-    if (slots[i] === null) slots[i] = normal[ni++];
+  for (let i = 0; i < 8 && ni < leftover.length; i++) {
+    if (slots[i] === null) slots[i] = leftover[ni++];
   }
 
   return slots;
@@ -121,7 +173,7 @@ function buildSlots(marcacoes: MarcacaoItem[]): (MarcacaoItem | null)[] {
 function buildDays(payload: EspelhoPayload, bloqueadoMap: Record<string, boolean> = {}): DayRow[] {
   return payload.dias.map((dia) => {
     // slots[i] = marcação que deve aparecer na coluna i (ou null se vazia)
-    const slots = buildSlots(dia.marcacoes);
+    const slots = buildSlots(dia.marcacoes, dia.horarios_previstos ?? []);
 
     const punches: (Punch | null)[] = Array(8).fill(null);
     const punchIds: number[] = [];
@@ -240,6 +292,7 @@ export function useFichaDePonto(params: Params): UseFichaDePontoResult {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [me, setMe] = useState<FuncionarioMe | null>(null);
+  const [meLoaded, setMeLoaded] = useState(false);
   const [funcionarios, setFuncionarios] = useState<FuncionarioListItem[]>([]);
 
   useEffect(() => {
@@ -251,7 +304,8 @@ export function useFichaDePonto(params: Params): UseFichaDePontoResult {
         }
       })
       .then((res) => { if (res) setFuncionarios(res.data); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setMeLoaded(true));
   }, []);
 
   const makeBloqueadoMap = (dias: { data: string; bloqueado?: boolean }[]): Record<string, boolean> => {
@@ -260,7 +314,19 @@ export function useFichaDePonto(params: Params): UseFichaDePontoResult {
     return map;
   };
 
+  const podeEscolherFuncionario = me?.role === 'admin' || me?.role === 'gestor';
+
   const load = useCallback(async () => {
+    // Admin/gestor sem funcionário selecionado: não existe "meu ponto" aqui —
+    // esse usuário pode nem ter jornada (controla_ponto=0), então carregar a
+    // própria ficha por padrão não faz sentido (era o que abria a tela errada
+    // ao entrar em Ficha de Ponto). Só carrega quando alguém é escolhido no filtro.
+    if (podeEscolherFuncionario && !employeeId) {
+      setData(null);
+      setError(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -310,9 +376,11 @@ export function useFichaDePonto(params: Params): UseFichaDePontoResult {
     } finally {
       setLoading(false);
     }
-  }, [startYear, startMonth, endYear, endMonth, employeeId]);
+  }, [startYear, startMonth, endYear, endMonth, employeeId, podeEscolherFuncionario]);
 
-  useEffect(() => { void load(); }, [load]);
+  // Só carrega automaticamente depois de saber o role (evita disparar a busca
+  // de "meu ponto" num primeiro instante em que `me` ainda não chegou).
+  useEffect(() => { if (meLoaded) void load(); }, [load, meLoaded]);
 
   const desbloquearPeriodo = useCallback(async (params: {
     data_inicio: string;

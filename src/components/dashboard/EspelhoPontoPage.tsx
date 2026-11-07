@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ApiError } from '../../lib/api'
-import { formatHoraLocalPtBr } from '../../lib/parseDataHora'
 import { fetchFuncionarios, type FuncionarioListItem } from '../../services/funcionariosApi'
 import { fetchMe, type FuncionarioMe } from '../../services/userApi'
 import {
@@ -27,8 +26,15 @@ function formatMinutos(min: number): string {
   return `${h}h ${String(m).padStart(2, '0')}m`
 }
 
-function horaLocal(iso: string): string {
-  return formatHoraLocalPtBr(iso)
+// `data_hora` cru mistura duas convenções: REP grava hora local sem conversão
+// (migration 035) enquanto manual/online/geo gravam UTC verdadeiro. Calcular
+// a hora aqui com fuso do navegador (como fazia antes, via
+// parseDataHoraUtc+toLocaleTimeString) deslocava as batidas de REP por todo o
+// offset do fuso do funcionário — ex.: REP gravado às 08:08 aparecia como
+// 04:08 pra quem vê a tela num fuso -04:00. `data_hora_local` já vem certo
+// por tipo, calculado no backend (mesmo campo usado em EspelhoImpressao.tsx).
+function horaLocal(m: { data_hora: string; data_hora_local: string | null }): string {
+  return (m.data_hora_local ?? m.data_hora).slice(11, 16)
 }
 
 function labelMes(m: number): string {
@@ -38,7 +44,7 @@ function labelMes(m: number): string {
 function batidasLinha(dia: DiaEspelho): string {
   if (!dia.marcacoes.length) return '—'
   return dia.marcacoes
-    .map((m) => `${horaLocal(m.data_hora)} · ${m.tipo_label}`)
+    .map((m) => `${horaLocal(m)} · ${m.tipo_label}`)
     .join('   ')
 }
 
@@ -126,6 +132,29 @@ export function EspelhoPontoPage() {
     if (!selectedLotacaoId) return funcionarios
     return funcionarios.filter((f) => f.lotacao_id === selectedLotacaoId)
   }, [funcionarios, selectedLotacaoId])
+
+  // Índice do funcionário atual na lista filtrada (lotação "Todas" ou uma
+  // específica) — permite avançar/voltar sem precisar reabrir o combo a cada
+  // funcionário, útil pra conferir vários espelhos em sequência.
+  const funcionarioAtualIndex = useMemo(() => {
+    const refId = selectedFuncId ?? me?.id
+    if (refId == null) return -1
+    return funcionariosFiltrados.findIndex((f) => f.id === refId)
+  }, [selectedFuncId, me, funcionariosFiltrados])
+
+  function handleFuncAnterior() {
+    if (funcionarioAtualIndex > 0) setSelectedFuncId(funcionariosFiltrados[funcionarioAtualIndex - 1].id)
+  }
+
+  function handleFuncProximo() {
+    if (funcionarioAtualIndex === -1) {
+      if (funcionariosFiltrados.length > 0) setSelectedFuncId(funcionariosFiltrados[0].id)
+      return
+    }
+    if (funcionarioAtualIndex < funcionariosFiltrados.length - 1) {
+      setSelectedFuncId(funcionariosFiltrados[funcionarioAtualIndex + 1].id)
+    }
+  }
 
   const anos = useMemo(() => {
     const y = new Date().getFullYear()
@@ -231,20 +260,40 @@ export function EspelhoPontoPage() {
               )}
               <div className={styles.field}>
                 <label htmlFor="espelho-func">Funcionário</label>
-                <select
-                  id="espelho-func"
-                  value={selectedFuncId ?? ''}
-                  onChange={(e) =>
-                    setSelectedFuncId(e.target.value === '' ? null : Number(e.target.value))
-                  }
-                >
-                  <option value="">Meu espelho</option>
-                  {funcionariosFiltrados.map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.nome}
-                    </option>
-                  ))}
-                </select>
+                <div className={styles.funcNav}>
+                  <button
+                    type="button"
+                    className={styles.navBtn}
+                    onClick={handleFuncAnterior}
+                    disabled={funcionarioAtualIndex <= 0}
+                    title="Funcionário anterior"
+                  >
+                    ‹
+                  </button>
+                  <select
+                    id="espelho-func"
+                    value={selectedFuncId ?? ''}
+                    onChange={(e) =>
+                      setSelectedFuncId(e.target.value === '' ? null : Number(e.target.value))
+                    }
+                  >
+                    <option value="">Meu espelho</option>
+                    {funcionariosFiltrados.map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.nome}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    className={styles.navBtn}
+                    onClick={handleFuncProximo}
+                    disabled={funcionarioAtualIndex === funcionariosFiltrados.length - 1}
+                    title="Próximo funcionário"
+                  >
+                    ›
+                  </button>
+                </div>
               </div>
             </>
           )}
@@ -379,7 +428,7 @@ export function EspelhoPontoPage() {
                             <span key={m.id}>
                               {i > 0 ? ' · ' : null}
                               <span className={styles.badge}>{m.tipo_label}</span>
-                              {horaLocal(m.data_hora)}
+                              {horaLocal(m)}
                             </span>
                           ))}
                     </td>

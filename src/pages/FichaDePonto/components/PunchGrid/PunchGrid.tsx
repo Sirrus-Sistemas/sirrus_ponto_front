@@ -4,6 +4,7 @@ import { PunchRow, type CellDragHandlers } from './PunchRow';
 import { DayActionMenu, type DayActionMenuContext } from './DayActionMenu';
 import { OcorrenciaModal } from './OcorrenciaModal';
 import { JustificativaManualModal } from './JustificativaManualModal';
+import { AlterarTabelaHorarioModal } from './AlterarTabelaHorarioModal';
 import { SidePanel } from './SidePanel';
 import { excluirBatida, editarBatida, desconsiderarBatida, reconsiderarBatida } from '../../../../services/fichaPontoApi';
 import { lancarBatida } from '../../../../services/fichaPontoApi';
@@ -65,6 +66,7 @@ const formatDay = (row: DayRow) =>
 export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOffset, onReload, reloading, canEdit, onToggleBloqueio }: PunchGridProps) {
   const [menuCtx, setMenuCtx] = useState<DayActionMenuContext | null>(null);
   const [ocorrenciaModal, setOcorrenciaModal] = useState<OcorrenciaModalState | null>(null);
+  const [tabelaHorarioModal, setTabelaHorarioModal] = useState<OcorrenciaModalState | null>(null);
   const [justManualCtx, setJustManualCtx] = useState<DayActionMenuContext | null>(null);
   const [actionMsg, setActionMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
@@ -318,6 +320,13 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOff
     setOcorrenciaModal({ dataInicio: date, dataFim: date });
   }
 
+  function handleAlterarTabelaHorario(ctx: DayActionMenuContext) {
+    const { row } = ctx;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const date = `${row.year}-${pad(row.month)}-${pad(row.day)}`;
+    setTabelaHorarioModal({ dataInicio: date, dataFim: date });
+  }
+
   async function handleJustificativaAutomatica(ctx: DayActionMenuContext) {
     const { row, funcionarioId: funcId } = ctx;
     const times = row.horariosPrevistos;
@@ -563,6 +572,7 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOff
           onDesconsiderar={(ctx) => void handleDesconsiderar(ctx)}
           onReconsiderar={(ctx) => void handleReconsiderar(ctx)}
           onLancarOcorrencia={handleLancarOcorrencia}
+          onAlterarTabelaHorario={handleAlterarTabelaHorario}
           onJustificativaAutomatica={(ctx) => void handleJustificativaAutomatica(ctx)}
           onJustificativaManual={handleJustificativaManual}
           onExcluirOcorrencia={(ctx) => void handleExcluirOcorrencia(ctx)}
@@ -581,6 +591,21 @@ export function PunchGrid({ days, funcionarioId, funcionarioNome, turnoId, tzOff
           onSuccess={() => {
             setOcorrenciaModal(null);
             showMsg('ok', 'Ocorrência lançada com sucesso.');
+            onReload();
+          }}
+        />
+      )}
+
+      {tabelaHorarioModal && (
+        <AlterarTabelaHorarioModal
+          funcionarioId={funcionarioId}
+          funcionarioNome={funcionarioNome}
+          dataInicio={tabelaHorarioModal.dataInicio}
+          dataFim={tabelaHorarioModal.dataFim}
+          onClose={() => setTabelaHorarioModal(null)}
+          onSuccess={() => {
+            setTabelaHorarioModal(null);
+            showMsg('ok', 'Tabela de horário aplicada ao período com sucesso.');
             onReload();
           }}
         />

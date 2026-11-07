@@ -76,6 +76,40 @@
   max-width: 260px;
 }
 
+.funcNav {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.navBtn {
+  flex: none;
+  width: 1.8rem;
+  height: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: var(--sp-radius-md);
+  border: 1px solid var(--sp-border);
+  background: var(--sp-bg-card);
+  color: var(--sp-text);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.navBtn:hover:not(:disabled) {
+  background: #f0f9f8;
+  border-color: var(--sp-accent);
+  color: var(--sp-accent);
+}
+
+.navBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .printBtn {
   padding: 0.5rem 1rem;
   border-radius: var(--sp-radius-md);

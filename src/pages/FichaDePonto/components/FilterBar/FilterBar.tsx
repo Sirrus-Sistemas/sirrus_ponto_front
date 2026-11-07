@@ -69,7 +69,7 @@ export function FilterBar({
             value={selectedFuncId ?? ''}
             onChange={(e) => onFuncChange(e.target.value === '' ? undefined : Number(e.target.value))}
           >
-            <option value="">Meu ponto</option>
+            <option value="">Selecione um funcionário</option>
             {funcionarios.map((f) => (
               <option key={f.id} value={f.id}>{f.nome}</option>
             ))}

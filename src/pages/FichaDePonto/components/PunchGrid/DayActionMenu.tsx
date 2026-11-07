@@ -18,6 +18,7 @@ interface DayActionMenuProps {
   onDesconsiderar: (ctx: DayActionMenuContext) => void;
   onReconsiderar: (ctx: DayActionMenuContext) => void;
   onLancarOcorrencia: (ctx: DayActionMenuContext) => void;
+  onAlterarTabelaHorario: (ctx: DayActionMenuContext) => void;
   onJustificativaAutomatica: (ctx: DayActionMenuContext) => void;
   onJustificativaManual: (ctx: DayActionMenuContext) => void;
   onExcluirOcorrencia: (ctx: DayActionMenuContext) => void;
@@ -25,7 +26,7 @@ interface DayActionMenuProps {
   onExcluirJustificativaManual: (ctx: DayActionMenuContext) => void;
 }
 
-export function DayActionMenu({ ctx, onClose, onDesconsiderar, onReconsiderar, onLancarOcorrencia, onJustificativaAutomatica, onJustificativaManual, onExcluirOcorrencia, onExcluirJustificativaAutomatica, onExcluirJustificativaManual }: DayActionMenuProps) {
+export function DayActionMenu({ ctx, onClose, onDesconsiderar, onReconsiderar, onLancarOcorrencia, onAlterarTabelaHorario, onJustificativaAutomatica, onJustificativaManual, onExcluirOcorrencia, onExcluirJustificativaAutomatica, onExcluirJustificativaManual }: DayActionMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -91,6 +92,14 @@ export function DayActionMenu({ ctx, onClose, onDesconsiderar, onReconsiderar, o
           onClick={() => { onClose(); onLancarOcorrencia(ctx); }}
         >
           <span className={styles.itemLabel}>Lançar Ocorrência por Período</span>
+        </button>
+
+        <button
+          type="button"
+          className={styles.item}
+          onClick={() => { onClose(); onAlterarTabelaHorario(ctx); }}
+        >
+          <span className={styles.itemLabel}>Alterar Tabela de Horário por Período</span>
         </button>
 
         <button
