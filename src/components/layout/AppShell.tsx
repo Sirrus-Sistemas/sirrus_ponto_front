@@ -223,6 +223,9 @@ export function AppShell() {
               <NavItem to="/mobile/aprovacao" icon={<IconAprovacao />} label="Aprovação de Batidas" onNavigate={closeMobileMenu} />
             ) : null}
             {me?.role === 'admin' ? (
+              <NavItem to="/mobile/aprovacao-ocorrencias" icon={<IconTipoOcorrencia />} label="Aprovação de Ocorrências" onNavigate={closeMobileMenu} />
+            ) : null}
+            {me?.role === 'admin' ? (
               <NavItem to="/relogios" icon={<IconRelogio />} label="Relógios de Ponto" onNavigate={closeMobileMenu} />
             ) : null}
             {me?.role === 'admin' ? (
