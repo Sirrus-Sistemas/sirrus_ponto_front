@@ -730,6 +730,40 @@
   color: var(--sp-status-presente-text);
 }
 
+/* ─── Abas (dados do funcionário / cerca eletrônica) ────────────────────────── */
+.editTabs {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--sp-border);
+}
+
+.editTabBtn {
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sp-text-3);
+  padding: 0.65rem 0.25rem;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+
+.editTabBtn + .editTabBtn {
+  margin-left: 1rem;
+}
+
+.editTabBtn:hover {
+  color: var(--sp-text);
+}
+
+.editTabBtnActive {
+  color: var(--sp-accent);
+  border-bottom-color: var(--sp-accent);
+}
+
 /* ─── Access denied ──────────────────────────────────────────────────────── */
 .denied {
   background: #fffbeb;

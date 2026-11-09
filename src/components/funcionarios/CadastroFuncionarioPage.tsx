@@ -161,6 +161,9 @@ export function CadastroFuncionarioPage() {
   const [loadingList, setLoadingList] = useState(false)
   const LIST_LIMIT = 15
 
+  // ── abas da edição (dados do funcionário vs. cerca eletrônica)
+  const [editTab, setEditTab] = useState<'dados' | 'cerca'>('dados')
+
   // ── form state
   const [form, setForm] = useState<FormState>(emptyForm)
   const originalFormRef = useRef<FormState | null>(null)
@@ -262,6 +265,7 @@ export function CadastroFuncionarioPage() {
     originalFormRef.current = null
     setError(null)
     setSuccess(null)
+    setEditTab('dados')
     setView('form')
   }, [])
 
@@ -320,6 +324,7 @@ export function CadastroFuncionarioPage() {
         setMunicipioQuery('')
       }
       setEditingId(id)
+      setEditTab('dados')
       setView('form')
     } catch {
       // keep on list
@@ -331,6 +336,7 @@ export function CadastroFuncionarioPage() {
     setEditingId(null)
     setError(null)
     setSuccess(null)
+    setEditTab('dados')
     originalFormRef.current = null
   }, [])
 
@@ -736,14 +742,16 @@ export function CadastroFuncionarioPage() {
           <button type="button" className={styles.btnGhost} onClick={backToList} disabled={submitting}>
             Cancelar
           </button>
-          <button
-            type="submit"
-            form="employee-form"
-            className={styles.btnPrimary}
-            disabled={submitting}
-          >
-            {submitting ? 'Salvando…' : isEdit ? 'Salvar alterações' : 'Cadastrar'}
-          </button>
+          {editTab === 'dados' && (
+            <button
+              type="submit"
+              form="employee-form"
+              className={styles.btnPrimary}
+              disabled={submitting}
+            >
+              {submitting ? 'Salvando…' : isEdit ? 'Salvar alterações' : 'Cadastrar'}
+            </button>
+          )}
         </div>
       </div>
 
@@ -755,8 +763,38 @@ export function CadastroFuncionarioPage() {
         <p className={`${styles.feedback} ${styles.feedbackOk}`} role="status">{success}</p>
       )}
 
-      {/* ── 3-panel grid */}
-      <form id="employee-form" onSubmit={handleSubmit} noValidate>
+      {/* ── Abas (cerca eletrônica só existe para funcionário já salvo) */}
+      {isEdit && editingId !== null && (
+        <div className={styles.editTabs} role="tablist">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={editTab === 'dados'}
+            className={`${styles.editTabBtn} ${editTab === 'dados' ? styles.editTabBtnActive : ''}`}
+            onClick={() => setEditTab('dados')}
+          >
+            Dados do Funcionário
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={editTab === 'cerca'}
+            className={`${styles.editTabBtn} ${editTab === 'cerca' ? styles.editTabBtnActive : ''}`}
+            onClick={() => setEditTab('cerca')}
+          >
+            Cerca Eletrônica — Ponto Mobile
+          </button>
+        </div>
+      )}
+
+      {/* ── 3-panel grid (mantido montado quando a aba de cerca está ativa —
+          o botão "Salvar alterações" no topo aponta pra este form por id) */}
+      <form
+        id="employee-form"
+        onSubmit={handleSubmit}
+        noValidate
+        style={editTab === 'cerca' ? { display: 'none' } : undefined}
+      >
         <div className={styles.panelGrid}>
 
           {/* Panel 1: Dados Pessoais */}
@@ -1167,13 +1205,9 @@ export function CadastroFuncionarioPage() {
       </form>
 
       {/* Cerca eletrônica — fora do <form> (Enter nos campos não envia o
-          cadastro) e só na edição: precisa do funcionário já salvo. */}
-      {isEdit && editingId !== null && (
-        <div className={styles.panel} style={{ marginTop: '1rem' }}>
-          <div className={styles.panelHeader}>
-            <span className={styles.panelDot} style={{ background: '#14918b' }} />
-            <span className={styles.panelTitle}>CERCA ELETRÔNICA — PONTO MOBILE</span>
-          </div>
+          cadastro) e só na aba própria, pra não exigir scroll pra ver. */}
+      {isEdit && editingId !== null && editTab === 'cerca' && (
+        <div className={styles.panel}>
           <p className={styles.hint} style={{ marginBottom: '0.5rem' }}>
             O funcionário pode bater ponto pelo aplicativo em qualquer local da filial, da lotação ou cadastrado aqui.
             "Herdar" usa a regra da lotação (ou da filial).

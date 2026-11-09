@@ -119,13 +119,21 @@ export function CercaEletronicaEditor({ escopo, id }: { escopo: EscopoCerca; id:
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locais, selecionado, config])
 
-  // Enquadra todos os locais quando a configuração chega.
+  // Enquadra todos os locais quando a configuração chega. Sem nenhum local
+  // ainda (nem próprio nem herdado), centraliza na localização do usuário em
+  // vez de deixar o mapa no zoom do Brasil inteiro.
   useEffect(() => {
     const m = mapa.current
     if (!m || !config) return
     const pontos = [...config.locais, ...herdados].map((l) => L.latLng(l.latitude, l.longitude))
     if (pontos.length === 1) m.setView(pontos[0], 16)
     else if (pontos.length > 1) m.fitBounds(L.latLngBounds(pontos).pad(0.3))
+    else if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (p) => m.setView([p.coords.latitude, p.coords.longitude], 15),
+        () => {},
+      )
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config])
 
