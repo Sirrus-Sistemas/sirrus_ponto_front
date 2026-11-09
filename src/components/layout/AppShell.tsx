@@ -1,11 +1,17 @@
 import { Link, NavLink, Outlet, useMatch, useNavigate } from 'react-router-dom'
 import type { AppShellOutletContext } from './appShellContext'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { clearStoredToken } from '../../lib/api'
 import { logoutRequest } from '../../services/authApi'
 import { fetchMe, type FuncionarioMe } from '../../services/userApi'
 import { fetchEmpresa } from '../../services/empresaApi'
 import styles from './AppShell.module.css'
+
+const SIDEBAR_COLLAPSED_KEY = 'sp_sidebar_collapsed'
+
+function navClass(isActive: boolean) {
+  return `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`
+}
 
 export function AppShell() {
   const navigate = useNavigate()
@@ -13,6 +19,13 @@ export function AppShell() {
   const [meReady, setMeReady] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1'
+    } catch {
+      return false
+    }
+  })
   const [aprovacaoMobileAtiva, setAprovacaoMobileAtiva] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -63,6 +76,14 @@ export function AppShell() {
     return () => window.removeEventListener('resize', onResize)
   }, [])
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? '1' : '0')
+    } catch {
+      /* localStorage indisponível — preferência só não persiste */
+    }
+  }, [collapsed])
+
   async function logout() {
     try {
       await logoutRequest()
@@ -76,10 +97,6 @@ export function AppShell() {
   }
 
   const initial = me?.nome?.trim()?.charAt(0)?.toUpperCase() ?? '?'
-
-  function navClass(isActive: boolean) {
-    return `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`
-  }
 
   const isFullBleed = !!useMatch('/ficha-ponto')
 
@@ -97,6 +114,10 @@ export function AppShell() {
   const podeGerirUsuarios = me?.role === 'admin'
   const outletCtx: AppShellOutletContext = { me, meReady }
 
+  function closeMobileMenu() {
+    setSidebarOpen(false)
+  }
+
   return (
     <div className={styles.root}>
       {sidebarOpen ? (
@@ -110,11 +131,21 @@ export function AppShell() {
 
       <div className={styles.shellRow}>
         <aside
-          className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}
+          className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''} ${collapsed ? styles.sidebarCollapsed : ''}`}
           aria-label="Menu principal"
         >
+          <button
+            type="button"
+            className={styles.collapseBtn}
+            aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
+            title={collapsed ? 'Expandir menu' : 'Recolher menu'}
+            onClick={() => setCollapsed((c) => !c)}
+          >
+            <ChevronIcon collapsed={collapsed} />
+          </button>
+
           <div className={styles.sidebarTop}>
-            <Link to="/dashboard" className={styles.sidebarBrand} onClick={() => setSidebarOpen(false)}>
+            <Link to="/dashboard" className={styles.sidebarBrand} onClick={closeMobileMenu}>
               <img src="/logo-sirrus.svg" alt="" className={styles.sidebarLogo} aria-hidden />
               <span className={styles.sidebarBrandNames}>
                 <span className={styles.sidebarBrandText}>Sirrus Ponto</span>
@@ -125,75 +156,25 @@ export function AppShell() {
 
           <nav className={styles.sidebarNav}>
             {/* ── Dashboard ─────────────────────────────────────── */}
-            <NavLink
-              to="/dashboard"
-              className={({ isActive }) => navClass(isActive)}
-              end
-              onClick={() => setSidebarOpen(false)}
-            >
-              <span className={styles.navIcon} aria-hidden><IconDashboard /></span>
-              Dashboard
-            </NavLink>
+            <NavItem to="/dashboard" end icon={<IconDashboard />} label="Dashboard" onNavigate={closeMobileMenu} />
 
             {/* ── Movimentações ─────────────────────────────────── */}
             <div className={styles.navSection}>Movimentações</div>
-            <NavLink
-              to="/espelho"
-              className={({ isActive }) => navClass(isActive)}
-              onClick={() => setSidebarOpen(false)}
-            >
-              <span className={styles.navIcon} aria-hidden><IconEspelho /></span>
-              Espelho de Ponto
-            </NavLink>
+            <NavItem to="/espelho" icon={<IconEspelho />} label="Espelho de Ponto" onNavigate={closeMobileMenu} />
             {podeFichaPonto ? (
-              <NavLink
-                to="/ficha-ponto"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconFicha /></span>
-                Ficha de Ponto
-              </NavLink>
+              <NavItem to="/ficha-ponto" icon={<IconFicha />} label="Ficha de Ponto" onNavigate={closeMobileMenu} />
             ) : null}
             {podeFichaPonto ? (
-              <NavLink
-                to="/banco-horas"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconBancoHoras /></span>
-                Banco de Horas
-              </NavLink>
+              <NavItem to="/banco-horas" icon={<IconBancoHoras />} label="Banco de Horas" onNavigate={closeMobileMenu} />
             ) : null}
             {podeGerarEscala ? (
-              <NavLink
-                to="/escalas/gerar"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconEscala /></span>
-                Gerar Escala
-              </NavLink>
+              <NavItem to="/escalas/gerar" icon={<IconEscala />} label="Gerar Escala" onNavigate={closeMobileMenu} />
             ) : null}
             {podeRelatorios ? (
-              <NavLink
-                to="/relatorios"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconRelatorio /></span>
-                Relatórios
-              </NavLink>
+              <NavItem to="/relatorios" icon={<IconRelatorio />} label="Relatórios" onNavigate={closeMobileMenu} />
             ) : null}
             {podeRelatorios ? (
-              <NavLink
-                to="/arquivos-mte"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconRelatorio /></span>
-                Arquivos MTE
-              </NavLink>
+              <NavItem to="/arquivos-mte" icon={<IconRelatorio />} label="Arquivos MTE" onNavigate={closeMobileMenu} />
             ) : null}
 
             {/* ── Cadastro ──────────────────────────────────────── */}
@@ -201,104 +182,34 @@ export function AppShell() {
               <div className={styles.navSection}>Cadastro</div>
             ) : null}
             {podeCadastrarFuncionario ? (
-              <NavLink
-                to="/funcionarios"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconUsers /></span>
-                Funcionários
-              </NavLink>
+              <NavItem to="/funcionarios" icon={<IconUsers />} label="Funcionários" onNavigate={closeMobileMenu} />
             ) : null}
             {podeGerirDepartamentos ? (
-              <NavLink
-                to="/departamentos"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconBuilding /></span>
-                Departamentos
-              </NavLink>
+              <NavItem to="/departamentos" icon={<IconBuilding />} label="Departamentos" onNavigate={closeMobileMenu} />
             ) : null}
             {podeGerirTiposOcorrencia ? (
-              <NavLink
-                to="/ocorrencias/tipos"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconTipoOcorrencia /></span>
-                Tipos de Ocorrência
-              </NavLink>
+              <NavItem to="/ocorrencias/tipos" icon={<IconTipoOcorrencia />} label="Tipos de Ocorrência" onNavigate={closeMobileMenu} />
             ) : null}
             {podeGerirTabelaHorarios ? (
-              <NavLink
-                to="/turnos"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconSchedule /></span>
-                Tabela de Horários
-              </NavLink>
+              <NavItem to="/turnos" icon={<IconSchedule />} label="Tabela de Horários" onNavigate={closeMobileMenu} />
             ) : null}
             {podeGerirFiliais ? (
-              <NavLink
-                to="/filiais"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconFilial /></span>
-                Filiais
-              </NavLink>
+              <NavItem to="/filiais" icon={<IconFilial />} label="Filiais" onNavigate={closeMobileMenu} />
             ) : null}
             {podeGerirLotacoes ? (
-              <NavLink
-                to="/lotacoes"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconLotacao /></span>
-                Lotações
-              </NavLink>
+              <NavItem to="/lotacoes" icon={<IconLotacao />} label="Lotações" onNavigate={closeMobileMenu} />
             ) : null}
             {podeGerirMunicipios ? (
-              <NavLink
-                to="/municipios"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconMapa /></span>
-                Municípios
-              </NavLink>
+              <NavItem to="/municipios" icon={<IconMapa />} label="Municípios" onNavigate={closeMobileMenu} />
             ) : null}
             {podeGerirFeriados ? (
-              <NavLink
-                to="/feriados"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconFeriado /></span>
-                Feriados
-              </NavLink>
+              <NavItem to="/feriados" icon={<IconFeriado />} label="Feriados" onNavigate={closeMobileMenu} />
             ) : null}
             {podeGerirUsuarios ? (
-              <NavLink
-                to="/usuarios"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconUsuario /></span>
-                Usuários do Sistema
-              </NavLink>
+              <NavItem to="/usuarios" icon={<IconUsuario />} label="Usuários do Sistema" onNavigate={closeMobileMenu} />
             ) : null}
             {me?.role === 'admin' ? (
-              <NavLink
-                to="/configuracoes/empresa"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconConfigEmpresa /></span>
-                Configuração da Empresa
-              </NavLink>
+              <NavItem to="/configuracoes/empresa" icon={<IconConfigEmpresa />} label="Configuração da Empresa" onNavigate={closeMobileMenu} />
             ) : null}
 
             {/* ── Integrações ───────────────────────────────────── */}
@@ -306,70 +217,28 @@ export function AppShell() {
               <div className={styles.navSection}>Integrações</div>
             ) : null}
             {me?.role === 'admin' ? (
-              <NavLink
-                to="/mobile/integracao"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconMobile /></span>
-                Ponto Mobile
-              </NavLink>
+              <NavItem to="/mobile/integracao" icon={<IconMobile />} label="Ponto Mobile" onNavigate={closeMobileMenu} />
             ) : null}
             {me?.role === 'admin' && aprovacaoMobileAtiva ? (
-              <NavLink
-                to="/mobile/aprovacao"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconAprovacao /></span>
-                Aprovação de Batidas
-              </NavLink>
+              <NavItem to="/mobile/aprovacao" icon={<IconAprovacao />} label="Aprovação de Batidas" onNavigate={closeMobileMenu} />
             ) : null}
             {me?.role === 'admin' ? (
-              <NavLink
-                to="/relogios"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconRelogio /></span>
-                Relógios de Ponto
-              </NavLink>
+              <NavItem to="/relogios" icon={<IconRelogio />} label="Relógios de Ponto" onNavigate={closeMobileMenu} />
             ) : null}
             {me?.role === 'admin' ? (
-              <NavLink
-                to="/relogios/comunicacao"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconComunicacao /></span>
-                Comunicação Equipamentos
-              </NavLink>
+              <NavItem to="/relogios/comunicacao" icon={<IconComunicacao />} label="Comunicação Equipamentos" onNavigate={closeMobileMenu} />
             ) : null}
             {me?.role === 'admin' ? (
-              <NavLink
-                to="/relogios/marcacoes-pendentes"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconComunicacao /></span>
-                Marcações Pendentes
-              </NavLink>
+              <NavItem to="/relogios/marcacoes-pendentes" icon={<IconComunicacao />} label="Marcações Pendentes" onNavigate={closeMobileMenu} />
             ) : null}
             {me?.role === 'admin' ? (
-              <NavLink
-                to="/relogios/importar-afd"
-                className={({ isActive }) => navClass(isActive)}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className={styles.navIcon} aria-hidden><IconComunicacao /></span>
-                Importar AFD
-              </NavLink>
+              <NavItem to="/relogios/importar-afd" icon={<IconComunicacao />} label="Importar AFD" onNavigate={closeMobileMenu} />
             ) : null}
           </nav>
 
           <div className={styles.sidebarFooter}>
             <div className={styles.sidebarUser}>
-              <div className={styles.sidebarUserAvatar} aria-hidden>
+              <div className={styles.sidebarUserAvatar} aria-hidden title={me?.nome ?? '—'}>
                 {me?.foto_path ? (
                   <img src={me.foto_path} alt="" className={styles.sidebarUserAvatarImg} />
                 ) : (
@@ -383,8 +252,14 @@ export function AppShell() {
                 </span>
               </div>
             </div>
-            <button type="button" className={styles.sidebarLogout} onClick={() => void logout()}>
-              Sair
+            <button
+              type="button"
+              className={styles.sidebarLogout}
+              onClick={() => void logout()}
+              title="Sair"
+            >
+              <span className={styles.logoutIcon} aria-hidden><IconLogout /></span>
+              <span className={styles.logoutLabel}>Sair</span>
             </button>
           </div>
         </aside>
@@ -453,6 +328,53 @@ export function AppShell() {
   )
 }
 
+interface NavItemProps {
+  to: string
+  icon: ReactNode
+  label: string
+  end?: boolean
+  onNavigate: () => void
+}
+
+function NavItem({ to, icon, label, end, onNavigate }: NavItemProps) {
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      className={({ isActive }) => navClass(isActive)}
+      onClick={onNavigate}
+      title={label}
+    >
+      <span className={styles.navIcon} aria-hidden>{icon}</span>
+      <span className={styles.navLabel}>{label}</span>
+    </NavLink>
+  )
+}
+
+function ChevronIcon({ collapsed }: { collapsed: boolean }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      style={{ transform: collapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.18s ease' }}
+    >
+      <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconLogout() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
 
 function IconDashboard() {
   return (

@@ -28,6 +28,7 @@
 }
 
 .sidebar {
+  position: relative;
   width: var(--sidebar-width);
   flex-shrink: 0;
   display: flex;
@@ -36,6 +37,35 @@
   color: var(--shell-text);
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08);
   z-index: 30;
+  transition: width 0.18s ease;
+}
+
+.sidebarCollapsed {
+  width: 72px;
+}
+
+.collapseBtn {
+  position: absolute;
+  top: 22px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--sp-border);
+  background: var(--sp-bg-card);
+  color: var(--sp-text-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  z-index: 35;
+}
+
+.collapseBtn:hover {
+  color: var(--sp-accent);
+  border-color: var(--sp-accent);
 }
 
 .sidebarTop {
@@ -153,6 +183,33 @@
   opacity: 0.95;
 }
 
+.navLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebarCollapsed .sidebarBrand {
+  justify-content: center;
+}
+
+.sidebarCollapsed .sidebarBrandNames {
+  display: none;
+}
+
+.sidebarCollapsed .navLink {
+  justify-content: center;
+  padding: 0.65rem;
+}
+
+.sidebarCollapsed .navLabel {
+  display: none;
+}
+
+.sidebarCollapsed .navSection {
+  display: none;
+}
+
 .sidebarFooter {
   padding: 0.85rem 1rem 1.1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -213,6 +270,10 @@
 
 .sidebarLogout {
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
   padding: 0.45rem 0.75rem;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -227,6 +288,31 @@
 .sidebarLogout:hover {
   background: rgba(0, 0, 0, 0.22);
   color: #fff;
+}
+
+.logoutIcon {
+  display: none;
+  flex-shrink: 0;
+}
+
+.sidebarCollapsed .sidebarUser {
+  justify-content: center;
+}
+
+.sidebarCollapsed .sidebarUserInfo {
+  display: none;
+}
+
+.sidebarCollapsed .sidebarLogout {
+  padding: 0.5rem;
+}
+
+.sidebarCollapsed .logoutIcon {
+  display: flex;
+}
+
+.sidebarCollapsed .logoutLabel {
+  display: none;
 }
 
 .rightCol {
@@ -387,6 +473,41 @@
 
   .sidebarOpen {
     transform: translateX(0);
+  }
+
+  .sidebarCollapsed {
+    width: var(--sidebar-width);
+  }
+
+  .sidebarCollapsed .sidebarBrand,
+  .sidebarCollapsed .navLink,
+  .sidebarCollapsed .sidebarUser {
+    justify-content: flex-start;
+  }
+
+  .sidebarCollapsed .navSection {
+    display: block;
+  }
+
+  .sidebarCollapsed .navLabel {
+    display: inline;
+  }
+
+  .sidebarCollapsed .sidebarBrandNames,
+  .sidebarCollapsed .sidebarUserInfo {
+    display: flex;
+  }
+
+  .sidebarCollapsed .logoutIcon {
+    display: none;
+  }
+
+  .sidebarCollapsed .logoutLabel {
+    display: inline;
+  }
+
+  .collapseBtn {
+    display: none;
   }
 
   .sidebarBackdrop {
