@@ -428,6 +428,9 @@
 /* ─── Search ─────────────────────────────────────────────────────────────── */
 .searchBar {
   margin-bottom: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
 }
 
 .searchInput {
@@ -448,6 +451,43 @@
   outline: none;
   border-color: #14918b;
   box-shadow: 0 0 0 1px #14918b;
+}
+
+.filterSelect,
+.filterInput {
+  height: 42px;
+  padding: 0 0.85rem;
+  border: 1px solid var(--sp-border);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--sp-text);
+  background: var(--sp-bg-card);
+  box-sizing: border-box;
+}
+
+.filterSelect {
+  min-width: 190px;
+}
+
+.filterInput {
+  width: 200px;
+}
+
+.filterSelect:focus,
+.filterInput:focus {
+  outline: none;
+  border-color: #14918b;
+  box-shadow: 0 0 0 1px #14918b;
+}
+
+@media (max-width: 640px) {
+  .searchInput,
+  .filterSelect,
+  .filterInput {
+    width: 100%;
+    max-width: 100%;
+  }
 }
 
 /* ─── Table card ─────────────────────────────────────────────────────────── */

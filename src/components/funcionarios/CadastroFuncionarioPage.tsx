@@ -158,6 +158,8 @@ export function CadastroFuncionarioPage() {
   const [listPages, setListPages] = useState(0)
   const [listPage, setListPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
+  const [filtroLotacaoId, setFiltroLotacaoId] = useState<number | ''>('')
+  const [filtroCargo, setFiltroCargo] = useState('')
   const [loadingList, setLoadingList] = useState(false)
   const LIST_LIMIT = 15
 
@@ -233,7 +235,13 @@ export function CadastroFuncionarioPage() {
     const timer = setTimeout(async () => {
       setLoadingList(true)
       try {
-        const res = await fetchFuncionarios({ search: searchTerm.trim(), page: listPage, limit: LIST_LIMIT })
+        const res = await fetchFuncionarios({
+          search: searchTerm.trim(),
+          lotacao_id: filtroLotacaoId || undefined,
+          cargo: filtroCargo.trim() || undefined,
+          page: listPage,
+          limit: LIST_LIMIT,
+        })
         if (!cancelled) {
           setEmployees(res.data)
           setListTotal(res.pagination.total)
@@ -244,9 +252,9 @@ export function CadastroFuncionarioPage() {
       } finally {
         if (!cancelled) setLoadingList(false)
       }
-    }, searchTerm ? 400 : 0)
+    }, searchTerm || filtroCargo ? 400 : 0)
     return () => { cancelled = true; clearTimeout(timer) }
-  }, [view, searchTerm, listPage])
+  }, [view, searchTerm, filtroLotacaoId, filtroCargo, listPage])
 
   // ── Form helpers
   const update =
@@ -560,6 +568,23 @@ export function CadastroFuncionarioPage() {
             value={searchTerm}
             onChange={(e) => { setSearchTerm(e.target.value); setListPage(1) }}
             className={styles.searchInput}
+          />
+          <select
+            value={filtroLotacaoId}
+            onChange={(e) => { setFiltroLotacaoId(e.target.value ? Number(e.target.value) : ''); setListPage(1) }}
+            className={styles.filterSelect}
+          >
+            <option value="">Todas as lotações</option>
+            {lotacoes.map((l) => (
+              <option key={l.id} value={l.id}>{l.nome}</option>
+            ))}
+          </select>
+          <input
+            type="search"
+            placeholder="Filtrar por cargo…"
+            value={filtroCargo}
+            onChange={(e) => { setFiltroCargo(e.target.value); setListPage(1) }}
+            className={styles.filterInput}
           />
         </div>
 
