@@ -70,3 +70,25 @@ export async function updateFeriado(id: number, payload: Partial<Feriado>): Prom
 export async function deleteFeriado(id: number): Promise<void> {
   await apiRequest<Wrapped<void>>(`/api/feriados/${id}`, { method: 'DELETE' })
 }
+
+export interface FeriadoNacionalApiItem {
+  data: string // YYYY-MM-DD
+  nome: string
+  recorrente: boolean
+  ja_existe: boolean
+}
+
+/** Busca (sem gravar nada) os feriados nacionais do ano na BrasilAPI, pra mostrar numa lista. */
+export async function fetchFeriadosNacionaisApi(ano: number): Promise<FeriadoNacionalApiItem[]> {
+  const res = await apiRequest<Wrapped<FeriadoNacionalApiItem[]>>(`/api/feriados/nacionais-api?ano=${ano}`)
+  return res.data
+}
+
+/** Importa um único feriado nacional escolhido na lista. */
+export async function importarFeriadoNacionalApi(item: { data: string; nome: string }): Promise<{ id: number }> {
+  const res = await apiRequest<Wrapped<{ id: number }>>('/api/feriados/nacionais-api/importar', {
+    method: 'POST',
+    body: JSON.stringify(item),
+  })
+  return res.data
+}

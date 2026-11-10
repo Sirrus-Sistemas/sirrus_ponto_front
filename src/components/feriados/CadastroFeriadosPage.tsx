@@ -1,13 +1,16 @@
+import { useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import type { AppShellOutletContext } from '../layout/appShellContext'
 import { useFeriados } from './useFeriados'
 import { FeriadoForm } from './components/FeriadoForm/FeriadoForm'
 import { FeriadosTable } from './components/FeriadosTable/FeriadosTable'
+import { ImportarFeriadosModal } from './components/ImportarFeriadosModal/ImportarFeriadosModal'
 import styles from './CadastroFeriadosPage.module.css'
 
 export function CadastroFeriadosPage() {
   const { meReady } = useOutletContext<AppShellOutletContext>()
   const { rows, total, loading, error, filters, updateFilters, add, remove } = useFeriados()
+  const [importarAberto, setImportarAberto] = useState(false)
 
   if (!meReady) {
     return <p className={styles.loading}>Carregando…</p>
@@ -24,11 +27,25 @@ export function CadastroFeriadosPage() {
 
       {/* Cabeçalho */}
       <div className={styles.pageHeader}>
-        <h1 className={styles.title}>Feriados</h1>
-        <p className={styles.subtitle}>
-          Cadastre feriados nacionais, estaduais, municipais e empresariais usados no cálculo de escalas e jornadas.
-        </p>
+        <div className={styles.pageHeaderTop}>
+          <div>
+            <h1 className={styles.title}>Feriados</h1>
+            <p className={styles.subtitle}>
+              Cadastre feriados nacionais, estaduais, municipais e empresariais usados no cálculo de escalas e jornadas.
+            </p>
+          </div>
+          <button type="button" className={styles.btnImportar} onClick={() => setImportarAberto(true)}>
+            Importar feriados
+          </button>
+        </div>
       </div>
+
+      {importarAberto && (
+        <ImportarFeriadosModal
+          onClose={() => setImportarAberto(false)}
+          onImportado={() => updateFilters({})}
+        />
+      )}
 
       {error && (
         <div className={styles.errorBanner} role="alert">

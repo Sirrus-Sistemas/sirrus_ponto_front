@@ -1,6 +1,6 @@
 import { apiRequest, getApiBaseUrl, getStoredToken, ApiError } from '../lib/api'
 
-export type ImportEntidade = 'lotacoes' | 'turnos' | 'funcionarios' | 'banco_horas'
+export type ImportEntidade = 'lotacoes' | 'turnos' | 'funcionarios' | 'banco_horas' | 'feriados'
 
 export type ImportErro = { linha: number; campo: string; mensagem: string }
 
@@ -16,6 +16,7 @@ const ENDPOINTS: Record<ImportEntidade, string> = {
   turnos: '/api/turnos/importar',
   funcionarios: '/api/funcionarios/importar',
   banco_horas: '/api/banco-horas/importar',
+  feriados: '/api/feriados/importar',
 }
 
 const NOMES_ARQUIVO: Record<ImportEntidade, string> = {
@@ -23,6 +24,7 @@ const NOMES_ARQUIVO: Record<ImportEntidade, string> = {
   turnos: 'modelo-tabela-horarios.xlsx',
   funcionarios: 'modelo-funcionarios.xlsx',
   banco_horas: 'modelo-banco-horas.xlsx',
+  feriados: 'modelo-feriados.xlsx',
 }
 
 /** Baixa o modelo .xlsx da entidade e dispara o download no navegador. */

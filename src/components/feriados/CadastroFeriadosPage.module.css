@@ -51,6 +51,31 @@
   margin-bottom: 1.1rem;
 }
 
+.pageHeaderTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btnImportar {
+  flex-shrink: 0;
+  border: 1px solid var(--sp-border-strong, var(--sp-border));
+  border-radius: var(--sp-radius-md, 10px);
+  padding: 0.6rem 1.1rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sp-text-2);
+  background: var(--sp-bg-card);
+  cursor: pointer;
+}
+
+.btnImportar:hover {
+  background: var(--sp-bg-canvas, #f8fafc);
+}
+
 .title {
   margin: 0 0 0.3rem;
   font-size: 1.5rem;
