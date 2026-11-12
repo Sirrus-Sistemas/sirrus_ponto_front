@@ -137,11 +137,16 @@ export type FecharMesTodosResultado = {
   resultados: FecharMesTodosItem[]
 }
 
-/** Fecha o mês de todos os funcionários com banco de horas ativo, de uma vez. */
-export async function fecharMesTodosBancoHoras(ano: number, mes: number): Promise<FecharMesTodosResultado> {
+/** Fecha o mês de todos os funcionários com banco de horas ativo, de uma vez — opcionalmente só de uma filial/lotação. */
+export async function fecharMesTodosBancoHoras(ano: number, mes: number, params?: { filialId?: number; lotacaoId?: number }): Promise<FecharMesTodosResultado> {
   const r = await apiRequest<{ data: FecharMesTodosResultado }>('/api/banco-horas/fechar-mes-todos', {
     method: 'POST',
-    body: JSON.stringify({ ano, mes }),
+    body: JSON.stringify({
+      ano,
+      mes,
+      ...(params?.filialId ? { filial_id: params.filialId } : {}),
+      ...(params?.lotacaoId ? { lotacao_id: params.lotacaoId } : {}),
+    }),
   })
   return r.data
 }

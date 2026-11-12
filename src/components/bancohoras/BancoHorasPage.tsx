@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { ApiError } from '../../lib/api'
 import type { AppShellOutletContext } from '../layout/appShellContext'
 import { fetchFuncionarios, type FuncionarioListItem } from '../../services/funcionariosApi'
+import { fetchLotacoes, type Lotacao } from '../../services/lotacoesApi'
 import {
   fetchBancoHoras,
   lancarBancoHoras,
@@ -86,13 +87,19 @@ export function BancoHorasPage() {
 
   // Fechamento mensal — todos os colaboradores de uma vez
   const [fecharTodosMesAno, setFecharTodosMesAno] = useState(mesAnoAtual())
+  const [fecharTodosLotacaoId, setFecharTodosLotacaoId] = useState<number | ''>('')
   const [fechandoTodos, setFechandoTodos] = useState(false)
   const [fecharTodosError, setFecharTodosError] = useState<string | null>(null)
   const [fecharTodosResultado, setFecharTodosResultado] = useState<FecharMesTodosResultado | null>(null)
 
+  const [lotacoes, setLotacoes] = useState<Lotacao[]>([])
+
   useEffect(() => {
     fetchFuncionarios({ limit: 1000, ativo: 1, controla_ponto: 1 })
       .then((r) => setFuncionarios(r.data))
+      .catch(() => {})
+    fetchLotacoes()
+      .then(setLotacoes)
       .catch(() => {})
   }, [])
 
@@ -172,14 +179,18 @@ export function BancoHorasPage() {
     setFecharTodosResultado(null)
     if (!/^\d{4}-\d{2}$/.test(fecharTodosMesAno)) { setFecharTodosError('Selecione o mês/ano a fechar.'); return }
     const [anoStr, mesStr] = fecharTodosMesAno.split('-')
+    const lotacaoNome = fecharTodosLotacaoId
+      ? lotacoes.find((l) => l.id === fecharTodosLotacaoId)?.nome
+      : null
+    const escopo = lotacaoNome ? `os colaboradores da lotação "${lotacaoNome}"` : 'TODOS os colaboradores'
     if (!confirm(
-      `Fechar o mês ${fecharTodosMesAno} para TODOS os colaboradores com banco de horas ativo?\n\n` +
+      `Fechar o mês ${fecharTodosMesAno} para ${escopo} com banco de horas ativo?\n\n` +
       'Calcula e grava o crédito/débito da ficha de ponto de cada um. Quem já tiver esse mês fechado, ou não puder ser calculado, é pulado e informado no resultado — não precisa fechar de novo depois.',
     )) return
 
     setFechandoTodos(true)
     try {
-      const r = await fecharMesTodosBancoHoras(Number(anoStr), Number(mesStr))
+      const r = await fecharMesTodosBancoHoras(Number(anoStr), Number(mesStr), { lotacaoId: fecharTodosLotacaoId || undefined })
       setFecharTodosResultado(r)
       if (funcionarioId) carregarSaldo(funcionarioId)
     } catch (e) {
@@ -232,8 +243,9 @@ export function BancoHorasPage() {
         <p className={styles.cardTitle}>Fechar mês de todos os colaboradores</p>
         <p className={styles.hint}>
           Calcula e fecha a ficha de ponto da competência escolhida pra todos os colaboradores com
-          banco de horas ativo, de uma vez — sem precisar selecionar um por um. Quem já tiver esse mês
-          fechado, ou não puder ser calculado, é pulado e informado no resultado.
+          banco de horas ativo, de uma vez — sem precisar selecionar um por um. Filtre por lotação pra
+          fechar só um grupo. Quem já tiver esse mês fechado, ou não puder ser calculado, é pulado e
+          informado no resultado.
         </p>
 
         {fecharTodosError && <p className={styles.error} role="alert">{fecharTodosError}</p>}
@@ -248,11 +260,24 @@ export function BancoHorasPage() {
               onChange={(e) => setFecharTodosMesAno(e.target.value)}
             />
           </div>
+          <div className={styles.field}>
+            <label htmlFor="bh-fechar-todos-lotacao">Lotação</label>
+            <select
+              id="bh-fechar-todos-lotacao"
+              value={fecharTodosLotacaoId}
+              onChange={(e) => setFecharTodosLotacaoId(e.target.value ? Number(e.target.value) : '')}
+            >
+              <option value="">Todas as lotações</option>
+              {lotacoes.map((l) => (
+                <option key={l.id} value={l.id}>{l.nome}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className={styles.actions}>
           <button type="button" className={styles.btnPrimary} onClick={() => void handleFecharMesTodos()} disabled={fechandoTodos}>
-            {fechandoTodos ? 'Calculando todos…' : 'Calcular todos os colaboradores'}
+            {fechandoTodos ? 'Calculando…' : fecharTodosLotacaoId ? 'Calcular colaboradores da lotação' : 'Calcular todos os colaboradores'}
           </button>
         </div>
 
