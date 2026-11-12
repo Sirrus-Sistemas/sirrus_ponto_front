@@ -59,6 +59,7 @@ export function AprovacaoBatidasPage() {
 
   const [decidindo, setDecidindo] = useState(false)
   const [resultado, setResultado] = useState<DecidirResult | null>(null)
+  const [erroDetalhes, setErroDetalhes] = useState<{ nome: string; dataHora: string; error: string }[]>([])
   const [rowLoadingId, setRowLoadingId] = useState<number | null>(null)
 
   const [aprovacaoAtiva, setAprovacaoAtiva] = useState<boolean | null>(null)
@@ -87,6 +88,7 @@ export function AprovacaoBatidasPage() {
     setLoading(true)
     setError(null)
     setResultado(null)
+    setErroDetalhes([])
     const params = {
       filialId,
       dataInicio: dataInicio?.format('YYYY-MM-DD') ?? '',
@@ -115,6 +117,7 @@ export function AprovacaoBatidasPage() {
     setAba(novaAba)
     setError(null)
     setResultado(null)
+    setErroDetalhes([])
     setPendentes([])
     setHistorico([])
     setSelecionados(new Set())
@@ -139,11 +142,20 @@ export function AprovacaoBatidasPage() {
     try {
       const r = await decidirMarcacoesMobile(itens, status)
       setResultado(r)
-      const processadosIds = new Set(itens.map((i) => i.mobile_id))
-      setPendentes((prev) => prev.filter((p) => !processadosIds.has(p.mobile_id)))
+      const erroIds = new Set(r.erros.map((e) => e.mobile_id))
+      setErroDetalhes(r.erros.map((e) => {
+        const item = itens.find((i) => i.mobile_id === e.mobile_id)
+        return {
+          nome: item?.funcionario_nome ?? `#${e.mobile_id}`,
+          dataHora: item ? formatDataHora(item.data_hora_utc) : '',
+          error: e.error,
+        }
+      }))
+      const removidosIds = new Set(itens.filter((i) => !erroIds.has(i.mobile_id)).map((i) => i.mobile_id))
+      setPendentes((prev) => prev.filter((p) => !removidosIds.has(p.mobile_id)))
       setSelecionados((prev) => {
         const next = new Set(prev)
-        processadosIds.forEach((id) => next.delete(id))
+        removidosIds.forEach((id) => next.delete(id))
         return next
       })
     } catch (e) {
@@ -259,6 +271,16 @@ export function AprovacaoBatidasPage() {
           {resultado.erros.length > 0 && <span className={styles.pillErr}>{resultado.erros.length} erro(s)</span>}
         </div>
       ) : null}
+
+      {erroDetalhes.length > 0 && (
+        <ul className={styles.errorList}>
+          {erroDetalhes.map((e, idx) => (
+            <li key={idx}>
+              <strong>{e.nome}</strong>{e.dataHora ? ` (${e.dataHora})` : ''}: {e.error}
+            </li>
+          ))}
+        </ul>
+      )}
 
       {aba === 'pendentes' && pendentes.length > 0 && (
         <div className={styles.bulkBar}>

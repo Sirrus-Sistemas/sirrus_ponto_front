@@ -1,6 +1,6 @@
 import { apiRequest } from '../lib/api'
 
-export type TipoCiclo = '1x5' | '1x6' | '12x36' | '24x72' | '12x24x12x36'
+export type TipoCiclo = '1x5' | '1x6' | '5x2' | '12x36' | '24x72' | '12x24x12x36'
 
 export type EscalaPayload = {
   funcionario_id: number

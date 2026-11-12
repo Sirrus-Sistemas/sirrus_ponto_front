@@ -66,6 +66,16 @@ const CICLOS: { value: TipoCiclo; label: string; desc: string; segments: CycleSe
     ],
   },
   {
+    value: '5x2',
+    label: '5×2',
+    desc: '5 trabalho · 2 folga',
+    segments: [
+      { type: 'work', flex: 1 }, { type: 'work', flex: 1 }, { type: 'work', flex: 1 },
+      { type: 'work', flex: 1 }, { type: 'work', flex: 1 }, { type: 'off', flex: 1 },
+      { type: 'off', flex: 1 },
+    ],
+  },
+  {
     value: '12x36',
     label: '12×36',
     desc: '12h on · 36h off',
