@@ -194,6 +194,14 @@ export function DashboardGestorView({ me, switcherNode }: { me: FuncionarioMe; s
     return { total, trabalhando, intervalo, folga, falta }
   }, [team, hojeStr])
 
+  // ── "Presença agora": só quem está trabalhando neste momento ────────────────
+  const presentesAgora = useMemo(() => {
+    return teamFiltered.filter((m) => {
+      const dia = m.espelho?.dias.find((d) => d.data === hojeStr)
+      return statusPresenca(dia, hojeStr).variant === 'trabalhando'
+    })
+  }, [teamFiltered, hojeStr])
+
   // ── Fechamento ──────────────────────────────────────────────────────────────
   const fechamento = useMemo(() => {
     if (!myEspelho) return null
@@ -339,6 +347,8 @@ export function DashboardGestorView({ me, switcherNode }: { me: FuncionarioMe; s
             <p className={styles.errorMsg} role="alert">{teamError}</p>
           ) : loadingTeam ? (
             <p className={styles.loadingMsg}>Carregando equipe…</p>
+          ) : presentesAgora.length === 0 ? (
+            <p className={styles.loadingMsg}>Ninguém trabalhando agora.</p>
           ) : (
             <>
               <div className={styles.tableWrap}>
@@ -353,7 +363,7 @@ export function DashboardGestorView({ me, switcherNode }: { me: FuncionarioMe; s
                     </tr>
                   </thead>
                   <tbody>
-                    {teamFiltered.slice(teamPage * PAGE_SIZE, (teamPage + 1) * PAGE_SIZE).map(({ funcionario: f, espelho: esp, loading: ld }) => {
+                    {presentesAgora.slice(teamPage * PAGE_SIZE, (teamPage + 1) * PAGE_SIZE).map(({ funcionario: f, espelho: esp, loading: ld }) => {
                       const dia = esp?.dias.find((d) => d.data === hojeStr)
                       const status = statusPresenca(dia, hojeStr)
                       const ultima = ultimaBatidaHora(dia)
@@ -397,7 +407,7 @@ export function DashboardGestorView({ me, switcherNode }: { me: FuncionarioMe; s
                   </tbody>
                 </table>
               </div>
-              {teamFiltered.length > PAGE_SIZE && (
+              {presentesAgora.length > PAGE_SIZE && (
                 <div className={styles.pagination}>
                   <button
                     className={styles.pageBtn}
@@ -405,12 +415,12 @@ export function DashboardGestorView({ me, switcherNode }: { me: FuncionarioMe; s
                     disabled={teamPage === 0}
                   >‹</button>
                   <span className={styles.pageInfo}>
-                    {teamPage + 1} / {Math.ceil(teamFiltered.length / PAGE_SIZE)}
+                    {teamPage + 1} / {Math.ceil(presentesAgora.length / PAGE_SIZE)}
                   </span>
                   <button
                     className={styles.pageBtn}
                     onClick={() => setTeamPage((p) => p + 1)}
-                    disabled={(teamPage + 1) * PAGE_SIZE >= teamFiltered.length}
+                    disabled={(teamPage + 1) * PAGE_SIZE >= presentesAgora.length}
                   >›</button>
                 </div>
               )}

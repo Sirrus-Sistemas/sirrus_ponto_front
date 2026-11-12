@@ -42,6 +42,8 @@ export type FuncionarioEscala = {
   cargo: string | null
   filial_nome: string | null
   departamento_nome: string | null
+  lotacao_id: number | null
+  lotacao_nome: string | null
   turno_nome: string | null
   turno_entrada: string | null
   turno_saida: string | null

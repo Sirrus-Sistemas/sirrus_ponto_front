@@ -141,6 +141,12 @@ export function GerarEscalaPage() {
   const [funcionarios, setFuncionarios] = useState<FuncionarioEscala[]>([])
   const [loadingFuncs, setLoadingFuncs] = useState(true)
 
+  // ── Alvo da geração: um funcionário específico ou todos de uma lotação ──────
+  const [alvoTipo, setAlvoTipo] = useState<'funcionario' | 'lotacao'>('funcionario')
+  const [alvoLotacaoId, setAlvoLotacaoId] = useState<number | ''>('')
+  const [bulkSaving, setBulkSaving] = useState(false)
+  const [bulkErros, setBulkErros] = useState<{ nome: string; error: string }[]>([])
+
   // ── Modo de geração: ciclo fixo (padrão) ou tabela de horário já cadastrada ──
   // Pensado pro caso de funcionário que troca de horário no meio do mês (ex.:
   // trabalhou 17h-23h do dia 1 ao 15 e comercial do dia 16 em diante) — aplica
@@ -212,7 +218,20 @@ export function GerarEscalaPage() {
     )
   }, [resultados, buscaTexto])
 
+  // Funcionários da lotação escolhida (alvo = "por lotação") — todos recebem a mesma escala.
+  const funcionariosDaLotacao = useMemo(() => {
+    if (alvoTipo !== 'lotacao' || !alvoLotacaoId) return []
+    return funcionarios.filter((f) => f.lotacao_id === alvoLotacaoId)
+  }, [funcionarios, alvoTipo, alvoLotacaoId])
+
+  // Funcionário "representante" da lotação — só pra habilitar a pré-visualização
+  // (que não depende de qual funcionário é, mesmo ciclo/horário pra todos).
+  const previewFuncionarioId = alvoTipo === 'lotacao'
+    ? (funcionariosDaLotacao[0]?.id ?? null)
+    : (form.funcionario_id ? Number(form.funcionario_id) : null)
+
   function selecionarEscalaExistente(r: EscalaGerada) {
+    setAlvoTipo('funcionario')
     setForm((prev) => ({
       ...prev,
       funcionario_id: String(r.funcionario_id),
@@ -280,12 +299,12 @@ export function GerarEscalaPage() {
   // Auto-preview: debounced 400ms after any form change
   useEffect(() => {
     const isValidCiclo = modo === 'ciclo' &&
-      form.funcionario_id && form.data_inicio && form.data_fim &&
+      previewFuncionarioId && form.data_inicio && form.data_fim &&
       form.data_inicio <= form.data_fim &&
       form.inicio_ciclo && form.entrada1 && form.saida1
 
     const isValidTurno = modo === 'turno' &&
-      form.funcionario_id && form.data_inicio && form.data_fim &&
+      previewFuncionarioId && form.data_inicio && form.data_fim &&
       form.data_inicio <= form.data_fim && turnoId
 
     if (!isValidCiclo && !isValidTurno) return
@@ -295,12 +314,12 @@ export function GerarEscalaPage() {
       try {
         const dias = modo === 'turno'
           ? await previewEscalaPorTurno({
-              funcionario_id: Number(form.funcionario_id),
+              funcionario_id: previewFuncionarioId!,
               data_inicio: form.data_inicio,
               data_fim: form.data_fim,
               turno_id: Number(turnoId),
             })
-          : await previewEscala(buildPayload(form))
+          : await previewEscala(buildPayload(form, previewFuncionarioId!))
         setPreview(dias)
       } catch {
         // silently ignore auto-preview errors
@@ -312,15 +331,15 @@ export function GerarEscalaPage() {
     return () => clearTimeout(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    modo, turnoId,
+    modo, turnoId, previewFuncionarioId,
     form.funcionario_id, form.data_inicio, form.data_fim, form.tipo_ciclo,
     form.inicio_ciclo, form.entrada1, form.saida1, form.entrada2, form.saida2,
     form.entrada3, form.saida3, form.entrada4, form.saida4, form.fim_noturno,
   ])
 
-  function buildPayload(f: FormState) {
+  function buildPayload(f: FormState, funcionarioId?: number) {
     return {
-      funcionario_id: Number(f.funcionario_id),
+      funcionario_id: funcionarioId ?? Number(f.funcionario_id),
       data_inicio:    f.data_inicio,
       data_fim:       f.data_fim,
       tipo_ciclo:     f.tipo_ciclo,
@@ -362,7 +381,12 @@ export function GerarEscalaPage() {
   }
 
   function validate() {
-    if (!form.funcionario_id) return 'Selecione um funcionário.'
+    if (alvoTipo === 'lotacao') {
+      if (!alvoLotacaoId) return 'Selecione uma lotação.'
+      if (funcionariosDaLotacao.length === 0) return 'Essa lotação não tem funcionários com escala habilitada.'
+    } else if (!form.funcionario_id) {
+      return 'Selecione um funcionário.'
+    }
     if (!form.data_inicio || !form.data_fim) return 'Informe o período.'
     if (form.data_inicio > form.data_fim) return 'Data de início deve ser anterior à data fim.'
     if (modo === 'turno') {
@@ -377,7 +401,9 @@ export function GerarEscalaPage() {
   function fieldError(field: keyof FormState): string | null {
     if (!submitAttempted) return null
     switch (field) {
-      case 'funcionario_id': return !form.funcionario_id ? 'Selecione um funcionário.' : null
+      case 'funcionario_id':
+        if (alvoTipo === 'lotacao') return !alvoLotacaoId ? 'Selecione uma lotação.' : null
+        return !form.funcionario_id ? 'Selecione um funcionário.' : null
       case 'data_inicio':    return !form.data_inicio ? 'Informe a data de início.' : null
       case 'data_fim':
         if (!form.data_fim) return 'Informe a data de fim.'
@@ -414,6 +440,12 @@ export function GerarEscalaPage() {
     const err = validate()
     if (err) { setSaveError(err); return }
     setSaveError(null)
+
+    if (alvoTipo === 'lotacao') {
+      await handleSalvarLotacao()
+      return
+    }
+
     setSaving(true)
     try {
       const total = modo === 'turno'
@@ -439,6 +471,42 @@ export function GerarEscalaPage() {
     }
   }
 
+  // Gera a mesma escala (ciclo/horários OU tabela de horário) para todos os
+  // funcionários da lotação escolhida — em lotes, pra não estourar o backend.
+  async function handleSalvarLotacao() {
+    setBulkSaving(true)
+    setBulkErros([])
+    let totalDias = 0
+    let okCount = 0
+    const erros: { nome: string; error: string }[] = []
+    const BATCH = 5
+    try {
+      for (let i = 0; i < funcionariosDaLotacao.length; i += BATCH) {
+        const lote = funcionariosDaLotacao.slice(i, i + BATCH)
+        const resultados = await Promise.allSettled(
+          lote.map((f) => modo === 'turno'
+            ? salvarEscalaPorTurno({
+                funcionario_id: f.id,
+                data_inicio: form.data_inicio,
+                data_fim: form.data_fim,
+                turno_id: Number(turnoId),
+              })
+            : salvarEscala(buildPayload(form, f.id))
+          )
+        )
+        resultados.forEach((r, idx) => {
+          if (r.status === 'fulfilled') { okCount++; totalDias += r.value }
+          else erros.push({ nome: lote[idx]!.nome, error: r.reason instanceof ApiError ? r.reason.message : 'Erro ao gravar.' })
+        })
+      }
+      setBulkErros(erros)
+      setSuccess(`${okCount} de ${funcionariosDaLotacao.length} funcionário(s) da lotação atualizados (${totalDias} dias no total).`)
+      setPreview(null)
+    } finally {
+      setBulkSaving(false)
+    }
+  }
+
   // ── Derived state ─────────────────────────────────────────────────────────────
 
   const funcSelecionado = funcionarios.find((f) => String(f.id) === form.funcionario_id)
@@ -452,11 +520,14 @@ export function GerarEscalaPage() {
     [form.data_inicio, form.data_fim]
   )
 
-  const step1Done = Boolean(form.funcionario_id && form.data_inicio && form.data_fim)
+  const step1Done = Boolean(
+    (alvoTipo === 'lotacao' ? alvoLotacaoId : form.funcionario_id) && form.data_inicio && form.data_fim
+  )
   const step2Done = modo === 'turno' ? Boolean(turnoId) : Boolean(form.inicio_ciclo)
   const step3Done = modo === 'turno' ? true : Boolean(form.entrada1 && form.saida1)
   const canSave   = step1Done && step2Done && step3Done &&
-                    form.data_inicio <= form.data_fim
+                    form.data_inicio <= form.data_fim &&
+                    (alvoTipo === 'funcionario' || funcionariosDaLotacao.length > 0)
 
   const paresAtivos = [
     form.entrada1 || form.saida1,
@@ -544,10 +615,16 @@ export function GerarEscalaPage() {
             type="button"
             className={styles.btnSave}
             onClick={handleSalvar}
-            disabled={saving || loadingPreview}
+            disabled={saving || bulkSaving || loadingPreview}
           >
             <CalendarCheck size={15} />
-            {saving ? 'Salvando…' : isEditing ? 'Atualizar escala' : 'Gerar escala'}
+            {bulkSaving
+              ? 'Gerando…'
+              : saving
+                ? 'Salvando…'
+                : alvoTipo === 'lotacao'
+                  ? `Gerar para ${funcionariosDaLotacao.length || 0} funcionário(s)`
+                  : isEditing ? 'Atualizar escala' : 'Gerar escala'}
           </button>
         </div>
       </div>
@@ -675,6 +752,14 @@ export function GerarEscalaPage() {
       {/* ── Success / Save Error banners ── */}
       {success  && <p className={`${styles.banner} ${styles.bannerOk}`}>{success}</p>}
       {saveError && <p className={`${styles.banner} ${styles.bannerErr}`}>{saveError}</p>}
+      {bulkErros.length > 0 && (
+        <div className={`${styles.banner} ${styles.bannerErr}`}>
+          <p style={{ margin: 0, fontWeight: 600 }}>{bulkErros.length} funcionário(s) não puderam ser atualizados:</p>
+          <ul style={{ margin: '4px 0 0', paddingLeft: '18px' }}>
+            {bulkErros.map((e, idx) => <li key={idx}>{e.nome}: {e.error}</li>)}
+          </ul>
+        </div>
+      )}
 
       {/* ── Two-column layout ── */}
       <div className={styles.layout}>
@@ -682,36 +767,88 @@ export function GerarEscalaPage() {
         {/* ═══ Left column — Form cards ═══ */}
         <div className={styles.formCol}>
 
-          {/* Card 1 — Funcionário e período */}
+          {/* Card 1 — Funcionário (ou lotação) e período */}
           <div className={styles.card}>
             <div className={styles.cardHeader}>
               <User size={14} className={styles.cardIcon} />
-              <span>Funcionário e período</span>
+              <span>{alvoTipo === 'lotacao' ? 'Lotação e período' : 'Funcionário e período'}</span>
             </div>
 
-            <div className={styles.field}>
-              <label htmlFor="ge-func" className={styles.label}>Funcionário</label>
-              {loadingFuncs ? (
-                <p className={styles.hint}>Carregando funcionários…</p>
-              ) : (
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '14px' }}>
+              <button
+                type="button"
+                className={alvoTipo === 'funcionario' ? styles.cicloCardActive : styles.cicloCard}
+                style={{ flex: 1, padding: '0.5rem 0.75rem', textAlign: 'center' }}
+                onClick={() => { setAlvoTipo('funcionario'); setSaveError(null); setSuccess(null); setBulkErros([]) }}
+              >
+                Funcionário individual
+              </button>
+              <button
+                type="button"
+                className={alvoTipo === 'lotacao' ? styles.cicloCardActive : styles.cicloCard}
+                style={{ flex: 1, padding: '0.5rem 0.75rem', textAlign: 'center' }}
+                onClick={() => {
+                  setAlvoTipo('lotacao')
+                  setForm((prev) => ({ ...prev, funcionario_id: '' }))
+                  setIsEditing(false)
+                  setSaveError(null); setSuccess(null); setBulkErros([])
+                }}
+              >
+                Por lotação
+              </button>
+            </div>
+
+            {alvoTipo === 'lotacao' ? (
+              <div className={styles.field}>
+                <label htmlFor="ge-lotacao" className={styles.label}>Lotação</label>
                 <select
-                  id="ge-func"
+                  id="ge-lotacao"
                   className={`${styles.select} ${fieldError('funcionario_id') ? styles.inputErr : ''}`}
-                  value={form.funcionario_id}
-                  onChange={update('funcionario_id')}
+                  value={alvoLotacaoId}
+                  onChange={(e) => {
+                    setAlvoLotacaoId(e.target.value ? Number(e.target.value) : '')
+                    setSaveError(null); setSuccess(null); setBulkErros([])
+                  }}
                 >
                   <option value="">— Selecione —</option>
-                  {funcionarios.map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.nome}{f.matricula ? ` (${f.matricula})` : ''}{f.filial_nome ? ` — ${f.filial_nome}` : ''}
-                    </option>
+                  {lotacoes.map((l) => (
+                    <option key={l.id} value={l.id}>{l.nome}</option>
                   ))}
                 </select>
-              )}
-              {fieldError('funcionario_id') && <p className={styles.errMsg}>{fieldError('funcionario_id')}</p>}
-            </div>
+                {fieldError('funcionario_id') && <p className={styles.errMsg}>{fieldError('funcionario_id')}</p>}
+                {alvoLotacaoId !== '' && (
+                  <p className={styles.hint}>
+                    {funcionariosDaLotacao.length === 0
+                      ? 'Nenhum funcionário com escala habilitada nessa lotação.'
+                      : `A mesma escala será gerada para os ${funcionariosDaLotacao.length} funcionário(s) dessa lotação.`}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className={styles.field}>
+                <label htmlFor="ge-func" className={styles.label}>Funcionário</label>
+                {loadingFuncs ? (
+                  <p className={styles.hint}>Carregando funcionários…</p>
+                ) : (
+                  <select
+                    id="ge-func"
+                    className={`${styles.select} ${fieldError('funcionario_id') ? styles.inputErr : ''}`}
+                    value={form.funcionario_id}
+                    onChange={update('funcionario_id')}
+                  >
+                    <option value="">— Selecione —</option>
+                    {funcionarios.map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.nome}{f.matricula ? ` (${f.matricula})` : ''}{f.filial_nome ? ` — ${f.filial_nome}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {fieldError('funcionario_id') && <p className={styles.errMsg}>{fieldError('funcionario_id')}</p>}
+              </div>
+            )}
 
-            {funcSelecionado && (
+            {alvoTipo === 'funcionario' && funcSelecionado && (
               <div className={styles.funcCard}>
                 <div className={styles.funcAvatar}>{getInitials(funcSelecionado.nome)}</div>
                 <div className={styles.funcInfo}>
@@ -996,6 +1133,12 @@ export function GerarEscalaPage() {
               <span>Pré-visualização</span>
               {loadingPreview && <span className={styles.previewLoading}>Calculando…</span>}
             </div>
+
+            {alvoTipo === 'lotacao' && funcionariosDaLotacao.length > 0 && (
+              <p className={styles.hint} style={{ marginTop: '-8px', marginBottom: '10px' }}>
+                Essa prévia vale igual para os {funcionariosDaLotacao.length} funcionário(s) da lotação — mesmo ciclo e horários pra todos.
+              </p>
+            )}
 
             {/* Metrics */}
             <div className={styles.metrics}>
