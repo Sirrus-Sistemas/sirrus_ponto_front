@@ -18,7 +18,7 @@ import {
 } from '../../services/lotacoesApi'
 import styles from './CadastroLotacoesPage.module.css'
 import { CercaEletronicaEditor } from '../cerca/CercaEletronicaEditor'
-import { LotacaoFuncionariosModal } from './LotacaoFuncionariosModal'
+import { ColaboradoresModal } from '../colaboradores/ColaboradoresModal'
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -640,9 +640,9 @@ export function CadastroLotacoesPage() {
       </div>
 
       {modalColab && (
-        <LotacaoFuncionariosModal
-          lotacaoId={modalColab.id}
-          lotacaoNome={modalColab.nome}
+        <ColaboradoresModal
+          filtro={{ lotacao_id: modalColab.id }}
+          nome={modalColab.nome}
           onClose={fecharModalColab}
         />
       )}

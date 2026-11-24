@@ -200,6 +200,31 @@
   white-space: nowrap;
 }
 
+/* "N colab." clicável — abre o modal com a lista de colaboradores */
+.colabLink {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  color: var(--sp-primary, #14918b);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  transition: text-decoration-color 0.15s;
+}
+
+.colabLink:hover,
+.colabLink:focus-visible {
+  text-decoration-color: currentColor;
+}
+
+.colabLink:disabled {
+  color: var(--sp-text-3);
+  cursor: default;
+  text-decoration: none;
+}
+
 /* Type badges */
 .typeBadge {
   display: inline-block;

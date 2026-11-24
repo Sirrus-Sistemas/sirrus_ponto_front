@@ -143,6 +143,7 @@ export async function fetchFuncionarios(params?: {
   limit?: number
   ativo?: number
   lotacao_id?: number
+  turno_id?: number
   filial_id?: number
   cargo?: string
   /** 1 = só quem controla ponto (telas de Ficha/Espelho/relatórios). */
@@ -154,6 +155,7 @@ export async function fetchFuncionarios(params?: {
   if (params?.limit)                 qs.set('limit', String(params.limit))
   if (params?.ativo !== undefined)   qs.set('ativo', String(params.ativo))
   if (params?.lotacao_id != null)    qs.set('lotacao_id', String(params.lotacao_id))
+  if (params?.turno_id != null)      qs.set('turno_id', String(params.turno_id))
   if (params?.filial_id != null)     qs.set('filial_id', String(params.filial_id))
   if (params?.cargo)                 qs.set('cargo', params.cargo)
   if (params?.controla_ponto !== undefined) qs.set('controla_ponto', String(params.controla_ponto))

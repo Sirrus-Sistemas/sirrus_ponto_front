@@ -2,11 +2,15 @@ import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 import { ApiError } from '../../lib/api'
 import { fetchFuncionarios, type FuncionarioListItem } from '../../services/funcionariosApi'
-import styles from './LotacaoFuncionariosModal.module.css'
+import styles from './ColaboradoresModal.module.css'
 
-interface LotacaoFuncionariosModalProps {
-  lotacaoId: number
-  lotacaoNome: string
+/** Vínculo cujos colaboradores serão listados (lotação ou tabela de horário/turno). */
+export type ColaboradoresFiltro = { lotacao_id: number } | { turno_id: number }
+
+interface ColaboradoresModalProps {
+  filtro: ColaboradoresFiltro
+  /** Nome da lotação/turno, exibido abaixo do título. */
+  nome: string
   onClose: () => void
 }
 
@@ -15,22 +19,25 @@ function formatCpf(cpf: string | null): string {
   return d.length === 11 ? `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}` : (cpf ?? '—')
 }
 
-/** Lista os colaboradores ativos de uma lotação (mesmo critério do contador da lista). */
-export function LotacaoFuncionariosModal({ lotacaoId, lotacaoNome, onClose }: LotacaoFuncionariosModalProps) {
+/** Lista os colaboradores ativos de uma lotação ou turno (mesmo critério dos contadores das telas). */
+export function ColaboradoresModal({ filtro, nome, onClose }: ColaboradoresModalProps) {
   const [funcionarios, setFuncionarios] = useState<FuncionarioListItem[] | null>(null)
   const [erro, setErro] = useState<string | null>(null)
   const [busca, setBusca] = useState('')
 
+  const lotacaoId = 'lotacao_id' in filtro ? filtro.lotacao_id : undefined
+  const turnoId = 'turno_id' in filtro ? filtro.turno_id : undefined
+
   useEffect(() => {
     const ctrl = new AbortController()
-    fetchFuncionarios({ lotacao_id: lotacaoId, ativo: 1, limit: 10000 }, ctrl.signal)
+    fetchFuncionarios({ lotacao_id: lotacaoId, turno_id: turnoId, ativo: 1, limit: 10000 }, ctrl.signal)
       .then((r) => setFuncionarios([...r.data].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))))
       .catch((e) => {
         if (ctrl.signal.aborted) return
         setErro(e instanceof ApiError ? e.message : 'Não foi possível carregar os colaboradores.')
       })
     return () => ctrl.abort()
-  }, [lotacaoId])
+  }, [lotacaoId, turnoId])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -54,7 +61,7 @@ export function LotacaoFuncionariosModal({ lotacaoId, lotacaoNome, onClose }: Lo
           <div>
             <h2 id="lot-func-titulo" className={styles.modalTitle}>Colaboradores</h2>
             <p className={styles.modalSub}>
-              {lotacaoNome}
+              {nome}
               {funcionarios && ` · ${funcionarios.length} ativo${funcionarios.length === 1 ? '' : 's'}`}
             </p>
           </div>
@@ -79,7 +86,7 @@ export function LotacaoFuncionariosModal({ lotacaoId, lotacaoNome, onClose }: Lo
         ) : funcionarios === null ? (
           <p className={styles.info}>Carregando…</p>
         ) : funcionarios.length === 0 ? (
-          <p className={styles.info}>Nenhum colaborador ativo nesta lotação.</p>
+          <p className={styles.info}>Nenhum colaborador ativo vinculado.</p>
         ) : filtrados.length === 0 ? (
           <p className={styles.info}>Nenhum colaborador encontrado para “{busca}”.</p>
         ) : (

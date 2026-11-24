@@ -17,6 +17,7 @@ import {
   type UpdateTurnoPayload,
 } from '../../services/turnosApi'
 import styles from './CadastroTabelaHorariosPage.module.css'
+import { ColaboradoresModal } from '../colaboradores/ColaboradoresModal'
 
 function podeGerirTabelaHorarios(role: string | undefined) {
   return role === 'admin'
@@ -166,6 +167,8 @@ export function CadastroTabelaHorariosPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [modalColab, setModalColab] = useState<Turno | null>(null)
+  const fecharModalColab = useCallback(() => setModalColab(null), [])
 
   const [busca, setBusca] = useState('')
 
@@ -497,7 +500,15 @@ export function CadastroTabelaHorariosPage() {
                     <span className={styles.cardHora}>
                       {horaParaInput(t.entrada)} – {horaParaInput(t.saida)}
                     </span>
-                    <span className={styles.cardColab}>{t.total_funcionarios ?? 0} colab.</span>
+                    <button
+                      type="button"
+                      className={`${styles.cardColab} ${styles.colabLink}`}
+                      disabled={(t.total_funcionarios ?? 0) === 0}
+                      title={(t.total_funcionarios ?? 0) > 0 ? 'Ver colaboradores deste turno' : undefined}
+                      onClick={(e) => { e.stopPropagation(); setModalColab(t) }}
+                    >
+                      {t.total_funcionarios ?? 0} colab.
+                    </button>
                   </div>
                 </li>
               ))}
@@ -767,6 +778,14 @@ export function CadastroTabelaHorariosPage() {
           )}
         </main>
       </div>
+
+      {modalColab && (
+        <ColaboradoresModal
+          filtro={{ turno_id: modalColab.id }}
+          nome={modalColab.nome}
+          onClose={fecharModalColab}
+        />
+      )}
     </div>
   )
 }
