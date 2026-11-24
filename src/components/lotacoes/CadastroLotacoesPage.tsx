@@ -18,6 +18,7 @@ import {
 } from '../../services/lotacoesApi'
 import styles from './CadastroLotacoesPage.module.css'
 import { CercaEletronicaEditor } from '../cerca/CercaEletronicaEditor'
+import { LotacaoFuncionariosModal } from './LotacaoFuncionariosModal'
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -179,6 +180,8 @@ export function CadastroLotacoesPage() {
   const [submitting, setSubmitting]   = useState(false)
   const [error, setError]             = useState<string | null>(null)
   const [success, setSuccess]         = useState<string | null>(null)
+  const [modalColab, setModalColab]   = useState<Lotacao | null>(null)
+  const fecharModalColab = useCallback(() => setModalColab(null), [])
 
   const isNew = selectedId === -1
   const selectedLot = lista.find(l => l.id === selectedId) ?? null
@@ -279,6 +282,21 @@ export function CadastroLotacoesPage() {
   const listaFiltrada = lista.filter(l =>
     l.nome.toLowerCase().includes(search.toLowerCase())
   )
+
+  function colaboradoresLink(l: Lotacao) {
+    const total = l.total_funcionarios ?? 0
+    return (
+      <button
+        type="button"
+        className={styles.colabLink}
+        disabled={total === 0}
+        title={total > 0 ? 'Ver colaboradores desta lotação' : undefined}
+        onClick={e => { e.stopPropagation(); setModalColab(l) }}
+      >
+        {total} colaboradores
+      </button>
+    )
+  }
 
   // ── tab content renderers ─────────────────────────────────────────────────
 
@@ -536,7 +554,7 @@ export function CadastroLotacoesPage() {
                   <div className={styles.avatar}>{initials(l.nome)}</div>
                   <div className={styles.lotacaoInfo}>
                     <span className={styles.lotacaoNome}>{l.nome}</span>
-                    <span className={styles.lotacaoSub}>{l.total_funcionarios ?? 0} colaboradores</span>
+                    <span className={styles.lotacaoSub}>{colaboradoresLink(l)}</span>
                   </div>
                   <span className={styles.badgeAtiva}>● Ativa</span>
                 </li>
@@ -561,7 +579,7 @@ export function CadastroLotacoesPage() {
                   <span className={styles.detailTitle}>{isNew ? 'Nova lotação' : selectedLot?.nome ?? '—'}</span>
                   {!isNew && selectedLot && (
                     <span className={styles.detailSubtitle}>
-                      {selectedLot.total_funcionarios ?? 0} colaboradores · regra base {tipoExtraLabel(selectedLot.tipo_extra)}
+                      {colaboradoresLink(selectedLot)} · regra base {tipoExtraLabel(selectedLot.tipo_extra)}
                     </span>
                   )}
                 </div>
@@ -620,6 +638,14 @@ export function CadastroLotacoesPage() {
           )}
         </div>
       </div>
+
+      {modalColab && (
+        <LotacaoFuncionariosModal
+          lotacaoId={modalColab.id}
+          lotacaoNome={modalColab.nome}
+          onClose={fecharModalColab}
+        />
+      )}
     </div>
   )
 }

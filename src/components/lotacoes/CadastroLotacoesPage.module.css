@@ -295,6 +295,32 @@
   color: var(--sp-text-3);
 }
 
+/* "N colaboradores" clicável — abre o modal com a lista */
+.colabLink {
+  display: inline;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--sp-primary, #14918b);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  transition: text-decoration-color 0.15s;
+}
+
+.colabLink:hover,
+.colabLink:focus-visible {
+  text-decoration-color: currentColor;
+}
+
+.colabLink:disabled {
+  color: inherit;
+  cursor: default;
+  text-decoration: none;
+}
+
 /* ── Status badge (detail header) ────────────────────────────────────────── */
 .headerBadgeAtiva {
   flex-shrink: 0;
