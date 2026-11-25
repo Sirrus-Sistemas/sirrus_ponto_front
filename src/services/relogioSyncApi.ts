@@ -90,3 +90,22 @@ export async function fetchSaude(): Promise<SistemasSaude> {
   const res = await apiRequest<Envelope<SistemasSaude>>('/api/relogios/saude')
   return res.data
 }
+
+export type DiagnosticoComunicacao = {
+  saudavel: boolean | null
+  mensagem: string
+}
+
+/**
+ * Não existe canal pra mandar comando nenhum pro Sirrus Ponto Sync — ele só
+ * fala com a API por iniciativa própria. Isso não força nada de verdade:
+ * devolve na hora um diagnóstico com o que já foi recebido (heartbeat +
+ * última marcação importada).
+ */
+export async function forcarSincronizacao(relogioId: number): Promise<DiagnosticoComunicacao> {
+  const res = await apiRequest<Envelope<DiagnosticoComunicacao>>(
+    `/api/relogios/${relogioId}/forcar-sincronizacao`,
+    { method: 'POST' },
+  )
+  return res.data
+}

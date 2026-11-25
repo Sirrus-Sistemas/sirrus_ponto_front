@@ -10,6 +10,7 @@ import {
   enqueueManual,
   retentarErros,
   removerDaFila,
+  forcarSincronizacao,
   type FilaItem,
   type FilaStatus,
   type ContadorFila,
@@ -48,6 +49,7 @@ export function RelogioComunicacaoPage() {
   const [error, setError]               = useState<string | null>(null)
   const [success, setSuccess]           = useState<string | null>(null)
   const [retentando, setRetentando]     = useState(false)
+  const [forcando, setForcando]         = useState(false)
 
   // Modal de adição manual
   const [modalOpen, setModalOpen]         = useState(false)
@@ -112,6 +114,22 @@ export function RelogioComunicacaoPage() {
       setError(err instanceof ApiError ? err.message : 'Erro ao retentar.')
     } finally {
       setRetentando(false)
+    }
+  }
+
+  async function handleForcar() {
+    if (!selectedId) return
+    setForcando(true)
+    setError(null)
+    setSuccess(null)
+    try {
+      const diagnostico = await forcarSincronizacao(selectedId)
+      if (diagnostico.saudavel === false) setError(diagnostico.mensagem)
+      else setSuccess(diagnostico.mensagem)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Erro ao verificar a comunicação.')
+    } finally {
+      setForcando(false)
     }
   }
 
@@ -255,6 +273,15 @@ export function RelogioComunicacaoPage() {
                   </p>
                 </div>
                 <div className={styles.panelActions}>
+                  <button
+                    type="button"
+                    className={styles.btnAction}
+                    onClick={() => void handleForcar()}
+                    disabled={forcando || !!selectedRelogio.usa_afd}
+                    title={selectedRelogio.usa_afd ? 'Relógio AFD não tem sincronização automática para verificar.' : 'Verifica na hora se a comunicação com este relógio está ativa.'}
+                  >
+                    {forcando ? 'Verificando…' : 'Forçar sincronização'}
+                  </button>
                   {temErros && (
                     <button
                       type="button"
