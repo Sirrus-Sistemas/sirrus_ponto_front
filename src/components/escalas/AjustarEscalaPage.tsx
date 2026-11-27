@@ -14,6 +14,7 @@ import {
   User,
 } from 'lucide-react'
 import type { AppShellOutletContext } from '../layout/appShellContext'
+import { ApiError } from '../../lib/api'
 import {
   deleteEscala,
   fetchEscala,
@@ -52,7 +53,7 @@ function buildMonthGrid(year: number, month: number): (string | null)[] {
   return cells
 }
 
-type TipoAjuste = 'trabalho' | 'folga' | 'falta'
+type TipoAjuste = 'trabalho' | 'folga'
 
 type HistoryEntry = {
   id: number
@@ -78,6 +79,7 @@ export function AjustarEscalaPage() {
   const [loadingEscala, setLoadingEscala] = useState(false)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [savingDate, setSavingDate] = useState<string | null>(null)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [history, setHistory] = useState<HistoryEntry[]>([])
   const [historyOpen, setHistoryOpen] = useState(false)
   const [calMonth, setCalMonth] = useState<{ year: number; month: number } | null>(null)
@@ -158,6 +160,7 @@ export function AjustarEscalaPage() {
   async function handleChangeTipo(data: string, tipo: TipoAjuste) {
     if (!currentFunc) return
     setSavingDate(data)
+    setSaveError(null)
     try {
       await updateDiaEscala(currentFunc.id, { data, tipo })
       setOverrides((prev) => ({ ...prev, [data]: tipo }))
@@ -169,9 +172,8 @@ export function AjustarEscalaPage() {
         },
         ...prev,
       ])
-    } catch {
-      // keep override local anyway to show intent
-      setOverrides((prev) => ({ ...prev, [data]: tipo }))
+    } catch (err) {
+      setSaveError(err instanceof ApiError ? err.message : 'Erro ao salvar o ajuste deste dia.')
     } finally {
       setSavingDate(null)
     }
@@ -475,7 +477,6 @@ export function AjustarEscalaPage() {
                       !inPeriod ? styles.calDayOut : '',
                       inPeriod && tipo === 'trabalho' ? styles.calDayWork : '',
                       inPeriod && tipo === 'folga'    ? styles.calDayOff  : '',
-                      inPeriod && tipo === 'falta'    ? styles.calDayFalta : '',
                       isSelected ? styles.calDaySelected : '',
                       isSaving   ? styles.calDaySaving   : '',
                     ].filter(Boolean).join(' ')}
@@ -493,7 +494,6 @@ export function AjustarEscalaPage() {
             <div className={styles.legend}>
               <span className={`${styles.legendDot} ${styles.legendWork}`} /> Trabalho
               <span className={`${styles.legendDot} ${styles.legendOff}`}  /> Folga
-              <span className={`${styles.legendDot} ${styles.legendFalta}`}/> Falta
             </div>
 
             {/* Day detail panel */}
@@ -508,8 +508,10 @@ export function AjustarEscalaPage() {
                   )}
                 </div>
 
+                {saveError && <p className={styles.deleteError}>{saveError}</p>}
+
                 <div className={styles.dayPanelTypes}>
-                  {(['trabalho', 'folga', 'falta'] as TipoAjuste[]).map((t) => (
+                  {(['trabalho', 'folga'] as TipoAjuste[]).map((t) => (
                     <button
                       key={t}
                       type="button"
@@ -518,7 +520,6 @@ export function AjustarEscalaPage() {
                         styles.tipoBtn,
                         t === 'trabalho' ? styles.tipoBtnWork  : '',
                         t === 'folga'    ? styles.tipoBtnOff   : '',
-                        t === 'falta'    ? styles.tipoBtnFalta : '',
                         selectedTipo === t ? styles.tipoBtnActive : '',
                       ].filter(Boolean).join(' ')}
                       onClick={() => handleChangeTipo(selectedDate, t)}
